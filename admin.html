@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>逗點集團｜面試後台管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans TC', sans-serif; background: #f1f5f9; }
+  </style>
+</head>
+<body class="text-slate-800">
+
+<!-- 登入頁 -->
+<div id="page-login" class="min-h-screen flex items-center justify-center bg-slate-900">
+  <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+    <div class="bg-slate-100 p-3 rounded-xl mb-6 inline-block mx-auto border border-slate-200">
+      <img src="逗點教室LOGO-直-co -去背.png" onerror="this.style.display='none'" class="h-16 object-contain">
+    </div>
+    <h1 class="text-2xl font-black mb-1">後台管理系統</h1>
+    <p class="text-sm text-slate-500 mb-6">逗點集團面試資料後台</p>
+    <div class="space-y-4 text-left">
+      <div>
+        <label class="text-xs font-bold text-slate-500 block mb-1">您的單位</label>
+        <select id="adm-branch" class="w-full border-2 border-slate-200 p-3 rounded-xl font-bold bg-white outline-none focus:border-blue-500 text-slate-700">
+          <option value="">請選擇單位...</option>
+          <optgroup label="人資／高階（可看全部資料）">
+            <option value="HR">人力資源處（人資）</option>
+            <option value="CEO">執行長室</option>
+            <option value="F00004">國高中事業處（處長）</option>
+            <option value="F00005">國小事業處（處長）</option>
+          </optgroup>
+          <optgroup label="各分校（只看本校資料）">
+            <option value="青埔升大校">青埔升大校</option>
+            <option value="青埔翱翔校">青埔翱翔校</option>
+            <option value="青園展翅校">青園展翅校</option>
+            <option value="大園晨光校">大園晨光校</option>
+            <option value="內壢森耀校">內壢森耀校</option>
+            <option value="竹北知行校">竹北知行校</option>
+            <option value="文化極光校">文化極光校</option>
+            <option value="快樂騰雲校">快樂騰雲校</option>
+            <option value="大園參天校">大園參天校</option>
+            <option value="園中方舟校">園中方舟校</option>
+            <option value="青埔旭日校">青埔旭日校</option>
+            <option value="中壢心夢想校">中壢心夢想校</option>
+          </optgroup>
+          <optgroup label="總部處室（只看本處資料）">
+            <option value="行政溝通處">行政溝通處</option>
+            <option value="財務會計處">財務會計處</option>
+            <option value="產品研發處">產品研發處</option>
+            <option value="品牌行銷處">品牌行銷處</option>
+            <option value="行銷辦公室">行銷辦公室</option>
+            <option value="國小英文管理科">國小英文管理科</option>
+          </optgroup>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-500 block mb-1">您的姓名</label>
+        <input type="text" id="adm-name" placeholder="請輸入您的姓名"
+          class="w-full border-2 border-slate-200 p-3 rounded-xl font-bold outline-none focus:border-blue-500 text-slate-700">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-500 block mb-1">登入密碼</label>
+        <input type="password" id="adm-pwd" placeholder="預設 0000"
+          class="w-full border-2 border-slate-200 p-3 rounded-xl font-bold outline-none focus:border-blue-500 text-slate-700">
+      </div>
+      <button onclick="adminLogin()"
+        class="w-full bg-slate-800 text-white font-black py-3 rounded-xl hover:bg-slate-700 transition-colors text-lg">
+        進入後台
+      </button>
+    </div>
+    <p class="mt-4 text-xs text-slate-400">測試密碼：0000</p>
+  </div>
+</div>
+
+<!-- 後台主頁面 -->
+<div id="page-admin" class="hidden min-h-screen">
+
+  <!-- 頂部導覽列 -->
+  <header class="bg-slate-800 text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-lg">
+    <div>
+      <h1 class="text-xl font-black tracking-wide">📊 逗點集團｜面試後台管理</h1>
+      <p id="admin-subtitle" class="text-xs text-slate-400 mt-0.5"></p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">
+        前往評分前台
+      </a>
+      <button onclick="adminLogout()" class="text-xs text-slate-400 hover:text-white underline">登出</button>
+    </div>
+  </header>
+
+  <main class="container mx-auto p-6 max-w-7xl">
+
+    <!-- 統計卡片 -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+        <div class="text-xs text-slate-400 font-bold mb-1">總面試筆數</div>
+        <div id="stat-total" class="text-3xl font-black text-slate-800">0</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+        <div class="text-xs text-slate-400 font-bold mb-1">✅ 錄取人數</div>
+        <div id="stat-pass" class="text-3xl font-black text-emerald-600">0</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+        <div class="text-xs text-slate-400 font-bold mb-1">❌ 不錄取人數</div>
+        <div id="stat-fail" class="text-3xl font-black text-red-500">0</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+        <div class="text-xs text-slate-400 font-bold mb-1">平均總分</div>
+        <div id="stat-avg" class="text-3xl font-black text-blue-600">-</div>
+      </div>
+    </div>
+
+    <!-- 篩選列 -->
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 mb-4 flex flex-wrap gap-3 items-end">
+      <div>
+        <label class="text-xs font-bold text-slate-400 block mb-1">搜尋姓名</label>
+        <input type="text" id="filter-name" placeholder="應徵者姓名" oninput="renderTable()"
+          class="border border-slate-200 rounded-lg p-2 text-sm outline-none focus:border-blue-400 w-36">
+      </div>
+      <div id="branch-filter-wrap">
+        <label class="text-xs font-bold text-slate-400 block mb-1">篩選分校</label>
+        <select id="filter-branch" onchange="renderTable()"
+          class="border border-slate-200 rounded-lg p-2 text-sm bg-white outline-none focus:border-blue-400">
+          <option value="">全部分校</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-400 block mb-1">篩選結果</label>
+        <select id="filter-decision" onchange="renderTable()"
+          class="border border-slate-200 rounded-lg p-2 text-sm bg-white outline-none focus:border-blue-400">
+          <option value="">全部結果</option>
+          <option value="pass">✅ 錄取</option>
+          <option value="fail">❌ 不錄取</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-400 block mb-1">篩選狀態</label>
+        <select id="filter-status" onchange="renderTable()"
+          class="border border-slate-200 rounded-lg p-2 text-sm bg-white outline-none focus:border-blue-400">
+          <option value="">全部狀態</option>
+          <option value="draft">暫存中</option>
+          <option value="stage_done">決策中</option>
+          <option value="completed">已完成</option>
+        </select>
+      </div>
+      <button onclick="exportCSV()"
+        class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-emerald-700 transition-colors ml-auto">
+        📥 匯出 CSV
+      </button>
+    </div>
+
+    <!-- 資料表格 -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="bg-slate-800 px-4 py-3 flex justify-between items-center">
+        <h2 class="text-white font-bold text-sm">面試紀錄列表</h2>
+        <span id="result-count" class="text-slate-400 text-xs"></span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left min-w-[900px]">
+          <thead class="bg-slate-100 text-slate-600 text-xs">
+            <tr>
+              <th class="p-3 border-b">面試日期</th>
+              <th class="p-3 border-b">應徵者</th>
+              <th class="p-3 border-b">分校／單位</th>
+              <th class="p-3 border-b">職位</th>
+              <th class="p-3 border-b">面試官</th>
+              <th class="p-3 border-b text-center text-indigo-700">筆試</th>
+              <th class="p-3 border-b text-center text-orange-700">職能</th>
+              <th class="p-3 border-b text-center text-emerald-700">外顯</th>
+              <th class="p-3 border-b text-center text-blue-700 font-black">總分</th>
+              <th class="p-3 border-b text-center">狀態</th>
+              <th class="p-3 border-b text-center">結果</th>
+            </tr>
+          </thead>
+          <tbody id="admin-tbody">
+            <tr><td colspan="11" class="text-center py-12 text-slate-400 font-bold">載入中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://yslzhijwfbhgropbmqab.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_RO4vbC0aTesyrikf9TixMA_79XrZbe2';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentRole   = '';
+  let currentBranch = '';
+  let allData       = [];
+
+  async function adminLogin() {
+    const branch = document.getElementById('adm-branch').value;
+    const name   = document.getElementById('adm-name').value.trim();
+    const pwd    = document.getElementById('adm-pwd').value;
+
+    if (!branch) return alert('請選擇單位！');
+    if (!name)   return alert('請輸入姓名！');
+    if (pwd !== '0000') return alert('密碼錯誤（測試密碼：0000）');
+
+    const fullRoleList = ['HR', 'CEO', 'F00004', 'F00005'];
+    currentRole   = fullRoleList.includes(branch) ? 'HR' : 'MGR';
+    currentBranch = branch;
+
+    await loadData();
+
+    document.getElementById('page-login').classList.add('hidden');
+    document.getElementById('page-admin').classList.remove('hidden');
+
+    const deptName = branch === 'HR' ? '人力資源處' :
+                     branch === 'CEO' ? '執行長室' :
+                     branch === 'F00004' ? '國高中事業處' :
+                     branch === 'F00005' ? '國小事業處' : branch;
+
+    const subtitle = currentRole === 'HR'
+      ? `${name}（${deptName}）— 顯示全公司所有分校資料`
+      : `${name}（${deptName}）— 僅顯示本校面試資料`;
+    document.getElementById('admin-subtitle').textContent = subtitle;
+
+    if (currentRole === 'HR') {
+      populateBranchFilter();
+    } else {
+      document.getElementById('branch-filter-wrap').style.display = 'none';
+    }
+
+    renderTable();
+  }
+
+  async function loadData() {
+    const fullRoleList = ['HR', 'CEO', 'F00004', 'F00005'];
+    let query = sb.from('interviews').select('*').order('created_at', { ascending: false });
+
+    if (!fullRoleList.includes(currentBranch)) {
+      query = query.eq('branch', currentBranch);
+    }
+
+    const { data, error } = await query;
+    if (error) { alert('載入失敗：' + error.message); return; }
+    allData = data || [];
+  }
+
+  function populateBranchFilter() {
+    const sel = document.getElementById('filter-branch');
+    const branches = [...new Set(allData.map(r => r.branch).filter(Boolean))].sort();
+    branches.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b; opt.textContent = b;
+      sel.appendChild(opt);
+    });
+  }
+
+  function renderTable() {
+    const nameQ     = document.getElementById('filter-name').value.trim();
+    const branchQ   = document.getElementById('filter-branch').value;
+    const decisionQ = document.getElementById('filter-decision').value;
+    const statusQ   = document.getElementById('filter-status').value;
+
+    let filtered = allData.filter(r => {
+      if (nameQ     && !(r.candidate_name || '').includes(nameQ)) return false;
+      if (branchQ   && r.branch !== branchQ)                       return false;
+      if (decisionQ && r.final_decision !== decisionQ)             return false;
+      if (statusQ   && r.doc_status !== statusQ)                   return false;
+      return true;
+    });
+
+    // 統計更新
+    document.getElementById('stat-total').textContent = filtered.length;
+    document.getElementById('stat-pass').textContent  = filtered.filter(r => r.final_decision === 'pass').length;
+    document.getElementById('stat-fail').textContent  = filtered.filter(r => r.final_decision === 'fail').length;
+    const scores = filtered.map(r => parseFloat(r.grand_total)).filter(n => !isNaN(n));
+    document.getElementById('stat-avg').textContent   = scores.length
+      ? (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(1) : '-';
+    document.getElementById('result-count').textContent = `共 ${filtered.length} 筆`;
+
+    const tbody = document.getElementById('admin-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="11" class="text-center py-12 text-slate-400 font-bold">目前無符合條件的資料</td></tr>`;
+      return;
+    }
+
+    const statusMap = {
+      draft:      '<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold">📝 暫存中</span>',
+      stage_done: '<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-bold">⏳ 決策中</span>',
+      completed:  '<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">✅ 已完成</span>'
+    };
+    const decMap = {
+      pass: '<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">✅ 錄取</span>',
+      fail: '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">❌ 不錄取</span>'
+    };
+
+    tbody.innerHTML = filtered.map(r => `
+      <tr class="border-b hover:bg-blue-50/40 transition-colors">
+        <td class="p-3 text-slate-400 text-xs">${r.interview_date || '-'}</td>
+        <td class="p-3 font-black text-blue-700">${r.candidate_name || '-'}</td>
+        <td class="p-3 text-slate-600 font-medium">${r.branch || '-'}</td>
+        <td class="p-3 text-slate-600">${r.position || '-'}</td>
+        <td class="p-3 text-slate-500 text-xs">${r.interviewer || '-'}</td>
+        <td class="p-3 text-center font-bold text-indigo-500">${r.s1_final ?? '-'}</td>
+        <td class="p-3 text-center font-bold text-orange-500">${r.s3_final ?? '-'}</td>
+        <td class="p-3 text-center font-bold text-emerald-500">${r.s2_final ?? '-'}</td>
+        <td class="p-3 text-center font-black text-lg text-blue-700">${r.grand_total ?? '-'}</td>
+        <td class="p-3 text-center">${statusMap[r.doc_status] || '-'}</td>
+        <td class="p-3 text-center">${decMap[r.final_decision] || '-'}</td>
+      </tr>`).join('');
+  }
+
+  function exportCSV() {
+    const rows = [['面試日期','應徵者','分校','職位','面試官','筆試','職能','外顯','總分','狀態','結果']];
+    allData.forEach(r => {
+      const statusText = r.doc_status === 'draft' ? '暫存中' : r.doc_status === 'stage_done' ? '決策中' : '已完成';
+      const decText    = r.final_decision === 'pass' ? '錄取' : r.final_decision === 'fail' ? '不錄取' : '-';
+      rows.push([r.interview_date, r.candidate_name, r.branch, r.position,
+        r.interviewer, r.s1_final, r.s3_final, r.s2_final, r.grand_total, statusText, decText]);
+    });
+    const csv = '\uFEFF' + rows.map(r => r.map(c => `"${c ?? ''}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = `逗點面試資料庫_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  }
+
+  function adminLogout() {
+    currentRole = ''; currentBranch = ''; allData = [];
+    document.getElementById('page-admin').classList.add('hidden');
+    document.getElementById('page-login').classList.remove('hidden');
+    document.getElementById('adm-pwd').value = '';
+  }
+</script>
+</body>
+</html>
