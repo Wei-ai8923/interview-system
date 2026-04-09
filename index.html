@@ -740,61 +740,52 @@ const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
 
         window.handleLogin = async function() {
-            const acc = document.getElementById('login-acc')?.value.trim().toUpperCase();
-            const pwd = document.getElementById('login-pwd')?.value.trim();
-            if(!acc || pwd !== "0000") return alert("帳號不存在或密碼錯誤 (測試密碼: 0000)");
-            if(!window.EMP_DB[acc]) return alert("查無此員工編號權限");
+    const branch = document.getElementById('login-branch')?.value;
+    const name   = document.getElementById('login-name')?.value.trim();
+    const pwd    = document.getElementById('login-pwd')?.value.trim();
 
-            const btnLogin = document.getElementById('btn-login');
-            if(btnLogin) btnLogin.innerText = "雲端同步中...";
+    if (!branch) return alert('請選擇您的單位！');
+    if (!name)   return alert('請輸入您的姓名！');
+    if (pwd !== '0000') return alert('密碼錯誤（測試密碼：0000）');
 
-            window.currentUser = window.EMP_DB[acc];
-            window.currentUser.id = acc;
-            
-            // 抓取遠端資料
-            await window.fetchCloudDB();
+    const btnLogin = document.getElementById('btn-login');
+    if (btnLogin) btnLogin.innerText = '登入中...';
 
-            let greeting = "";
-            if (acc === "F00035") {
-                greeting = `歡迎人資長Sherry~~來了❤️`;
-            } else if (acc === "F00054") {
-                greeting = `歡迎～～～系統開發師茉莉花仙子 敏敏登場！！`;
-            } else if (acc === "F00001") {
-                greeting = `歡迎 徐暘智 執行長來了～～❤️`;
-            } else if (window.currentUser.dept.includes("校")) {
-                greeting = `歡迎 ${window.currentUser.name} 主任/主管來了～～❤️`;
-            } else {
-                greeting = `歡迎 ${window.currentUser.name} 主任/主管來了～～❤️`;
-            }
-            
-            alert(greeting); 
+    const isHR     = (branch === 'HR');
+    const isCEO    = (branch === 'F00001');
+    const isSenior = ['F00004', 'F00005'].includes(branch);
 
-            let roleName = window.currentUser.role === 'HR' ? '人資管理員' : '單位主管';
-            window.setTxt('header-user-info', `${greeting} | ${roleName}`);
-            const mainHeader = document.getElementById('main-header');
-            if(mainHeader) mainHeader.classList.remove('hidden');
+    window.currentUser = {
+        name:  name,
+        dept:  isHR ? '人力資源處' : (isCEO ? '執行長室' : branch),
+        role:  (isHR || isCEO) ? 'HR' : (isSenior ? 'SENIOR' : 'MGR'),
+        id:    branch
+    };
 
-            window.state = window.getEmptyState();
-            window.hydrateUI();
-            window.calculateScores();
+    await window.fetchCloudDB();
 
-            // 🔥【重要分流邏輯】🔥
-            if(window.currentUser.role === 'HR') {
-                // 如果是人資：顯示「應徵者管理」與「進入後台」，並預設跳轉到 hr_search
-                document.getElementById('nav-hr-search-btn').classList.remove('hidden');
-                document.getElementById('nav-mgr-front-btn').classList.add('hidden');
-                document.getElementById('nav-backend-btn').classList.remove('hidden');
-                window.switchView('hr_search');
-            } else {
-                // 如果是主管(非人資)：顯示「前台評分」與「進入後台」，並預設跳轉到 mgr_front
-                document.getElementById('nav-hr-search-btn').classList.add('hidden');
-                document.getElementById('nav-mgr-front-btn').classList.remove('hidden');
-                document.getElementById('nav-backend-btn').classList.remove('hidden');
-                window.switchView('mgr_front'); 
-            }
+    const roleLabel = (isHR || isCEO) ? '人資／管理員' : '主任／主管';
+    window.setTxt('header-user-info', `${name}（${window.currentUser.dept}）| ${roleLabel}`);
+    document.getElementById('main-header')?.classList.remove('hidden');
 
-            if(btnLogin) btnLogin.innerText = "登 入 系 統";
-        }
+    window.state = window.getEmptyState();
+    window.hydrateUI();
+    window.calculateScores();
+
+    if (isHR || isCEO) {
+        document.getElementById('nav-hr-search-btn')?.classList.remove('hidden');
+        document.getElementById('nav-mgr-front-btn')?.classList.add('hidden');
+        document.getElementById('nav-backend-btn')?.classList.remove('hidden');
+        window.switchView('hr_search');
+    } else {
+        document.getElementById('nav-hr-search-btn')?.classList.add('hidden');
+        document.getElementById('nav-mgr-front-btn')?.classList.remove('hidden');
+        document.getElementById('nav-backend-btn')?.classList.remove('hidden');
+        window.switchView('mgr_front');
+    }
+
+    if (btnLogin) btnLogin.innerText = '登 入 系 統';
+};
 
         window.logout = function() {
             window.currentUser = null;
