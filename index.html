@@ -123,7 +123,7 @@
         .page-view.active { display: block !important; animation: fadeIn 0.3s ease; }
         #view-login.active { display: flex !important; } 
     </style>
-</head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head>
 <body class="text-slate-800 pb-40" data-theme="blue">
 
     <!-- 系統通知 -->
@@ -223,27 +223,66 @@
     </div>
 
     <!-- ==================== 頁面 0: 登入頁 ==================== -->
-    <div id="view-login" class="page-view active min-h-screen w-full flex flex-col items-center justify-center bg-slate-900">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-            <div class="bg-slate-100 p-3 rounded-xl mb-6 inline-block mx-auto border border-slate-200">
-                <img src="逗點教室LOGO-直-co -去背.png" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%23333\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'%23e2e8f0\'/><text x=\'50\' y=\'55\' font-size=\'16\' font-weight=\'bold\' text-anchor=\'middle\' fill=\'%2364748b\'>COMMA</text></svg>'" class="h-16 object-contain">
-            </div>
-            <h1 class="text-2xl font-black text-slate-800 mb-2">面試評分系統</h1>
-            <p class="text-sm text-slate-500 mb-6">請輸入您的員工編號與密碼</p>
-            <div class="space-y-4">
-                <input type="text" id="login-acc" placeholder="員工編號 (如: F00035)" class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none font-bold text-slate-700 uppercase">
-                <input type="password" id="login-pwd" placeholder="登入密碼 (0000)" class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none font-bold text-slate-700">
-                <button id="btn-login" onclick="window.handleLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-xl shadow-lg transition-colors mt-2 text-lg">登 入 系 統</button>
-            </div>
-            <div class="mt-4 text-xs text-slate-400 text-left leading-relaxed">
-                💡 測試帳號提示：<br>
-                執行長：F00001<br>
-                高階處長：F00004、F00005<br>
-                人資：F00035、F00054<br>
-                分校主管：F00007 (青園)、F00070 (青埔)
-            </div>
+   <div id="view-login" class="page-view active min-h-screen w-full flex flex-col items-center justify-center bg-slate-900">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+        <div class="bg-slate-100 p-3 rounded-xl mb-6 inline-block mx-auto border border-slate-200">
+            <img src="逗點教室LOGO-直-co -去背.png" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'%23e2e8f0\'/><text x=\'50\' y=\'55\' font-size=\'16\' font-weight=\'bold\' text-anchor=\'middle\' fill=\'%2364748b\'>COMMA</text></svg>'" class="h-16 object-contain">
         </div>
+        <h1 class="text-2xl font-black text-slate-800 mb-2">面試評分系統</h1>
+        <p class="text-sm text-slate-500 mb-6">請選擇單位並輸入資料</p>
+        <div class="space-y-4 text-left">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">您的單位</label>
+                <select id="login-branch" class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none font-bold text-slate-700 bg-white">
+                    <option value="">請選擇單位...</option>
+                    <optgroup label="人資／高階">
+                        <option value="HR">人力資源處（人資）</option>
+                        <option value="F00001">執行長室</option>
+                        <option value="F00004">國高中事業處（處長）</option>
+                        <option value="F00005">國小事業處（處長）</option>
+                    </optgroup>
+                    <optgroup label="各分校">
+                        <option value="青埔升大校">青埔升大校</option>
+                        <option value="青埔翱翔校">青埔翱翔校</option>
+                        <option value="青園展翅校">青園展翅校</option>
+                        <option value="大園晨光校">大園晨光校</option>
+                        <option value="內壢森耀校">內壢森耀校</option>
+                        <option value="竹北知行校">竹北知行校</option>
+                        <option value="文化極光校">文化極光校</option>
+                        <option value="快樂騰雲校">快樂騰雲校</option>
+                        <option value="大園參天校">大園參天校</option>
+                        <option value="園中方舟校">園中方舟校</option>
+                        <option value="青埔旭日校">青埔旭日校</option>
+                        <option value="中壢心夢想校">中壢心夢想校</option>
+                    </optgroup>
+                    <optgroup label="總部處室">
+                        <option value="行政溝通處">行政溝通處</option>
+                        <option value="財務會計處">財務會計處</option>
+                        <option value="產品研發處">產品研發處</option>
+                        <option value="品牌行銷處">品牌行銷處</option>
+                        <option value="行銷辦公室">行銷辦公室</option>
+                        <option value="國小英文管理科">國小英文管理科</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">您的姓名</label>
+                <input type="text" id="login-name" placeholder="請輸入您的姓名"
+                    class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none font-bold text-slate-700">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">登入密碼</label>
+                <input type="password" id="login-pwd" placeholder="請輸入密碼（預設 0000）"
+                    class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none font-bold text-slate-700">
+            </div>
+            <button id="btn-login" onclick="window.handleLogin()"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-xl shadow-lg transition-colors mt-2 text-lg">
+                登 入 系 統
+            </button>
+        </div>
+        <p class="mt-4 text-xs text-slate-400">測試密碼：0000</p>
     </div>
+</div>
 
     <!-- ==================== 共用標頭 ==================== -->
     <header id="main-header" class="th-header text-white p-3 md:p-4 shadow-lg sticky top-0 z-50 no-print hidden">
@@ -581,6 +620,10 @@
     <script>
         window.SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCPQLOLkHCDJJkyxhAPq8PI49K4FOLCdyFjahQnoAOFPUq6CtriFwU0uEtLKVlQkYF/exec";
         window.dbCache = [];
+        // ===== Supabase 設定 =====
+const SUPABASE_URL = 'https://yslzhijwfbhgropbmqab.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_RO4vbCOaTesyrikf9TixMA_79XrZbe2';
+const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // ================= 1. 企業帳號與基礎資料 =================
         window.EMP_DB = {
