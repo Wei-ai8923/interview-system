@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --blue:#1D6FD8;--blue-dark:#1558B0;--blue-light:#EBF3FF;--blue-mid:#DBEAFE;
+  --blue:#1D6FD8;--blue-dark:#1558B0;--blue-light:#EBF3FF;
   --bg:#F4F7FB;--white:#FFFFFF;
   --border:#DDE4EF;--border2:#C8D6EE;
   --text:#1A2338;--text2:#4B5C7A;--text3:#8898B4;
@@ -19,21 +19,17 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-.page{display:none;}
-.page.active{display:block;}
-#page-login.active{display:flex;}
+.page{display:none!important;}
+.page.active{display:block!important;}
+#page-login.active{display:flex!important;}
 
-#page-login{
-  min-height:100vh;background:linear-gradient(135deg,#EBF3FF 0%,#F4F7FB 60%,#E8F0FE 100%);
-  align-items:center;justify-content:center;
-}
+#page-login{min-height:100vh;background:linear-gradient(135deg,#EBF3FF 0%,#F4F7FB 60%,#E8F0FE 100%);align-items:center;justify-content:center;}
 .login-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:44px 40px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(29,111,216,.14);}
-.login-logo{text-align:center;margin-bottom:28px;}
-.login-logo img{height:64px;object-fit:contain;}
-.login-logo-fb{width:64px;height:64px;background:var(--blue);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:900;}
+.login-logo{text-align:center;margin-bottom:24px;}
+.login-logo img{height:72px;width:72px;object-fit:cover;border-radius:50%;}
 .login-title{font-size:22px;font-weight:900;color:var(--text);text-align:center;margin-bottom:4px;}
-.login-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:32px;}
-.form-group{margin-bottom:18px;}
+.login-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:28px;}
+.form-group{margin-bottom:16px;}
 .form-label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;letter-spacing:.06em;}
 .form-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-weight:500;color:var(--text);outline:none;transition:all .2s;font-family:'Noto Sans TC',sans-serif;}
 .form-input:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(29,111,216,.1);}
@@ -42,12 +38,10 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .btn-login:hover{background:var(--blue-dark);transform:translateY(-1px);}
 .login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;}
 
-/* HEADER */
 .admin-header{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(29,111,216,.06);}
 .header-inner{max-width:1400px;margin:0 auto;padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;}
-.header-left{display:flex;align-items:center;gap:12px;}
-.header-logo{height:30px;object-fit:contain;}
-.header-logo-fb{width:30px;height:30px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:900;}
+.header-left{display:flex;align-items:center;gap:10px;}
+.header-logo-img{height:36px;width:36px;object-fit:cover;border-radius:50%;}
 .header-title{font-size:15px;font-weight:900;color:var(--text);}
 .header-sub{font-size:11px;color:var(--text3);}
 .header-nav{display:flex;gap:8px;align-items:center;}
@@ -57,10 +51,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .nav-btn-ghost{background:transparent;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
 .nav-btn-ghost:hover{color:var(--text);}
 
-/* MAIN */
 .admin-main{max-width:1400px;margin:0 auto;padding:20px 24px;}
-
-/* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
 @media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
 .stat-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow);transition:box-shadow .2s;}
@@ -68,13 +59,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .stat-label{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
 .stat-value{font-size:30px;font-weight:900;}
 
-/* FILTER */
 .filter-bar{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;box-shadow:var(--shadow);}
 .filter-group label{display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;}
 .filter-input{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;color:var(--text);outline:none;font-family:'Noto Sans TC',sans-serif;transition:all .2s;}
 .filter-input:focus{border-color:var(--blue);background:var(--white);}
 
-/* TABLE */
 .table-wrap{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
 .table-header{background:var(--bg);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
 .table-header-title{font-size:13px;font-weight:700;color:var(--text);}
@@ -84,14 +73,13 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .tbl td{padding:11px 12px;border-bottom:1px solid rgba(221,228,239,.5);font-size:13px;vertical-align:middle;}
 .tbl tr:last-child td{border-bottom:none;}
 .tbl tr:hover td{background:var(--blue-light);}
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;gap:3px;}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
 .badge-draft{background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;}
 .badge-complete{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
 .badge-pass{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
 .badge-fail{background:#FEF2F2;color:#7F1D1D;border:1px solid #FECACA;}
 .badge-pending{background:#FFFBEB;color:#78350F;border:1px solid #FDE68A;}
 .candidate-name{font-weight:900;color:var(--blue);}
-.score-val{font-weight:700;font-size:13px;}
 .total-score{font-weight:900;font-size:16px;color:var(--blue);}
 .action-btns{display:flex;gap:6px;}
 .btn-action{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all .2s;border:1.5px solid transparent;}
@@ -101,15 +89,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .btn-delete:hover{background:#FEE2E2;border-color:#EF4444;}
 .overflow-wrap{overflow-x:auto;}
 
-/* TOAST */
 #toast{position:fixed;top:68px;right:20px;background:var(--white);border:1.5px solid var(--blue);color:var(--blue);padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;transform:translateX(150%);transition:transform .3s;z-index:9999;box-shadow:var(--shadow-md);}
 #toast.show{transform:translateX(0);}
-
-@keyframes fadeInUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-.stats-grid .stat-card{animation:fadeInUp .2s ease both;}
-.stats-grid .stat-card:nth-child(2){animation-delay:.05s;}
-.stats-grid .stat-card:nth-child(3){animation-delay:.1s;}
-.stats-grid .stat-card:nth-child(4){animation-delay:.15s;}
 </style>
 </head>
 <body>
@@ -119,9 +100,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 <div id="page-login" class="page active">
   <div class="login-card">
     <div class="login-logo">
-      <img src="逗點教室LOGO-直-co -去背.png" alt="逗點教室"
-        onerror="this.style.display='none';document.getElementById('adm-logo-fb').style.display='inline-flex';">
-      <div id="adm-logo-fb" class="login-logo-fb" style="display:none;">逗</div>
+      <img id="login-logo-img" src="00逗點教室_各分校校徽_頭貼_總部.png" alt="逗點教室">
     </div>
     <div class="login-title">後台管理系統</div>
     <div class="login-sub">逗點集團面試資料後台</div>
@@ -136,7 +115,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
       <input type="password" id="login-pwd" class="form-input" placeholder="請輸入密碼"
         onkeydown="if(event.key==='Enter')adminLogin()">
     </div>
-    <button class="btn-login" onclick="adminLogin()">進 入 後 台</button>
+    <button class="btn-login" id="btn-login-main" onclick="adminLogin()">進 入 後 台</button>
     <div class="login-hint">測試密碼：0000</div>
   </div>
 </div>
@@ -146,9 +125,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
   <header class="admin-header">
     <div class="header-inner">
       <div class="header-left">
-        <img src="逗點教室LOGO-直-co -去背.png" class="header-logo" alt=""
-          onerror="this.style.display='none';document.getElementById('adm-header-fb').style.display='flex';">
-        <div id="adm-header-fb" class="header-logo-fb" style="display:none;">逗</div>
+        <img id="header-logo-img" src="00逗點教室_各分校校徽_頭貼_總部.png" class="header-logo-img" alt="">
         <div>
           <div class="header-title">面試後台管理</div>
           <div class="header-sub" id="admin-subtitle"></div>
@@ -163,51 +140,17 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 
   <div class="admin-main">
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">總面試筆數</div>
-        <div class="stat-value" id="stat-total" style="color:var(--blue);">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">錄取人數</div>
-        <div class="stat-value" id="stat-pass" style="color:var(--green);">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">不錄取人數</div>
-        <div class="stat-value" id="stat-fail" style="color:var(--red);">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">平均總分</div>
-        <div class="stat-value" id="stat-avg" style="color:var(--amber);">-</div>
-      </div>
+      <div class="stat-card"><div class="stat-label">總面試筆數</div><div class="stat-value" id="stat-total" style="color:var(--blue);">0</div></div>
+      <div class="stat-card"><div class="stat-label">錄取人數</div><div class="stat-value" id="stat-pass" style="color:var(--green);">0</div></div>
+      <div class="stat-card"><div class="stat-label">不錄取人數</div><div class="stat-value" id="stat-fail" style="color:var(--red);">0</div></div>
+      <div class="stat-card"><div class="stat-label">平均總分</div><div class="stat-value" id="stat-avg" style="color:var(--amber);">-</div></div>
     </div>
 
     <div class="filter-bar">
-      <div class="filter-group">
-        <label>搜尋姓名</label>
-        <input type="text" id="filter-name" class="filter-input" placeholder="應徵者姓名" oninput="renderTable()" style="width:140px;">
-      </div>
-      <div class="filter-group" id="branch-filter-wrap">
-        <label>篩選單位</label>
-        <select id="filter-branch" class="filter-input" onchange="renderTable()">
-          <option value="">全部單位</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>篩選結果</label>
-        <select id="filter-decision" class="filter-input" onchange="renderTable()">
-          <option value="">全部結果</option>
-          <option value="pass">錄取</option>
-          <option value="fail">不錄取</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>篩選狀態</label>
-        <select id="filter-status" class="filter-input" onchange="renderTable()">
-          <option value="">全部狀態</option>
-          <option value="draft">暫存中</option>
-          <option value="completed">已完成</option>
-        </select>
-      </div>
+      <div class="filter-group"><label>搜尋姓名</label><input type="text" id="filter-name" class="filter-input" placeholder="應徵者姓名" oninput="renderTable()" style="width:140px;"></div>
+      <div class="filter-group" id="branch-filter-wrap"><label>篩選單位</label><select id="filter-branch" class="filter-input" onchange="renderTable()"><option value="">全部單位</option></select></div>
+      <div class="filter-group"><label>篩選結果</label><select id="filter-decision" class="filter-input" onchange="renderTable()"><option value="">全部結果</option><option value="pass">錄取</option><option value="fail">不錄取</option></select></div>
+      <div class="filter-group"><label>篩選狀態</label><select id="filter-status" class="filter-input" onchange="renderTable()"><option value="">全部狀態</option><option value="draft">暫存中</option><option value="completed">已完成</option></select></div>
     </div>
 
     <div class="table-wrap">
@@ -220,10 +163,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
           <thead>
             <tr>
               <th>面試日期</th><th>應徵者</th><th>分校/單位</th><th>職位</th><th>面試官</th>
-              <th style="color:#059669;">筆試</th>
-              <th style="color:#D97706;">職能</th>
-              <th style="color:#4F46E5;">外顯</th>
-              <th style="color:var(--blue);">總分</th>
+              <th style="color:#059669;">筆試</th><th style="color:#D97706;">職能</th>
+              <th style="color:#4F46E5;">外顯</th><th style="color:var(--blue);">總分</th>
               <th>狀態</th><th>結果</th><th>操作</th>
             </tr>
           </thead>
@@ -240,6 +181,15 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 const SUPABASE_URL='https://yslzhijwfbhgropbmqab.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzbHpoaWp3ZmJoZ3JvcGJtcWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MTg0NjksImV4cCI6MjA5MTI5NDQ2OX0.UUm9ShB9vd1PSGxLlW5kOwI5rzle1O2WYKmZcjE9Ksc';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const BRANCH_LOGO={
+  '青埔翱翔校':'翱翔.png','青埔升大校':'升大.png','青園展翅校':'展翅.png',
+  '大園晨光校':'晨光.png','內壢森耀校':'內壢森耀校.png','竹北知行校':'竹北知行校.png',
+  '文化極光校':'極光.png','快樂騰雲校':'00逗點教室_各分校校徽_頭貼_總部.png',
+  '大園參天校':'參天.png','園中方舟校':'方舟.png','青埔旭日校':'旭日.png',
+  '中壢心夢想校':'心夢想.png',
+};
+function getBranchLogo(dept){return BRANCH_LOGO[dept]||'00逗點教室_各分校校徽_頭貼_總部.png';}
 
 const EMP_DB={
   "F00001":{name:"徐暘智",dept:"逗點集團",role:"ADMIN"},
@@ -276,6 +226,7 @@ window.onload=async()=>{
   if(empId&&EMP_DB[empId]){
     currentUser={...EMP_DB[empId],id:empId};
     await loadAndShow();
+    window.history.replaceState({},'',window.location.pathname);
   }
 };
 
@@ -286,13 +237,19 @@ async function adminLogin(){
   if(pwd!=='0000')return alert('密碼錯誤（測試密碼：0000）');
   if(!EMP_DB[empId])return alert('查無此員工編號');
   currentUser={...EMP_DB[empId],id:empId};
-  document.querySelector('.btn-login').textContent='登入中...';
+  const btn=document.getElementById('btn-login-main');
+  btn.textContent='登入中...';btn.disabled=true;
   await loadAndShow();
-  document.querySelector('.btn-login').textContent='進 入 後 台';
+  btn.textContent='進 入 後 台';btn.disabled=false;
 }
 
 async function loadAndShow(){
   await loadData();
+  // 更新 Logo
+  const logoSrc=getBranchLogo(currentUser.dept);
+  document.getElementById('login-logo-img').src=logoSrc;
+  document.getElementById('header-logo-img').src=logoSrc;
+  // 切換頁面
   document.getElementById('page-login').classList.remove('active');
   document.getElementById('page-admin').classList.add('active');
   const roleLabel=['HR','ADMIN'].includes(currentUser.role)?'人資/管理員 — 全公司資料':
@@ -317,6 +274,8 @@ async function loadData(){
 
 function populateBranchFilter(){
   const sel=document.getElementById('filter-branch');
+  // 清除舊的選項（保留第一個"全部單位"）
+  while(sel.options.length>1)sel.remove(1);
   [...new Set(allData.map(r=>r.branch).filter(Boolean))].sort().forEach(b=>{
     const o=document.createElement('option');o.value=b;o.textContent=b;sel.appendChild(o);
   });
@@ -347,31 +306,38 @@ function renderTable(){
   }
   const sb2=s=>s==='draft'?'<span class="badge badge-draft">暫存中</span>':s==='completed'?'<span class="badge badge-complete">已完成</span>':'<span class="badge badge-pending">決策中</span>';
   const db=d=>d==='pass'?'<span class="badge badge-pass">錄取</span>':d==='fail'?'<span class="badge badge-fail">不錄取</span>':'-';
-  tbody.innerHTML=filtered.map(r=>`
-    <tr>
+  // 每列左側顯示分校logo小圖示
+  tbody.innerHTML=filtered.map(r=>{
+    const logoSrc=getBranchLogo(r.branch);
+    return`<tr>
       <td style="color:var(--text3);font-size:12px;">${r.interview_date||'-'}</td>
       <td class="candidate-name">${r.candidate_name||'-'}</td>
-      <td style="color:var(--text2);font-weight:500;">${r.branch||'-'}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <img src="${logoSrc}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'">
+          <span style="color:var(--text2);font-weight:500;">${r.branch||'-'}</span>
+        </div>
+      </td>
       <td style="color:var(--text3);">${r.position||'-'}</td>
       <td style="color:var(--text3);font-size:12px;">${r.interviewer||'-'}</td>
-      <td class="score-val" style="color:#059669;">${r.s1_final??'-'}</td>
-      <td class="score-val" style="color:#D97706;">${r.s3_final??'-'}</td>
-      <td class="score-val" style="color:#4F46E5;">${r.s2_final??'-'}</td>
+      <td style="font-weight:700;color:#059669;">${r.s1_final??'-'}</td>
+      <td style="font-weight:700;color:#D97706;">${r.s3_final??'-'}</td>
+      <td style="font-weight:700;color:#4F46E5;">${r.s2_final??'-'}</td>
       <td class="total-score">${r.grand_total??'-'}</td>
       <td>${sb2(r.doc_status)}</td>
       <td>${db(r.final_decision)}</td>
       <td><div class="action-btns">
         <button class="btn-action btn-edit" onclick="editRecord('${r.doc_id}')">編輯</button>
-        <button class="btn-action btn-delete" onclick="deleteRecord('${r.doc_id}','${r.candidate_name}')">刪除</button>
+        <button class="btn-action btn-delete" onclick="deleteRecord('${r.doc_id}','${(r.candidate_name||'').replace(/'/g,"\\'")}')">刪除</button>
       </div></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function editRecord(docId){
   const r=allData.find(x=>x.doc_id===docId);
   if(!r)return;
   sessionStorage.setItem('edit_state',JSON.stringify(r.state_json||r));
-  sessionStorage.setItem('edit_doc_id',docId);
   window.location.href='index.html?emp='+currentUser.id+'&edit='+docId;
 }
 
@@ -391,7 +357,9 @@ function adminLogout(){
   document.getElementById('page-admin').classList.remove('active');
   document.getElementById('page-login').classList.add('active');
   document.getElementById('login-pwd').value='';
-  window.history.replaceState({},'',window.location.pathname);
+  // 重置 Logo 為總部
+  const defaultLogo='00逗點教室_各分校校徽_頭貼_總部.png';
+  document.getElementById('login-logo-img').src=defaultLogo;
 }
 
 function showToast(msg){
