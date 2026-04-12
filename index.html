@@ -1,1552 +1,970 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>面試評分系統</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <style>
-        /* ================= 動態主題顏色變數 ================= */
-        :root {
-            --th-header: #1e3a8a; --th-header-border: #3b82f6; --th-header-dark: #172554;
-            --th-light-bg: #eff6ff; --th-light-border: #bfdbfe; --th-text: #1d4ed8;
-            --th-btn: #2563eb; --th-btn-hover: #1d4ed8; --th-score: #60a5fa;
-        }
-        body[data-theme="green"] {
-            --th-header: #14532d; --th-header-border: #22c55e; --th-header-dark: #052e16;
-            --th-light-bg: #f0fdf4; --th-light-border: #bbf7d0; --th-text: #15803d;
-            --th-btn: #16a34a; --th-btn-hover: #15803d; --th-score: #4ade80;
-        }
-        body[data-theme="yellow"] {
-            --th-header: #d97706; --th-header-border: #fcd34d; --th-header-dark: #b45309;
-            --th-light-bg: #fffbeb; --th-light-border: #fde68a; --th-text: #b45309;
-            --th-btn: #f59e0b; --th-btn-hover: #d97706; --th-score: #fbbf24;
-        }
-        body[data-theme="black"] {
-            --th-header: #0f172a; --th-header-border: #64748b; --th-header-dark: #020617;
-            --th-light-bg: #f8fafc; --th-light-border: #e2e8f0; --th-text: #334155;
-            --th-btn: #1e293b; --th-btn-hover: #0f172a; --th-score: #94a3b8;
-        }
-        
-        .th-header { background-color: var(--th-header); border-bottom: 3px solid var(--th-header-border); transition: background-color 0.3s ease; }
-        .th-header-box { background-color: var(--th-header-dark); border: 1px solid var(--th-header-border); }
-        .th-light-box { background-color: var(--th-light-bg); border: 1px solid var(--th-light-border); }
-        .th-text { color: var(--th-text); }
-        .th-score-text { color: var(--th-score); }
-        .th-btn-primary { background-color: var(--th-btn); color: white; transition: all 0.3s ease; }
-        .th-btn-primary:hover { background-color: var(--th-btn-hover); transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f1f5f9; }
-        
-        /* 評分按鈕 */
-        .score-btn { transition: all 0.1s; cursor: pointer; border: 1px solid #cbd5e1; background-color: white; position: relative; }
-        .score-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px -1px rgba(0,0,0,0.1); }
-        .score-btn.active { transform: scale(1.05); border-width: 2px; }
-        .score-btn.active[data-val="1"] { background-color: #ef4444; color: white; border-color: #b91c1c; }
-        .score-btn.active[data-val="2"] { background-color: #f97316; color: white; border-color: #c2410c; }
-        .score-btn.active[data-val="3"] { background-color: #eab308; color: white; border-color: #a16207; }
-        .score-btn.active[data-val="4"] { background-color: #84cc16; color: white; border-color: #4d7c0f; }
-        .score-btn.active[data-val="5"] { background-color: #22c55e; color: white; border-color: #15803d; }
-        
-        /* Tooltip */
-        .tooltip-text { visibility: hidden; opacity: 0; position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%); background-color: #1e293b; color: white; text-align: center; padding: 4px 8px; border-radius: 6px; font-size: 11px; white-space: nowrap; z-index: 10; transition: opacity 0.2s; pointer-events: none; }
-        .score-btn:hover .tooltip-text { visibility: visible; opacity: 1; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>逗點集團｜面試評分系統</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#1D6FD8;--blue-dark:#1558B0;--blue-light:#EBF3FF;--blue-mid:#DBEAFE;
+  --orange:#F97316;--orange-dark:#EA580C;
+  --bg:#F4F7FB;--white:#FFFFFF;
+  --border:#DDE4EF;--border2:#C8D6EE;
+  --text:#1A2338;--text2:#4B5C7A;--text3:#8898B4;
+  --green:#059669;--red:#DC2626;--amber:#D97706;
+  --shadow:0 1px 4px rgba(29,111,216,.08);
+  --shadow-md:0 4px 16px rgba(29,111,216,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.page{display:none;}
+.page.active{display:block;}
+#page-login.active{display:flex;}
 
-        .input-cell { @apply w-full border border-slate-300 rounded p-1.5 text-sm focus:border-slate-500 outline-none resize-none transition-all; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+/* ── LOGIN ─────────────────────────────── */
+#page-login{
+  min-height:100vh;background:linear-gradient(135deg,#EBF3FF 0%,#F4F7FB 60%,#E8F0FE 100%);
+  align-items:center;justify-content:center;position:relative;overflow:hidden;
+}
+#page-login::before{
+  content:'';position:absolute;width:600px;height:600px;
+  background:radial-gradient(circle,rgba(29,111,216,.06) 0%,transparent 70%);
+  top:-100px;right:-100px;pointer-events:none;
+}
+.login-card{
+  background:var(--white);border:1px solid var(--border);border-radius:20px;
+  padding:44px 40px;width:100%;max-width:420px;
+  box-shadow:0 8px 40px rgba(29,111,216,.14);position:relative;z-index:1;
+}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo img{height:64px;object-fit:contain;}
+.login-logo-placeholder{
+  width:64px;height:64px;background:var(--blue);border-radius:14px;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:white;font-size:18px;font-weight:900;
+}
+.login-title{font-size:22px;font-weight:900;color:var(--text);text-align:center;margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:32px;}
+.form-group{margin-bottom:18px;}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;letter-spacing:.06em;}
+.form-input{
+  width:100%;background:var(--bg);border:1.5px solid var(--border);
+  border-radius:10px;padding:11px 14px;font-size:14px;font-weight:500;
+  color:var(--text);outline:none;transition:all .2s;
+  font-family:'Noto Sans TC',sans-serif;
+}
+.form-input:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(29,111,216,.1);}
+.form-input::placeholder{color:var(--text3);}
+.btn-login{
+  width:100%;background:var(--blue);color:white;border:none;
+  border-radius:10px;padding:13px;font-size:15px;font-weight:900;
+  cursor:pointer;transition:all .2s;margin-top:4px;
+  font-family:'Noto Sans TC',sans-serif;letter-spacing:.06em;
+  box-shadow:0 4px 12px rgba(29,111,216,.3);
+}
+.btn-login:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 6px 18px rgba(29,111,216,.35);}
+.btn-login:active{transform:translateY(0);}
+.login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;}
 
-        /* 決策按鈕 */
-        .decision-btn { transition: all 0.2s; border: 2px solid transparent; }
-        .decision-btn.active-pass { background-color: #ecfdf5; border-color: #10b981; color: #047857; transform: scale(1.02); }
-        .decision-btn.active-fail { background-color: #fef2f2; border-color: #ef4444; color: #b91c1c; transform: scale(1.02); }
+/* ── HEADER ────────────────────────────── */
+#main-header{
+  background:var(--white);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;display:none;
+  box-shadow:0 2px 8px rgba(29,111,216,.06);
+}
+.header-inner{max-width:1300px;margin:0 auto;padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.header-logo-img{height:30px;object-fit:contain;}
+.header-logo-box{
+  width:30px;height:30px;background:var(--blue);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:11px;font-weight:900;
+}
+.header-title{font-size:15px;font-weight:900;color:var(--text);}
+.header-sub{font-size:11px;color:var(--text3);}
+.header-nav{display:flex;align-items:center;gap:8px;}
+.nav-btn{
+  padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .2s;font-family:'Noto Sans TC',sans-serif;
+  border:1.5px solid transparent;
+}
+.nav-btn-outline{background:transparent;border-color:var(--border2);color:var(--text2);}
+.nav-btn-outline:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
+.nav-btn-blue{background:var(--blue);color:white;border-color:var(--blue);}
+.nav-btn-blue:hover{background:var(--blue-dark);}
+.nav-btn-ghost{background:transparent;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.nav-btn-ghost:hover{color:var(--text);}
 
-        /* Toast 通知 */
-        #toast { position: fixed; top: 80px; right: 20px; background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transform: translateX(150%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999; }
-        #toast.show { transform: translateX(0); }
+/* ── PAGE CONTAINER ─────────────────────── */
+#page-front{padding:20px 24px 120px;}
+.container{max-width:1300px;margin:0 auto;}
 
-        /* Modals */
-        .modal-overlay { display: none; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); z-index: 99999; }
-        .modal-overlay.show { display: flex; }
+/* ── CARD ───────────────────────────────── */
+.card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;margin-bottom:14px;
+  box-shadow:var(--shadow);
+}
+.card-header{
+  padding:11px 18px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);
+}
+.card-header-s1{background:linear-gradient(90deg,#F0FDF8,#FAFFFE);}
+.card-header-s3{background:linear-gradient(90deg,#FFF8F0,#FFFCFA);}
+.card-header-s2{background:linear-gradient(90deg,#F3F0FF,#FAFAFE);}
+.card-header-title{font-size:14px;font-weight:700;color:var(--text);}
+.card-header-score{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:4px;}
+.score-badge{font-size:17px;font-weight:900;color:var(--blue);}
+.card-body{padding:14px 18px;}
 
-        /* ================= 列印 / 報告模式 CSS (A4極致壓縮) ================= */
-        .report-label { display: none; } 
-        body.report-mode { background-color: white; padding-bottom: 0 !important; }
-        body.report-mode .hide-in-report { display: none !important; }
-        body.report-mode input, body.report-mode textarea, body.report-mode select { border: none !important; background: transparent !important; appearance: none; -webkit-appearance: none; pointer-events: none; resize: none; padding: 0 !important; color: #000 !important; font-weight: bold; }
-        body.report-mode .shadow-sm, body.report-mode .shadow-md, body.report-mode .shadow-lg, body.report-mode .shadow-xl { box-shadow: none !important; }
-        
-        body.report-mode .score-btn:not(.active) { display: none !important; }
-        body.report-mode .score-btn.active { transform: none !important; cursor: default; width: auto !important; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin: 0; box-shadow: none !important; border: 1px solid #ccc; }
-        body.report-mode .s1-s2-btn .btn-num { display: none !important; }
-        body.report-mode .s1-s2-btn .report-label { display: inline-block !important; margin-left: 2px; }
+/* ── INFO GRID ──────────────────────────── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
+@media(max-width:900px){.info-grid{grid-template-columns:1fr 1fr;}}
+.info-field label{display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase;}
+.info-input{
+  width:100%;background:var(--bg);border:1.5px solid var(--border);
+  border-radius:8px;padding:8px 11px;font-size:13px;font-weight:600;
+  color:var(--text);outline:none;transition:all .2s;
+  font-family:'Noto Sans TC',sans-serif;
+}
+.info-input:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(29,111,216,.08);}
+.info-input:disabled{background:#F0F2F5;color:var(--text2);cursor:not-allowed;}
 
-        body.report-mode .decision-btn:not([class*="active-"]) { display: none !important; }
-        body.report-mode .decision-btn { padding: 4px 8px !important; pointer-events: none; font-size: 12px; border: 1px solid #ccc; }
-        
-        @media print {
-            .no-print { display: none !important; }
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 9px !important; line-height: 1.1 !important; color: #000; }
-            @page { size: A4 portrait; margin: 5mm; }
-            
-            main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-            .p-4, .p-5, .p-6, .p-8, .p-3, .p-2 { padding: 2px 4px !important; }
-            .mb-6, .mb-8, .mb-4, .mb-3, .mb-2, .mb-1 { margin-bottom: 2px !important; }
-            .gap-6, .gap-8, .gap-4, .gap-3, .gap-2 { gap: 2px !important; }
-            .text-lg, .text-xl, .text-2xl, .text-3xl, .text-5xl, .text-4xl { font-size: 12px !important; line-height: 1.2 !important; }
-            .text-base { font-size: 10px !important; }
-            .text-sm { font-size: 9px !important; }
-            .text-xs { font-size: 8px !important; }
-            
-            section { border: 1px solid #94a3b8 !important; margin-bottom: 3px !important; border-radius: 4px !important; break-inside: avoid; }
-            
-            /* 壓縮表格 */
-            table { width: 100% !important; table-layout: fixed !important; }
-            table th, table td { padding: 1px 2px !important; border: 1px solid #cbd5e1 !important; font-size: 7px !important; word-wrap: break-word !important; }
-            .overflow-x-auto { overflow: hidden !important; }
-            
-            textarea { min-height: unset !important; height: auto !important; border-bottom: 1px dashed #ccc !important; }
-            
-            .bg-slate-900, .bg-slate-800, .bg-emerald-50, .bg-indigo-50, .bg-orange-50 { background-color: #f1f5f9 !important; color: #000 !important; border: none !important; }
-            .text-white, .text-slate-200, .text-slate-300, .text-slate-400 { color: #0f172a !important; }
-            .text-blue-400, .text-emerald-400, .text-orange-400, .text-amber-300, .text-red-400, .text-red-500 { color: #000 !important; font-weight: 900 !important; }
-            
-            #ideal-status-exp, #bonus-method-input { padding: 2px !important; border: none !important; }
-            #report-grand-total { font-size: 20px !important; }
-        }
+/* ── INTERVIEWER ────────────────────────── */
+.interviewer-list{display:flex;flex-direction:column;gap:6px;}
+.interviewer-row{display:flex;gap:6px;align-items:center;}
+.btn-add-int{font-size:11px;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;padding:0;font-family:'Noto Sans TC',sans-serif;}
+.btn-add-int:hover{text-decoration:underline;}
+.btn-rm-int{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px 4px;border-radius:4px;}
+.btn-rm-int:hover{background:#FEF2F2;}
 
-        @keyframes small-pop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .animate-small-pop { animation: small-pop 0.2s ease-out; }
+/* ── S1 SCORE ROWS ──────────────────────── */
+.s1-group{margin-bottom:10px;}
+.s1-group:last-child{margin-bottom:0;}
+.s1-group-title{
+  font-size:10px;font-weight:700;color:var(--blue);
+  letter-spacing:.08em;text-transform:uppercase;
+  margin-bottom:5px;padding-left:2px;
+}
+.score-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border-radius:8px;margin-bottom:5px;
+  background:var(--bg);border:1px solid var(--border);gap:12px;
+  transition:background .15s;
+}
+.score-row:hover{background:var(--blue-light);border-color:var(--border2);}
+.score-row:last-child{margin-bottom:0;}
+.score-q{font-size:13px;color:var(--text);line-height:1.4;min-width:0;}
+.score-btns{display:flex;gap:4px;flex-shrink:0;}
+.score-btn{
+  width:32px;height:32px;border-radius:7px;border:1.5px solid var(--border2);
+  background:var(--white);color:var(--text2);font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Sans TC',sans-serif;
+}
+.score-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);transform:translateY(-1px);}
+.score-btn.active[data-val="1"]{background:#FEE2E2;border-color:#EF4444;color:#B91C1C;}
+.score-btn.active[data-val="2"]{background:#FFEDD5;border-color:#F97316;color:#C2410C;}
+.score-btn.active[data-val="3"]{background:#FEF9C3;border-color:#EAB308;color:#A16207;}
+.score-btn.active[data-val="4"]{background:#DCFCE7;border-color:#22C55E;color:#15803D;}
+.score-btn.active[data-val="5"]{background:#DCFCE7;border-color:#16A34A;color:#166534;}
+.score-btn.active{transform:scale(1.05);}
 
-        /* 頁面切換邏輯與登入置中 */
-        .page-view { display: none !important; }
-        .page-view.active { display: block !important; animation: fadeIn 0.3s ease; }
-        #view-login.active { display: flex !important; } 
-    </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head>
-<body class="text-slate-800 pb-40" data-theme="blue">
+/* ── BON TEXT ───────────────────────────── */
+.bon-wrap{display:flex;flex-direction:column;gap:8px;}
+.bon-textarea{
+  width:100%;background:var(--bg);border:1.5px solid var(--border);
+  border-radius:8px;padding:8px 11px;font-size:13px;color:var(--text);
+  outline:none;resize:vertical;min-height:58px;
+  font-family:'Noto Sans TC',sans-serif;transition:all .2s;
+}
+.bon-textarea:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(29,111,216,.08);}
 
-    <!-- 系統通知 -->
-    <div id="toast">✅ 操作成功！</div>
+/* ── S3 TABLE ───────────────────────────── */
+.s3-scroll{overflow-x:auto;}
+.s3-table{width:100%;border-collapse:collapse;min-width:920px;}
+.s3-table th{
+  background:var(--bg);padding:8px 10px;font-size:11px;font-weight:700;
+  color:var(--text3);text-align:center;border:1px solid var(--border);
+  letter-spacing:.03em;
+}
+.s3-table td{border:1px solid var(--border);padding:6px;vertical-align:top;}
+.s3-dim{background:#EFF6FF;text-align:center;font-size:11px;font-weight:700;width:56px;}
+.s3-dim-core{color:#1D6FD8;}
+.s3-dim-mgmt{color:#059669;}
+.s3-name{background:var(--bg);text-align:center;font-size:12px;font-weight:700;color:var(--text);width:88px;}
+.s3-textarea{
+  width:100%;background:transparent;border:none;
+  padding:5px;font-size:12px;color:var(--text);
+  outline:none;resize:none;min-height:80px;
+  font-family:'Noto Sans TC',sans-serif;line-height:1.6;border-radius:4px;
+}
+.s3-textarea:focus{background:var(--blue-light);}
+.s3-score-cell{text-align:center;width:140px;background:var(--bg);}
+.s3-score-btns{display:flex;gap:3px;justify-content:center;padding:6px 4px;flex-wrap:nowrap;}
+.s3-score-btn{
+  width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border2);
+  background:var(--white);color:var(--text2);font-size:11px;font-weight:700;
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;
+  position:relative;font-family:'Noto Sans TC',sans-serif;
+}
+.s3-score-btn:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-1px);}
+.s3-score-btn.active[data-val="1"]{background:#FEE2E2;border-color:#EF4444;color:#B91C1C;transform:scale(1.1);}
+.s3-score-btn.active[data-val="2"]{background:#FFEDD5;border-color:#F97316;color:#C2410C;transform:scale(1.1);}
+.s3-score-btn.active[data-val="3"]{background:#FEF9C3;border-color:#EAB308;color:#A16207;transform:scale(1.1);}
+.s3-score-btn.active[data-val="4"]{background:#DCFCE7;border-color:#22C55E;color:#15803D;transform:scale(1.1);}
+.s3-score-btn.active[data-val="5"]{background:#DCFCE7;border-color:#16A34A;color:#166534;transform:scale(1.1);}
+.s3-tooltip{
+  visibility:hidden;opacity:0;position:absolute;bottom:110%;left:50%;
+  transform:translateX(-50%);background:var(--text);color:white;
+  padding:4px 8px;border-radius:5px;font-size:10px;white-space:nowrap;
+  z-index:20;pointer-events:none;transition:opacity .15s;
+}
+.s3-score-btn:hover .s3-tooltip{visibility:visible;opacity:1;}
+.s3-desc-row{background:var(--blue-light);}
+.s3-desc-row td{padding:6px 12px;font-size:11px;color:var(--text2);line-height:1.5;border-color:var(--border2);}
+.s3-desc-row.hidden{display:none;}
 
-    <!-- 檢核表 (Checklist) Modal -->
-    <div id="checklist-modal" class="fixed inset-0 items-center justify-center modal-overlay no-print z-[99999]">
-        <div class="bg-white w-11/12 max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-small-pop">
-            <div class="bg-slate-800 p-4 flex justify-between items-center">
-                <h2 class="text-white font-bold text-lg flex items-center gap-2">📝 【主任/主管面試規範 Checklist】</h2>
-                <button onclick="window.toggleChecklist()" class="text-slate-400 hover:text-white text-xl leading-none">✕</button>
-            </div>
-            <div class="p-6 overflow-auto bg-slate-50 space-y-6 flex-1">
-                <p class="text-sm text-slate-600 leading-relaxed font-medium">
-                    各位主任/主管好，為因應從「逗點集團」出發的面試能夠標準且一致化，我們需拿出相同的品質來對待所有面試者，再請您確認以下面試準備清單，確保面試能夠有好的開始與結尾，感謝您
-                </p>
+/* ── LEVEL SELECT ───────────────────────── */
+.level-select{
+  background:var(--white);border:1.5px solid var(--border2);border-radius:7px;
+  padding:4px 8px;font-size:11px;font-weight:700;color:var(--text2);
+  outline:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all .2s;
+}
+.level-select:focus{border-color:var(--blue);}
 
-                <!-- 一、面試前 -->
-                <div>
-                    <h3 class="font-bold text-base text-slate-800 mb-2 border-l-4 border-blue-500 pl-2">一、面試前（準備階段）</h3>
-                    <div class="space-y-2 pl-2">
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>已完整閱讀面試者履歷（工作經歷、離職原因、自我介紹）</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>已瀏覽及評分面試者填寫之應徵表單（筆試資料）</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-red-50 p-1 rounded transition-colors border border-red-200 bg-white shadow-sm">
-                            <input type="checkbox" id="chk-must-fill" class="chk-item mt-1" onchange="window.syncState()"> 
-                            <span class="text-red-600 font-black">已於職能面試中填上要詢問的問題 (※ 必勾選才能暫存)</span>
-                        </label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>若有題目疑慮，已提前與人資確認</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>已確認面試職位之職能需求（確保問對問題）</span></label>
-                    </div>
-                </div>
+/* ── REPORT CARD ────────────────────────── */
+.report-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:14px;padding:22px;margin-bottom:14px;
+  box-shadow:var(--shadow);
+}
+.report-card-title{font-size:15px;font-weight:900;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.report-card-title::before{content:'';width:4px;height:18px;background:var(--blue);border-radius:2px;display:block;}
+.report-total-row{
+  background:linear-gradient(135deg,var(--blue) 0%,#2563EB 100%);
+  border-radius:12px;padding:18px 22px;display:flex;
+  justify-content:space-between;align-items:center;margin-bottom:16px;
+  box-shadow:0 4px 16px rgba(29,111,216,.25);
+}
+.report-total-label{font-size:14px;font-weight:700;color:rgba(255,255,255,.85);}
+.report-total-score{font-size:42px;font-weight:900;color:white;}
+.report-sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+@media(max-width:700px){.report-sub-grid{grid-template-columns:1fr;}}
+.report-sub-box{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:10px;padding:12px;text-align:center;
+}
+.report-sub-label{font-size:10px;color:var(--text3);font-weight:700;margin-bottom:4px;}
+.report-sub-score{font-size:22px;font-weight:900;}
+.report-bottom{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.report-bottom{grid-template-columns:1fr;}}
+.report-status-box,.report-action-box{
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;
+}
+.report-field-label{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+.report-status-text{font-size:18px;font-weight:900;margin-bottom:8px;}
+.report-exp{font-size:12px;color:var(--text2);background:var(--white);padding:8px 10px;border-radius:7px;line-height:1.6;border:1px solid var(--border);}
+.report-textarea{
+  width:100%;background:var(--white);border:1.5px solid var(--border);
+  border-radius:8px;padding:8px 11px;font-size:13px;color:var(--text);
+  outline:none;resize:vertical;min-height:68px;margin-bottom:12px;
+  font-family:'Noto Sans TC',sans-serif;transition:all .2s;
+}
+.report-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,111,216,.08);}
+.decision-row{display:flex;gap:8px;}
+.decision-btn{
+  flex:1;padding:10px;border-radius:9px;font-size:13px;font-weight:900;
+  cursor:pointer;transition:all .2s;border:2px solid transparent;
+  background:var(--white);color:var(--text2);font-family:'Noto Sans TC',sans-serif;
+  border:1.5px solid var(--border2);
+}
+.decision-btn:hover{border-color:var(--blue);color:var(--blue);}
+.decision-btn.active-pass{background:#ECFDF5;border-color:#10B981;color:#065F46;box-shadow:0 2px 8px rgba(16,185,129,.2);}
+.decision-btn.active-fail{background:#FEF2F2;border-color:#EF4444;color:#7F1D1D;box-shadow:0 2px 8px rgba(239,68,68,.2);}
 
-                <!-- 二、面試中 -->
-                <div>
-                    <h3 class="font-bold text-base text-slate-800 mb-2 border-l-4 border-emerald-500 pl-2">二、面試中（執行階段）</h3>
-                    <div class="space-y-2 pl-2">
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>已保留至少 1 小時進行面試</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>已安排第二位面試官共同參與面談</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>面試地點安靜、不受干擾，並已提前預約</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>全程使用行為事例（BEI/CAR）提問法</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>無做出任何錄取、薪資或福利承諾</span></label>
-                    </div>
-                </div>
+/* ── BOTTOM BAR ─────────────────────────── */
+#bottom-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--white);border-top:1px solid var(--border);
+  padding:10px 24px;z-index:50;display:none;
+  box-shadow:0 -4px 16px rgba(29,111,216,.08);
+}
+.bottom-bar-inner{max-width:1300px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+.bottom-total{font-size:14px;font-weight:700;color:var(--text2);}
+.bottom-total span{font-size:22px;font-weight:900;color:var(--blue);margin-left:6px;}
+.bottom-actions{display:flex;gap:8px;}
+.btn-bottom{
+  padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s;font-family:'Noto Sans TC',sans-serif;
+  border:1.5px solid transparent;
+}
+.btn-clear{background:var(--bg);border-color:var(--border2);color:var(--text2);}
+.btn-clear:hover{border-color:#EF4444;color:#EF4444;}
+.btn-save{background:var(--bg);border-color:var(--border2);color:var(--text2);}
+.btn-save:hover{border-color:var(--blue);color:var(--blue);}
+.btn-submit{background:var(--blue);color:white;border-color:var(--blue);box-shadow:0 2px 8px rgba(29,111,216,.3);}
+.btn-submit:hover{background:var(--blue-dark);transform:translateY(-1px);}
 
-                <!-- 三、面試後 -->
-                <div>
-                    <h3 class="font-bold text-base text-slate-800 mb-2 border-l-4 border-orange-500 pl-2">三、面試後（紀錄與回報階段）</h3>
-                    <div class="space-y-2 pl-2">
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>已於當日或隔日中午前完成「面試評分系統」</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>評分內容有依據、填寫完整（無空白、無僅寫印象）</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>已與人資討論並確認錄用建議</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>未自行通知面試者，由人資統一通知</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>若需安排二面或觀課，已告知人資協助安排</span></label>
-                    </div>
-                </div>
+/* ── TOAST ──────────────────────────────── */
+#toast{
+  position:fixed;top:68px;right:20px;
+  background:var(--white);border:1.5px solid var(--blue);color:var(--blue);
+  padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;
+  transform:translateX(150%);transition:transform .3s;z-index:9999;
+  box-shadow:var(--shadow-md);
+}
+#toast.show{transform:translateX(0);}
 
-                <!-- 四、自我檢查 -->
-                <div>
-                    <h3 class="font-bold text-base text-slate-800 mb-2 border-l-4 border-purple-500 pl-2">四、主任/主管自我檢查（可於每次面試後自省）</h3>
-                    <div class="space-y-2 pl-2">
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>我是否有確實閱讀完整履歷與表單？</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>今天的提問是否扣合該職位核心與管理職能？</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>是否有第二位面試官共同參與？</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>面試是否留足時間、無匆忙結束？</span></label>
-                        <label class="flex items-start gap-2 cursor-pointer text-sm text-slate-700 hover:bg-slate-200 p-1 rounded transition-colors"><input type="checkbox" class="chk-item mt-1" onchange="window.syncState()"> <span>評分回傳是否客觀、有事例支撐？</span></label>
-                    </div>
-                </div>
+/* ── MODAL ──────────────────────────────── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,35,56,.4);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--white);border:1px solid var(--border);border-radius:14px;width:90%;max-width:440px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(29,111,216,.2);}
+.modal-header{background:var(--bg);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+.modal-title{font-size:14px;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;border-radius:4px;padding:2px 6px;}
+.modal-close:hover{background:var(--bg);color:var(--text);}
+.modal-body{padding:16px 18px;overflow-y:auto;flex:1;}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--border);text-align:right;}
+.btn-modal-ok{padding:8px 20px;background:var(--blue);border:none;border-radius:7px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.btn-modal-ok:hover{background:var(--blue-dark);}
 
-                <!-- 五、面試官筆記 -->
-                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200 shadow-sm">
-                    <h3 class="font-bold text-base text-indigo-900 mb-2">五、面試官記錄本次好的或下次想要改善的文字內容</h3>
-                    <textarea id="interview-note-input" rows="3" onchange="window.syncState()" class="w-full border border-slate-300 rounded-lg p-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-colors" placeholder="請填寫您對本次面試的自我檢討、收穫或改善方向..."></textarea>
-                </div>
-            </div>
-            <div class="p-4 bg-white border-t border-slate-200 text-right flex justify-between items-center">
-                <span class="text-xs text-slate-400 font-bold ml-2">※ 此檢核表內容會隨評分進度自動儲存</span>
-                <button onclick="window.toggleChecklist()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-md">確認並縮小</button>
-            </div>
-        </div>
+/* ── ANIMATIONS ─────────────────────────── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.card{animation:fadeInUp .25s ease both;}
+.card:nth-child(2){animation-delay:.05s;}
+.card:nth-child(3){animation-delay:.1s;}
+.card:nth-child(4){animation-delay:.15s;}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- Missing Modal -->
+<div id="missing-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">⚠ 尚有未評分項目</span>
+      <button class="modal-close" onclick="closeMissingModal()">✕</button>
     </div>
-
-    <!-- 漏填警告 Modal -->
-    <div id="missing-modal" class="fixed inset-0 items-center justify-center modal-overlay no-print z-[99999]">
-        <div class="bg-white w-11/12 max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-small-pop">
-            <div class="bg-amber-500 p-3.5 flex justify-between items-center">
-                <h2 class="text-white font-bold text-base flex items-center gap-2">⚠️ 尚未完成評分項目</h2>
-                <button onclick="window.closeMissingModal()" class="text-amber-100 hover:text-white text-xl leading-none">✕</button>
-            </div>
-            <div class="p-5 max-h-[60vh] overflow-auto bg-slate-50">
-                <p class="text-slate-600 text-sm mb-3">您還有以下項目尚未評分，請補齊後再進行最終決策：</p>
-                <ul id="missing-modal-list" class="list-disc pl-5 text-sm font-bold text-slate-800 space-y-1"></ul>
-            </div>
-            <div class="p-4 bg-white border-t border-slate-200 text-right">
-                <button onclick="window.closeMissingModal()" class="bg-slate-800 text-white px-5 py-2 rounded-lg font-bold hover:bg-slate-700 transition-colors">我知道了</button>
-            </div>
-        </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">請補齊以下項目再送出：</p>
+      <ul id="missing-list" style="list-style:disc;padding-left:20px;font-size:13px;font-weight:700;color:var(--text);line-height:2.2;"></ul>
     </div>
-
-    <!-- ==================== 頁面 0: 登入頁 ==================== -->
-   <div id="view-login" class="page-view active min-h-screen w-full flex flex-col items-center justify-center bg-slate-900">
-    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-        <div class="bg-slate-100 p-3 rounded-xl mb-6 inline-block mx-auto border border-slate-200">
-            <img src="逗點教室LOGO-直-co -去背.png" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'%23e2e8f0\'/><text x=\'50\' y=\'55\' font-size=\'16\' font-weight=\'bold\' text-anchor=\'middle\' fill=\'%2364748b\'>COMMA</text></svg>'" class="h-16 object-contain">
-        </div>
-        <h1 class="text-2xl font-black text-slate-800 mb-2">面試評分系統</h1>
-        <p class="text-sm text-slate-500 mb-6">請選擇單位並輸入資料</p>
-        <div class="space-y-4 text-left">
-            <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1">您的單位</label>
-                <select id="login-branch" class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none font-bold text-slate-700 bg-white">
-                    <option value="">請選擇單位...</option>
-                    <optgroup label="人資／高階">
-                        <option value="HR">人力資源處（人資）</option>
-                        <option value="F00001">執行長室</option>
-                        <option value="F00004">國高中事業處（處長）</option>
-                        <option value="F00005">國小事業處（處長）</option>
-                    </optgroup>
-                    <optgroup label="各分校">
-                        <option value="青埔升大校">青埔升大校</option>
-                        <option value="青埔翱翔校">青埔翱翔校</option>
-                        <option value="青園展翅校">青園展翅校</option>
-                        <option value="大園晨光校">大園晨光校</option>
-                        <option value="內壢森耀校">內壢森耀校</option>
-                        <option value="竹北知行校">竹北知行校</option>
-                        <option value="文化極光校">文化極光校</option>
-                        <option value="快樂騰雲校">快樂騰雲校</option>
-                        <option value="大園參天校">大園參天校</option>
-                        <option value="園中方舟校">園中方舟校</option>
-                        <option value="青埔旭日校">青埔旭日校</option>
-                        <option value="中壢心夢想校">中壢心夢想校</option>
-                    </optgroup>
-                    <optgroup label="總部處室">
-                        <option value="行政溝通處">行政溝通處</option>
-                        <option value="財務會計處">財務會計處</option>
-                        <option value="產品研發處">產品研發處</option>
-                        <option value="品牌行銷處">品牌行銷處</option>
-                        <option value="行銷辦公室">行銷辦公室</option>
-                        <option value="國小英文管理科">國小英文管理科</option>
-                    </optgroup>
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1">您的姓名</label>
-                <input type="text" id="login-name" placeholder="請輸入您的姓名"
-                    class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none font-bold text-slate-700">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1">登入密碼</label>
-                <input type="password" id="login-pwd" placeholder="請輸入密碼（預設 0000）"
-                    class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none font-bold text-slate-700">
-            </div>
-            <button id="btn-login" onclick="window.handleLogin()"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-xl shadow-lg transition-colors mt-2 text-lg">
-                登 入 系 統
-            </button>
-        </div>
-        <p class="mt-4 text-xs text-slate-400">測試密碼：0000</p>
+    <div class="modal-footer">
+      <button class="btn-modal-ok" onclick="closeMissingModal()">我知道了</button>
     </div>
+  </div>
 </div>
 
-    <!-- ==================== 共用標頭 ==================== -->
-    <header id="main-header" class="th-header text-white p-3 md:p-4 shadow-lg sticky top-0 z-50 no-print hidden">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-white/90 p-1 rounded-lg backdrop-blur-sm shadow-sm flex items-center justify-center h-10 w-24 overflow-hidden">
-                    <img src="逗點教室LOGO-直-co -去背.png" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%23333\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'%23e2e8f0\'/><text x=\'50\' y=\'55\' font-size=\'14\' font-weight=\'bold\' text-anchor=\'middle\' fill=\'%2364748b\'>COMMA</text></svg>'" class="h-full w-full object-contain">
-                </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-black tracking-widest leading-none">面試評分系統</h1>
-                    <div class="text-[10px] text-blue-100 font-bold mt-1" id="header-user-info">載入中...</div>
-                </div>
+<!-- ══ LOGIN ══ -->
+<div id="page-login" class="page active">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="逗點教室LOGO-直-co -去背.png" alt="逗點教室"
+        onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='inline-flex';">
+      <div id="logo-fallback" class="login-logo-placeholder" style="display:none;">逗</div>
+    </div>
+    <div class="login-title">面試評分系統</div>
+    <div class="login-sub">逗點集團人才招募平台</div>
+    <div class="form-group">
+      <label class="form-label">員工編號</label>
+      <input type="text" id="login-emp" class="form-input" placeholder="例：F00035"
+        style="text-transform:uppercase;" autocomplete="off"
+        onkeydown="if(event.key==='Enter')document.getElementById('login-pwd').focus()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">登入密碼</label>
+      <input type="password" id="login-pwd" class="form-input" placeholder="請輸入密碼"
+        onkeydown="if(event.key==='Enter')handleLogin()">
+    </div>
+    <button class="btn-login" onclick="handleLogin()">登 入 系 統</button>
+    <div class="login-hint">測試密碼：0000</div>
+  </div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<header id="main-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <img src="逗點教室LOGO-直-co -去背.png" class="header-logo-img" alt=""
+        onerror="this.style.display='none';document.getElementById('header-logo-box').style.display='flex';">
+      <div id="header-logo-box" class="header-logo-box" style="display:none;">逗</div>
+      <div>
+        <div class="header-title">面試評分系統</div>
+        <div class="header-sub" id="header-user-info"></div>
+      </div>
+    </div>
+    <div class="header-nav">
+      <button class="nav-btn nav-btn-outline" id="nav-front-btn" onclick="switchView('front')" style="display:none;">前台評分</button>
+      <button class="nav-btn nav-btn-blue" id="nav-backend-btn" onclick="switchView('backend')" style="display:none;">進入後台</button>
+      <button class="nav-btn-ghost" onclick="handleLogout()">登出</button>
+    </div>
+  </div>
+</header>
+
+<!-- ══ FRONT PAGE ══ -->
+<div id="page-front" class="page">
+  <div class="container">
+
+    <!-- 基本資訊 -->
+    <div class="card" style="margin-top:16px;">
+      <div class="card-header" style="background:#F8FAFF;">
+        <span class="card-header-title">面試基本資訊</span>
+      </div>
+      <div class="card-body">
+        <div class="info-grid">
+          <div class="info-field">
+            <label>應徵者姓名</label>
+            <input type="text" id="ipt-name" class="info-input" placeholder="輸入姓名" oninput="syncState()">
+          </div>
+          <div class="info-field" style="grid-row:span 2;">
+            <label style="display:flex;justify-content:space-between;align-items:center;">
+              面試官
+              <button class="btn-add-int" onclick="addInterviewer()">+ 新增</button>
+            </label>
+            <div id="interviewer-list" class="interviewer-list">
+              <div class="interviewer-row">
+                <input type="text" class="ipt-interviewer info-input" oninput="syncState()" placeholder="面試官姓名">
+              </div>
             </div>
-            <div class="flex items-center gap-2 md:gap-3">
-                <!-- 將三個按鈕獨立 ID 管理，防呆更徹底 -->
-                <button id="nav-hr-search-btn" onclick="window.switchView('hr_search')" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-sm font-bold transition-colors hidden">應徵者管理</button>
-                <button id="nav-mgr-front-btn" onclick="window.switchView('mgr_front')" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-sm font-bold transition-colors hidden">前台評分</button>
-                <button id="nav-backend-btn" onclick="window.switchView('backend')" class="bg-black/30 hover:bg-black/50 px-3 py-1.5 rounded text-sm font-bold border border-white/20 transition-colors hidden shadow-inner">進入後台</button>
-                <button onclick="window.logout()" class="text-xs text-white/70 hover:text-white underline ml-2">登出</button>
-            </div>
+          </div>
+          <div class="info-field">
+            <label>應徵分校/單位</label>
+            <select id="sel-branch" class="info-input" onchange="syncState()">
+              <option value="">請選擇...</option>
+              <optgroup label="各分校">
+                <option>青埔升大校</option><option>青埔翱翔校</option><option>青園展翅校</option>
+                <option>大園晨光校</option><option>內壢森耀校</option><option>竹北知行校</option>
+                <option>文化極光校</option><option>快樂騰雲校</option><option>大園參天校</option>
+                <option>園中方舟校</option><option>青埔旭日校</option><option>中壢心夢想校</option>
+              </optgroup>
+              <optgroup label="總部處室">
+                <option>行政溝通處</option><option>人力資源處</option><option>財務會計處</option>
+                <option>國小營運處</option><option>國高中營運處</option><option>產品研發處</option>
+                <option>品牌行銷處</option><option>行銷辦公室</option><option>國小英文管理科</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="info-field">
+            <label>應徵職位</label>
+            <select id="sel-position" class="info-input" onchange="syncState()">
+              <option value="">請選擇...</option>
+              <option>班級導師</option><option>行政導師</option><option>授課師</option>
+              <option>主任</option><option>處長</option><option>總部</option><option>其他</option>
+            </select>
+          </div>
+          <div class="info-field">
+            <label>其他職務</label>
+            <input type="text" id="ipt-other-pos" class="info-input" placeholder="選其他時填寫" oninput="syncState()">
+          </div>
+          <div class="info-field">
+            <label>面試日期</label>
+            <input type="date" id="ipt-date" class="info-input" onchange="syncState()">
+          </div>
+          <div class="info-field">
+            <label>開始時間</label>
+            <input type="time" id="ipt-time" class="info-input" onchange="syncState()">
+          </div>
         </div>
-    </header>
+      </div>
+    </div>
 
-    <div id="report-exit-bar" class="hidden fixed top-0 left-0 w-full bg-blue-600 text-white p-2 z-[60] flex justify-between items-center no-print shadow-lg">
-        <span class="font-bold ml-4 text-sm">📄 成績單列印模式 (列印已預設為 A4 橫式)</span>
-        <div class="flex gap-2 mr-4">
-            <button onclick="window.print()" class="bg-white text-blue-600 px-4 py-1.5 rounded-lg font-bold hover:bg-blue-50 text-sm shadow-sm transition-colors flex items-center gap-1">🖨️ 下載 / 列印</button>
-            <button onclick="window.toggleReportMode(false)" class="bg-slate-800 text-white px-4 py-1.5 rounded-lg font-bold hover:bg-slate-700 text-sm shadow-sm transition-colors">返回編輯</button>
+    <!-- 一、筆試 -->
+    <div class="card">
+      <div class="card-header card-header-s1">
+        <span class="card-header-title" style="color:#065F46;">一、筆試和綜合面談 <span style="font-weight:400;font-size:12px;color:var(--text3);">(30%)</span></span>
+        <div class="card-header-score">得分：<span class="score-badge" style="color:#059669;" id="s1-final">0.00</span><span>/30</span></div>
+      </div>
+      <div class="card-body" id="s1-body"></div>
+    </div>
+
+    <!-- 二、職能 -->
+    <div class="card">
+      <div class="card-header card-header-s3">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="card-header-title" style="color:#92400E;">二、職能面試 <span style="font-weight:400;font-size:12px;color:var(--text3);">(60%)</span></span>
+          <select id="job-level-select" class="level-select" onchange="updateLevelLogic()">
+            <option value="1">職等1 核心90%/管理10%</option>
+            <option value="2">職等2 核心85%/管理15%</option>
+            <option value="3">職等3 核心70%/管理30%</option>
+            <option value="4">職等4 核心60%/管理40%</option>
+            <option value="5">職等5 核心50%/管理50%</option>
+            <option value="6">職等6 核心40%/管理60%</option>
+            <option value="7">職等7 核心30%/管理70%</option>
+          </select>
         </div>
+        <div class="card-header-score">得分：<span class="score-badge" style="color:#D97706;" id="s3-final">0.00</span><span>/60</span></div>
+      </div>
+      <div class="s3-scroll">
+        <table class="s3-table">
+          <thead>
+            <tr>
+              <th>維度</th><th>職能項目</th>
+              <th style="min-width:180px;">BEI（問題描述）</th>
+              <th style="min-width:150px;">狀況 C</th>
+              <th style="min-width:150px;">行動 A</th>
+              <th style="min-width:150px;">結果 R</th>
+              <th style="min-width:148px;">給分</th>
+            </tr>
+          </thead>
+          <tbody id="s3-tbody"></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- ==================== 頁面 1: 人資前台 (搜尋) ==================== -->
-    <div id="view-hr-front" class="page-view container mx-auto p-4 max-w-5xl mt-6">
-        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b pb-3 gap-3">
-                <h2 class="text-xl font-black text-slate-800 flex items-center gap-2">🔍 應徵者管理 (查閱已評分資料)</h2>
-                <button onclick="window.startNewRating()" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-md text-sm transition-colors">+ 新增面試評分</button>
-            </div>
-            
-            <div class="flex flex-col md:flex-row gap-4 mb-6">
-                <input type="text" id="search-name" placeholder="輸入應徵者姓名" class="flex-1 border-2 border-slate-200 p-2.5 rounded-lg focus:border-blue-500 outline-none font-bold">
-                <select id="search-branch" class="flex-1 border-2 border-slate-200 p-2.5 rounded-lg focus:border-blue-500 outline-none font-bold bg-white">
-                    <option value="">不限分校/單位</option>
-                    <option>青埔升大校</option><option>青埔翱翔校</option><option>青園展翅校</option><option>大園晨光校</option>
-                    <option>內壢森耀校</option><option>竹北知行校</option><option>文化極光校</option><option>快樂騰雲校</option>
-                    <option>大園參天校</option><option>園中方舟校</option><option>青埔旭日校</option><option>中壢心夢想校</option>
-                    <option>行政溝通處</option><option>人力資源處</option><option>財務會計處</option><option>國小事業處</option>
-                    <option>國高中事業處</option><option>產品研發處</option><option>品牌行銷處</option><option>行銷辦公室</option><option>國小英文管理科</option>
-                </select>
-                <button onclick="window.searchHRFront()" class="bg-blue-600 text-white px-8 py-2.5 rounded-lg font-black hover:bg-blue-700 shadow-md">查詢資料</button>
-            </div>
-            
-            <div class="p-0 overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[900px]">
-                    <thead class="bg-slate-100 text-slate-700 text-sm">
-                        <tr>
-                            <th class="p-3 border-b">面試日期</th>
-                            <th class="p-3 border-b">應徵者</th>
-                            <th class="p-3 border-b">分校/單位</th>
-                            <th class="p-3 border-b">職位</th>
-                            <th class="p-3 border-b text-center text-blue-700">總得分</th>
-                            <th class="p-3 border-b text-center">進度狀態</th>
-                            <th class="p-3 border-b text-center">結果</th>
-                            <th class="p-3 border-b w-32 text-center">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="hr-search-results" class="text-sm">
-                        <tr><td colspan="8" class="text-center text-slate-400 py-10 font-bold">請輸入條件並點擊查詢</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+    <!-- 三、外顯特質 -->
+    <div class="card">
+      <div class="card-header card-header-s2">
+        <span class="card-header-title" style="color:#3730A3;">三、外顯特質 <span style="font-weight:400;font-size:12px;color:var(--text3);">(10%)</span></span>
+        <div class="card-header-score">得分：<span class="score-badge" style="color:#4F46E5;" id="s2-final">0.00</span><span>/10</span></div>
+      </div>
+      <div class="card-body" id="s2-body"></div>
     </div>
 
-    <!-- ==================== 頁面 2: 人資/主管 後台 (資料分析) ==================== -->
-    <div id="view-backend" class="page-view container mx-auto p-4 max-w-[1400px] mt-6">
-        <section class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
-            <div class="bg-slate-800 p-4 flex justify-between items-center">
-                <h2 class="text-white font-bold text-lg flex items-center gap-2">📊 逗點面試資料庫</h2>
-                <div class="flex gap-2">
-                    <a href="https://docs.google.com/spreadsheets/d/1RiFQdCr6WNoW6Nobgym35eu1SI03JlT1Njz8ZOhsT5Q/edit?gid=1973860664#gid=1973860664" target="_blank" id="btn-google-sheet" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg font-bold hover:bg-blue-700 shadow-sm text-sm transition-colors flex items-center gap-2 hidden">
-                        <span>🔗 進入 Google Sheet</span>
-                    </a>
-                    <button onclick="window.exportCSV()" class="bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-bold hover:bg-emerald-700 shadow-sm text-sm transition-colors flex items-center gap-2">
-                        <span>📥 匯出 CSV</span>
-                    </button>
-                </div>
-            </div>
-            <div class="p-0 overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[1200px]">
-                    <thead class="bg-slate-100 text-slate-700 text-sm">
-                        <tr>
-                            <th class="p-3 border-b w-24">面試日期</th>
-                            <th class="p-3 border-b">應徵者</th>
-                            <th class="p-3 border-b">分校/單位</th>
-                            <th class="p-3 border-b">職位</th>
-                            <th class="p-3 border-b text-center text-slate-500">其他職務</th>
-                            <th class="p-3 border-b text-center text-indigo-700">筆試和綜合面談</th>
-                            <th class="p-3 border-b text-center text-orange-700">職能面試</th>
-                            <th class="p-3 border-b text-center text-emerald-700">外顯特質</th>
-                            <th class="p-3 border-b text-center text-blue-700">總得分</th>
-                            <th class="p-3 border-b text-center">進度狀態</th>
-                            <th class="p-3 border-b text-center">結果</th>
-                            <th class="p-3 border-b text-center">面試官備註</th>
-                            <th class="p-3 border-b w-40 text-center">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="db-list-tbody" class="text-sm"></tbody>
-                </table>
-            </div>
-        </section>
-    </div>
-
-    <!-- ==================== 頁面 3: 主管前台 (面試評分表) ==================== -->
-    <div id="view-mgr-front" class="page-view container mx-auto p-4 max-w-[1400px] mt-2 space-y-5 pb-32">
-        
-        <!-- 基本資訊 -->
-        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="bg-slate-800 p-2.5 border-b border-slate-700 flex justify-between items-center">
-                <h2 class="text-white font-bold flex items-center gap-2 text-base">面試基本資訊</h2>
-                <!-- 檢核表按鈕 -->
-                <button onclick="window.toggleChecklist()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold shadow-md transition-all border border-indigo-400 flex items-center gap-1">
-                    ☑️ 檢核表
-                </button>
-            </div>
-            <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- 第一排 -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">應徵者姓名</label>
-                    <input type="text" id="ipt-name" onblur="window.checkExistingRecord()" oninput="window.syncState()" class="w-full border-b-2 border-slate-200 p-1.5 outline-none bg-slate-50 transition-all text-base font-bold focus:border-blue-500" placeholder="輸入姓名 (離開欄位自動搜尋紀錄)">
-                </div>
-                <div class="row-span-2">
-                    <label class="block text-xs font-bold text-slate-400 mb-1 flex justify-between items-center">
-                        面試官姓名
-                        <button onclick="window.addInterviewer()" class="hide-in-report bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-0.5 rounded text-xs flex items-center gap-1 font-bold transition-colors">增加人員點我</button>
-                    </label>
-                    <div id="interviewer-list" class="space-y-2">
-                        <div class="flex gap-2"><input type="text" class="ipt-interviewer flex-1 border-b-2 border-slate-200 p-1.5 text-base outline-none bg-slate-50 focus:border-blue-500 transition-all" oninput="window.syncState()"></div>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">應徵分校/單位 (可自由切換)</label>
-                    <select id="sel-branch" onchange="window.syncState(); window.updateThemeManual(this.value);" class="w-full border-b-2 border-slate-200 p-1.5 outline-none bg-slate-50 text-base font-bold text-slate-600 transition-colors focus:border-blue-500 cursor-pointer">
-                        <option value="">請選擇...</option>
-                        <optgroup label="各分校單位">
-                            <option>青埔升大校</option><option>青埔翱翔校</option><option>青園展翅校</option><option>大園晨光校</option>
-                            <option>內壢森耀校</option><option>竹北知行校</option><option>文化極光校</option><option>快樂騰雲校</option>
-                            <option>大園參天校</option><option>園中方舟校</option><option>青埔旭日校</option><option>中壢心夢想校</option>
-                        </optgroup>
-                        <optgroup label="總部處室">
-                            <option>行政溝通處</option><option>人力資源處</option><option>財務會計處</option><option>國小事業處</option>
-                            <option>國高中事業處</option><option>產品研發處</option><option>品牌行銷處</option><option>行銷辦公室</option><option>國小英文管理科</option>
-                        </optgroup>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">應徵職位</label>
-                    <select id="sel-position" onchange="window.syncState()" class="w-full border-b-2 border-slate-200 p-1.5 outline-none bg-slate-50 text-base font-bold focus:border-blue-500 cursor-pointer">
-                        <option value="">請選擇...</option>
-                        <option>班級導師</option><option>行政導師</option><option>授課師</option>
-                        <option>主任</option><option>處長</option><option>總部</option>
-                        <option value="其他">其他</option>
-                    </select>
-                </div>
-
-                <!-- 第二排 -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">階段狀態</label>
-                    <select id="sel-stage" onchange="window.syncState()" class="w-full border-b-2 border-slate-200 p-1.5 outline-none bg-slate-50 text-base font-bold text-blue-700 cursor-pointer focus:border-blue-500">
-                        <option>階段一筆試</option><option>其他階段</option>
-                    </select>
-                </div>
-                <!-- 注意：面試官(rowspan=2) 佔用這裡的第二格 -->
-                
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">其他職務 (自行輸入)</label>
-                    <input type="text" id="ipt-other-position" oninput="window.syncState()" class="w-full border-b-2 border-slate-200 p-1.5 outline-none bg-slate-50 transition-all text-base font-bold focus:border-blue-500" placeholder="請輸入職務名稱">
-                </div>
-
-                <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 th-light-box p-3 rounded-xl transition-all duration-300">
-                    <div><label class="block text-xs font-bold th-text mb-1">面試日期</label><input type="date" id="interview-date" onchange="window.updateDateTimeDisplay(); window.syncState();" class="w-full border border-white/50 rounded p-1 text-sm outline-none bg-white/80 focus:border-blue-500 transition-all"></div>
-                    <div><label class="block text-xs font-bold th-text mb-1">開始時間</label><input type="time" id="interview-time" onchange="window.updateDateTimeDisplay(); window.syncState();" class="w-full border border-white/50 rounded p-1 text-sm outline-none bg-white/80 focus:border-blue-500 transition-all"></div>
-                    <div class="sm:col-span-2"><div id="datetime-preview" class="text-sm font-black th-text tracking-wide"></div></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 階段一 (筆試) -->
-        <section class="bg-white rounded-2xl shadow-sm border border-slate-200">
-            <div class="bg-emerald-50 p-2.5 border-b border-emerald-100 flex justify-between items-center">
-                <h2 class="text-base font-bold text-emerald-900">一、筆試和綜合面談 <span class="text-xs font-normal text-emerald-600 ml-1">(30%)</span></h2>
-                <div class="text-xs font-bold text-emerald-700">得分: <span id="s1-final" class="text-lg">0.00</span>/30</div>
-            </div>
-            <div class="p-3 space-y-2.5 bg-slate-50/30">
-                <div id="s1-exp-section"></div><div id="s1-mot-section"></div><div id="s1-sty-section"></div><div id="s1-sal-section"></div><div id="s1-bon-section"></div>
-            </div>
-        </section>
-
-        <!-- 階段二 (職能) -->
-        <section class="bg-white rounded-2xl shadow-sm border border-slate-200">
-            <div class="bg-orange-50 p-2.5 border-b border-orange-200 flex justify-between items-center">
-                <h2 class="text-base font-bold text-orange-900">二、職能面試 <span class="text-xs font-normal text-orange-600 ml-1">(60%)</span></h2>
-                <div class="flex items-center gap-3">
-                    <select id="job-level-select" class="border rounded outline-none font-bold text-xs p-1 hide-in-report focus:ring-2 focus:ring-orange-500" onchange="window.updateLevelLogic()">
-                        <option value="1">職等 1 (核心90% / 管理10%)</option>
-                        <option value="2">職等 2 (核心85% / 管理15%)</option>
-                        <option value="3">職等 3 (核心70% / 管理30%)</option>
-                        <option value="4">職等 4 (核心60% / 管理40%)</option>
-                        <option value="5">職等 5 (核心50% / 管理50%)</option>
-                        <option value="6">職等 6 (核心40% / 管理60%)</option>
-                        <option value="7">職等 7 (核心30% / 管理70%)</option>
-                    </select>
-                    <div class="text-xs font-bold text-orange-700">得分: <span id="s3-final" class="text-lg">0.00</span>/60</div>
-                </div>
-            </div>
-
-            <div class="p-0 overflow-x-auto no-scrollbar pt-4 pb-2">
-                <table class="w-full text-left border-collapse min-w-[1200px]">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-700 text-[11px] text-center">
-                            <th class="p-1 border border-slate-200 w-16">維度</th>
-                            <th class="p-1 border border-slate-200 w-28">職能項目</th>
-                            <th class="p-1 border border-slate-200 text-blue-800" width="300">BEI (問題描述)</th>
-                            <th class="p-1 border border-slate-200 text-indigo-800" colspan="3">CAR (狀況 / 行動 / 結果)</th>
-                            <th class="p-1 border border-slate-200 w-36">給分 (放置滑鼠看提示)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="s3-tbody"></tbody>
-                </table>
-            </div>
-
-            <!-- 暫存按鈕移至職能面試下方 -->
-            <div class="mt-4 mb-4 text-center border-t border-slate-200 pt-4 pb-2 hide-in-report">
-                <button onclick="window.handleSaveDraft()" class="bg-white border-2 border-slate-300 text-slate-700 px-8 py-2 rounded-xl font-black hover:bg-slate-100 transition-colors flex items-center justify-center gap-2 mx-auto shadow-sm">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-                    暫存人才及職能題目
-                </button>
-                <p class="text-[11px] text-slate-400 mt-2">主管可於此暫存評分記憶，下階段面試前請務必確保檢核表填寫。</p>
-            </div>
-        </section>
-
-        <!-- 階段三 (外顯特質) -->
-        <section class="bg-white rounded-2xl shadow-sm border border-slate-200">
-            <div class="bg-indigo-50 p-2.5 border-b border-indigo-100 flex justify-between items-center">
-                <div>
-                    <h2 class="text-base font-bold text-indigo-900">三、外顯特質 <span class="text-xs font-normal text-indigo-600 ml-1">(10%)</span></h2>
-                    <p class="text-[10px] text-indigo-700 mt-0.5 hide-in-report">評分基準：[5]優異、[4]良好、[3]佳、[2]尚可、[1]差 (再次點選可取消)</p>
-                </div>
-                <div class="text-xs font-bold text-indigo-700">得分: <span id="s2-final" class="text-lg">0.00</span>/10</div>
-            </div>
-            <div class="p-3 space-y-1" id="s2-container"></div>
-            
-            <!-- 階段評分完成按鈕 -->
-            <div class="flex justify-center mt-6 mb-4 hide-in-report">
-                <button onclick="window.handleStageComplete()" class="bg-blue-600 text-white px-10 py-3 rounded-2xl font-black shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all text-lg hover:scale-105 flex items-center gap-2">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                    階段評分完成，進入最終決策
-                </button>
-            </div>
-        </section>
-
-        <!-- 成績單與決策 -->
-        <section id="report-card-section" class="bg-slate-900 rounded-2xl shadow-xl p-5 text-white mb-8 border border-slate-700 relative break-inside-avoid overflow-hidden">
-            <div class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-blue-600 rounded-full opacity-20 blur-3xl pointer-events-none no-print"></div>
-            <div class="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-emerald-600 rounded-full opacity-10 blur-3xl pointer-events-none no-print"></div>
-
-            <h2 class="text-xl font-black mb-4 flex items-center gap-3 relative z-10">面試成績總結算</h2>
-            <div class="bg-slate-800 p-4 rounded-xl border border-slate-600 flex justify-between items-center mb-5 relative z-10">
-                <div>
-                    <div class="text-lg font-black text-slate-200">系統最終總得分</div>
-                </div>
-                <div class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400" id="report-grand-total">0.00</div>
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6 relative z-10">
-                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-center">
-                    <div class="text-slate-400 text-xs font-bold mb-1">一、筆試和綜合面談</div>
-                    <div class="text-2xl font-black text-emerald-400" id="report-s1">0.00</div>
-                </div>
-                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-center">
-                    <div class="text-slate-400 text-xs font-bold mb-1">二、職能面試</div>
-                    <div class="text-2xl font-black text-orange-400" id="report-s3">0.00</div>
-                </div>
-                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-center">
-                    <div class="text-slate-400 text-xs font-bold mb-1">三、外顯特質</div>
-                    <div class="text-2xl font-black text-indigo-400" id="report-s2">0.00</div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
-                <div class="space-y-3 bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-                    <label class="block text-slate-400 text-sm font-bold">系統建議理想狀態</label>
-                    <div id="ideal-status-text" class="text-xl font-black text-white mb-2">等待評分...</div>
-                    <label class="block text-slate-400 text-sm font-bold">判定原因</label>
-                    <div id="ideal-status-exp" class="text-sm font-medium text-amber-300 bg-amber-900/30 p-2.5 rounded-lg border border-amber-700/50">-</div>
-                </div>
-
-                <div class="space-y-3 bg-slate-800/80 p-4 rounded-xl border border-slate-700 flex flex-col">
-                    <label class="block text-slate-300 text-sm font-bold">加分方式 / 補救培訓計畫 (必填)</label>
-                    <div id="bonus-hint-area" class="text-xs text-amber-400 bg-amber-900/20 px-3 py-2 rounded-t-lg hidden hide-in-report"></div>
-                    <textarea id="bonus-method-input" oninput="window.syncState()" rows="2" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white text-sm focus:border-slate-500 outline-none mb-2 placeholder-slate-500 flex-1 transition-colors" placeholder="請填寫..."></textarea>
-                    
-                    <label class="block text-slate-300 text-sm font-bold hide-in-report">最終錄取結果 (選擇後請按下方確認送出)</label>
-                    <div class="flex gap-4">
-                        <button id="btn-pass" onclick="window.handleFinalDecision('pass')" class="decision-btn flex-1 bg-slate-700 text-slate-300 py-2 rounded-xl font-black text-base hover:bg-slate-600 shadow-md">✅ 確認錄取</button>
-                        <button id="btn-fail" onclick="window.handleFinalDecision('fail')" class="decision-btn flex-1 bg-slate-700 text-slate-300 py-2 rounded-xl font-black text-base hover:bg-slate-600 shadow-md">❌ 不予錄取</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 確認送出檢核 -->
-            <div class="mt-8 flex justify-center hide-in-report relative z-10">
-                <button id="btn-final-submit" onclick="window.handleFinalSubmit()" class="bg-emerald-500 text-white px-10 py-3 rounded-2xl font-black shadow-lg hover:bg-emerald-600 hover:shadow-xl transition-all text-lg hover:scale-105 flex items-center gap-2">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                    <span id="btn-final-submit-text">確認送出檢核並建檔</span>
-                </button>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- 底部操作列 -->
-    <div id="action-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2.5 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)] z-50 no-print">
-        <div class="container mx-auto max-w-[1400px] flex justify-end items-center">
-            <div class="flex items-center gap-4">
-                <div class="text-base font-black text-slate-800 flex items-center">
-                    總得分：<span id="footer-total" class="text-blue-700 text-xl ml-1">0.00</span>
-                </div>
-                <button onclick="window.toggleReportMode(true)" class="px-6 py-1.5 bg-slate-800 rounded-lg text-white hover:bg-slate-700 text-sm font-black shadow-md transition-colors">📄 產出成績單</button>
-            </div>
+    <!-- 成績總結 -->
+    <div class="report-card">
+      <div class="report-card-title">面試成績總結算</div>
+      <div class="report-total-row">
+        <div class="report-total-label">系統最終總得分</div>
+        <div class="report-total-score" id="report-grand-total">0.00</div>
+      </div>
+      <div class="report-sub-grid">
+        <div class="report-sub-box">
+          <div class="report-sub-label">一、筆試和綜合面談</div>
+          <div class="report-sub-score" style="color:#059669;" id="report-s1">0.00</div>
         </div>
+        <div class="report-sub-box">
+          <div class="report-sub-label">二、職能面試</div>
+          <div class="report-sub-score" style="color:#D97706;" id="report-s3">0.00</div>
+        </div>
+        <div class="report-sub-box">
+          <div class="report-sub-label">三、外顯特質</div>
+          <div class="report-sub-score" style="color:#4F46E5;" id="report-s2">0.00</div>
+        </div>
+      </div>
+      <div class="report-bottom">
+        <div class="report-status-box">
+          <div class="report-field-label">系統建議理想狀態</div>
+          <div class="report-status-text" id="ideal-status-text">等待評分...</div>
+          <div class="report-field-label">判定原因</div>
+          <div class="report-exp" id="ideal-status-exp">-</div>
+        </div>
+        <div class="report-action-box">
+          <div class="report-field-label">加分方式 / 補救培訓計畫</div>
+          <textarea id="bonus-method-input" class="report-textarea" oninput="syncState()" placeholder="請填寫..."></textarea>
+          <div class="report-field-label" style="margin-bottom:8px;">最終錄取結果</div>
+          <div class="decision-row">
+            <button id="btn-pass" class="decision-btn" onclick="handleDecision('pass')">✓ 確認錄取</button>
+            <button id="btn-fail" class="decision-btn" onclick="handleDecision('fail')">✕ 不予錄取</button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- 所有 JavaScript 邏輯全域綁定與執行 -->
-    <script>
-        window.SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCPQLOLkHCDJJkyxhAPq8PI49K4FOLCdyFjahQnoAOFPUq6CtriFwU0uEtLKVlQkYF/exec";
-        window.dbCache = [];
-        // ===== Supabase 設定 =====
-const SUPABASE_URL = 'https://yslzhijwfbhgropbmqab.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzbHpoaWp3ZmJoZ3JvcGJtcWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MTg0NjksImV4cCI6MjA5MTI5NDQ2OX0.UUm9ShB9vd1PSGxLlW5kOwI5rzle1O2WYKmZcjE9Ksc';
-const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </div>
+</div>
 
-        // ================= 1. 企業帳號與基礎資料 =================
-        window.EMP_DB = {
-            "F00001": { name: "徐暘智", dept: "企業主", role: "MGR" },
-            "F00002": { name: "余羿賢", dept: "財務會計處", role: "MGR" },
-            "F00003": { name: "劉芸諺", dept: "行政溝通處", role: "MGR" },
-            "F00004": { name: "黃乙凡", dept: "國高中事業處", role: "MGR" },
-            "F00005": { name: "黃倪睨", dept: "國小事業處", role: "MGR" },
-            "F00007": { name: "黃偉婷", dept: "青園展翅校", role: "MGR" },
-            "F00008": { name: "游立銘", dept: "中壢心夢想校", role: "MGR" },
-            "F00009": { name: "林思誼", dept: "園中方舟校", role: "MGR" },
-            "F00010": { name: "李安琇", dept: "青埔翱翔校", role: "MGR" },
-            "F00012": { name: "陳映竹", dept: "青埔旭日校", role: "MGR" },
-            "F00016": { name: "古欣平", dept: "文化極光校", role: "MGR" },
-            "F00022": { name: "鄒瑞紋", dept: "大園參天校", role: "MGR" },
-            "F00029": { name: "王欣俞", dept: "竹北知行校", role: "MGR" },
-            "F00031": { name: "許芳茹", dept: "大園晨光校", role: "MGR" },
-            "F00035": { name: "魏詩珊", dept: "人力資源處", role: "HR" }, 
-            "F00036": { name: "張涵渝", dept: "品牌行銷處", role: "MGR" },
-            "F00049": { name: "周沛妤", dept: "行政溝通處", role: "MGR" },
-            "F00054": { name: "曾佳敏", dept: "人力資源處", role: "HR" }, 
-            "F00059": { name: "應羽涵", dept: "國小英文管理科", role: "MGR" },
-            "F00070": { name: "林依屏", dept: "青埔升大校", role: "MGR" },
-            "F00081": { name: "廖依珊", dept: "產品研發處", role: "MGR" },
-            "F00084": { name: "巫珮菱", dept: "內壢森耀校", role: "MGR" },
-            "F00092": { name: "蔡玉晴", dept: "快樂騰雲校", role: "MGR" }
-        };
+<!-- BOTTOM BAR -->
+<div id="bottom-bar">
+  <div class="bottom-bar-inner">
+    <div class="bottom-total">總得分：<span id="footer-total">0.00</span></div>
+    <div class="bottom-actions">
+      <button class="btn-bottom btn-clear" onclick="handleClear()">清除資料</button>
+      <button class="btn-bottom btn-save" onclick="handleSaveDraft()">暫存資料</button>
+      <button class="btn-bottom btn-submit" onclick="handleFinalSubmit()">確認送出</button>
+    </div>
+  </div>
+</div>
 
-        window.GRADE_LABELS = ["", "差1", "尚可2", "佳3", "良好4", "優異5"];
-        window.S1_DATA = [
-            { id: 'exp', title: "工作經歷", weight: 0.20, max: 5, qs: ["最能代表其專業能力及理想的經歷？"] },
-            { id: 'mot', title: "動機與價值", weight: 0.35, max: 10, qs: ["與我們最契合的價值觀？", "影響個人去留的主因？"] },
-            { id: 'sty', title: "工作風格", weight: 0.25, max: 10, qs: ["最滿意或欣賞的工作環境、管理制度？", "感到挫敗或壓力最大的案例？當時如何應對？"] },
-            { id: 'sal', title: "薪資與期待", weight: 0.20, max: 15, qs: ["期望月薪/年薪及初期最低薪資？", "最感興趣的工作任務與職涯關聯？", "想了解或擔心的部分？"] },
-            { id: 'bon', title: "特別加分題", weight: 0.01, max: 5, qs: ["補充說明"] }
-        ];
-        window.S2_QUESTIONS = ["儀容穿著", "禮貌應對", "表達流暢", "自信穩健", "誠懇親和", "對分校了解", "對職務認知", "企圖心展現", "配合度", "邏輯思考", "臨場反應", "學習意願", "情緒穩定", "抗壓性", "團隊合作", "經歷相關", "專業知識"];
-        window.S3_LEVELS = { 1: { c: [30, 20, 20, 15, 10, 5], m: [30, 30, 40], ratio: { c: 90, m: 10 } }, 4: { c: [20, 15, 20, 15, 15, 15], m: [30, 40, 30], ratio: { c: 60, m: 40 } }, 7: { c: [15, 10, 20, 15, 20, 20], m: [40, 35, 25], ratio: { c: 30, m: 70 } } };
-        window.S3_BARS_CORE = [
-            { name: "品質成果導向", levels: ["逃避責任", "被動執行", "穩定執行", "主動精進", "卓越引領"], descs: ["經常拖延，需多次提醒才執行；遇問題傾向抱怨，品質不穩。","僅完成明確指示，缺乏自我檢查；需主管持續監督。","理解任務並依計畫執行；遇困難主動回報，品質大致穩定。","清楚拆解目標並優化流程；面對挑戰能分析並協調資源，具高責任感。","高度自我要求，帶領他人檢視改進；建立標準化機制與信任文化。"] },
-            { name: "顧客導向", levels: ["忽視需求", "被動回應", "穩定服務", "主動協助", "建立信任"], descs: ["對家長反應漠不關心，傾向以規則回應，不願理解對方焦慮。","僅被詢問時回覆；面對抱怨易緊張防禦，缺乏安撫技巧。","能友善回覆，並在指導下處理簡單抱怨；維持禮貌與穩定。","察覺家長焦慮並主動關懷，提供具體協助；平衡雙方期待。","化解負面情緒並建立信任，帶領團隊形成穩定服務文化。"] },
-            { name: "問題解決", levels: ["逃避問題", "被動回報", "穩定修正", "主動分析", "系統改善"], descs: ["面對問題閃避或推卸責任，缺乏改善行動。","察覺問題但僅通報主管，未嘗試分析或提出方案。","在指導下釐清問題，提出可行修正並完成任務。","獨立找出根源、提出並執行方案，追蹤結果防止重複。","整合團隊經驗建立SOP，推動持續改善與風險預警。"] },
-            { name: "團隊合作", levels: ["抗拒合作", "被動配合", "穩定參與", "主動支援", "領導團隊"], descs: ["缺乏團隊意識，只顧自身任務，對他人需求漠不關心。","願意合作但僅在被要求時行動，難以主動協助。","理解目標並完成分配任務，衝突時保持理性尊重。","協調不同意見、推動共識，主動分享經驗協助同儕。","帶領團隊形成穩定機制，推動跨部門協作建立信任。"] },
-            { name: "溝通協調", levels: ["表達混亂", "被動回應", "清楚表達", "彈性調整", "影響引導"], descs: ["溝通缺乏邏輯或情緒化，易造成誤會或衝突。","單向表達未確認對方理解；常需他人重複解釋。","條理說明工作，能傾聽並確認理解。","依對象調整語氣方式，協助建立共識與合作。","跨部門清晰表達觀點，影響他人並維護形象。"] },
-            { name: "創新能力", levels: ["抗拒改變", "被動接受", "穩定嘗試", "主動創新", "引領創新"], descs: ["拒絕新做法，傾向維持現狀或否定他人創意。","願意嘗試但缺乏主動觀察；需指導才能執行。","配合新流程，並在指導下提出小幅優化。","獨立觀察問題、提出新做法並追蹤結果，積極改善。","發展創新專案或制度，推動團隊建立優化文化。"] }
-        ];
-        window.S3_BARS_MGMT = [
-            { name: "策略性思考", levels: ["僅執行命令", "理解指令 / 缺乏分析", "基本分析 / 連結目標", "前瞻規劃 / 主動提案", "組織引領 / 策略制定"], descs: ["只關注自身任務，不理解組織方向；缺乏思考長期影響。","能理解策略但無法轉化行動；僅依他人決策行動。","能分析資料、理解願景並與部門任務連結。","能發現趨勢或問題，提出可行策略建議並落實。","能設計策略地圖、影響決策並推動長期發展。"] },
-            { name: "人才發展", levels: ["無學習動機", "被動學習 / 有限支持", "穩定學習 / 願意分享", "主動培育 / 指導他人", "系統傳承 / 文化引導"], descs: ["對自身或他人發展無興趣，不參與訓練也不支持學習。","僅完成要求的培訓，偶爾給予同事建議但缺乏持續追蹤。","能自我成長並主動協助新進同事適應任務。","能計畫學習方向、提供具體回饋，帶領同儕進步。","能設計培訓制度、建立導師文化，推動組織人才成長。"] },
-            { name: "文化落實", levels: ["不認同 / 違反價值", "被動參與 / 理解不足", "穩定實踐 / 態度正向", "主動傳遞 / 影響同儕", "文化引領 / 價值代言"], descs: ["行為與組織價值相悖，對文化活動冷漠或抵制。","表面配合但缺乏實際行動，僅在被要求時參與。","認同價值觀並在工作中展現，能主動參與文化活動。","以行動影響他人、推動文化活動，展現正向力量。","能建立文化制度、引領團隊內化價值並對外傳遞品牌信念。"] }
-        ];
+<script>
+const SUPABASE_URL='https://yslzhijwfbhgropbmqab.supabase.co';
+const SUPABASE_KEY='請替換為你的anon_key';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-        window.currentUser = null; 
-        window.state = null;
-
-        // ================= 2. 核心功能函式定義 =================
-        window.getEmptyState = function() {
-            return {
-                name: "", branch: "", position: "", otherPosition: "", date: "", time: "", stage: "階段一筆試",
-                level: 1, finalDecision: null, bonusMethod: "", idealStatus: "", grandTotal: "",
-                s1Final: "0.00", s2Final: "0.00", s3Final: "0.00",
-                docStatus: "new", 
-                checklist: Array(20).fill(false),
-                interviewNote: "",
-                s1: { exp: [0], mot: [0,0], sty: [0,0], sal: [0,0,0], bon: [0], bonText: "" },
-                s2: Array(window.S2_QUESTIONS.length).fill(0), 
-                s3: { core: Array(6).fill(0), mgmt: Array(3).fill(0) },
-                s3Texts: {
-                    core: Array(6).fill(null).map(()=>({bei:'', c:'', a:'', r:''})),
-                    mgmt: Array(3).fill(null).map(()=>({bei:'', c:'', a:'', r:''}))
-                }
-            };
-        }
-
-        window.ensureStateStructure = function() {
-            if(!window.state) window.state = window.getEmptyState();
-            if(!window.state.s3Texts) {
-                window.state.s3Texts = {
-                    core: Array(6).fill(null).map(()=>({bei:'', c:'', a:'', r:''})),
-                    mgmt: Array(3).fill(null).map(()=>({bei:'', c:'', a:'', r:''}))
-                };
-            }
-            if(!window.state.checklist) window.state.checklist = Array(20).fill(false);
-            if(typeof window.state.interviewNote === 'undefined') window.state.interviewNote = "";
-            if(typeof window.state.otherPosition === 'undefined') window.state.otherPosition = "";
-        }
-
-        window.setTxt = function(id, text) { const el = document.getElementById(id); if(el) el.innerText = text; }
-        window.setHtml = function(id, html) { const el = document.getElementById(id); if(el) el.innerHTML = html; }
-
-        window.toggleChecklist = function(forceShow = false) {
-            const modal = document.getElementById('checklist-modal');
-            if (!modal) return;
-            if (forceShow === true || !modal.classList.contains('show')) {
-                modal.classList.add('show');
-            } else {
-                modal.classList.remove('show');
-            }
-        }
-
-        // --- 核心：向雲端抓取資料 ---
-        window.fetchCloudDB = async function() {
-            try {
-                window.showToast('🔄 正在同步雲端資料，請稍候...');
-                const res = await fetch(window.SCRIPT_URL);
-                const data = await res.json();
-                window.dbCache = data || [];
-                window.showToast('✅ 雲端資料同步完成');
-            } catch (e) {
-                console.error("Fetch DB error", e);
-                window.dbCache = [];
-                window.showToast('❌ 同步失敗或無資料，進入離線模式');
-            }
-        }
-
-        window.handleLogin = async function() {
-    const branch = document.getElementById('login-branch')?.value;
-    const name   = document.getElementById('login-name')?.value.trim();
-    const pwd    = document.getElementById('login-pwd')?.value.trim();
-
-    if (!branch) return alert('請選擇您的單位！');
-    if (!name)   return alert('請輸入您的姓名！');
-    if (pwd !== '0000') return alert('密碼錯誤（測試密碼：0000）');
-
-    const btnLogin = document.getElementById('btn-login');
-    if (btnLogin) btnLogin.innerText = '登入中...';
-
-    const isHR     = (branch === 'HR');
-    const isCEO    = (branch === 'F00001');
-    const isSenior = ['F00004', 'F00005'].includes(branch);
-
-    window.currentUser = {
-        name:  name,
-        dept:  isHR ? '人力資源處' : (isCEO ? '執行長室' : branch),
-        role:  (isHR || isCEO) ? 'HR' : (isSenior ? 'SENIOR' : 'MGR'),
-        id:    branch
-    };
-
-    await window.fetchCloudDB();
-
-    const roleLabel = (isHR || isCEO) ? '人資／管理員' : '主任／主管';
-    window.setTxt('header-user-info', `${name}（${window.currentUser.dept}）| ${roleLabel}`);
-    document.getElementById('main-header')?.classList.remove('hidden');
-
-    window.state = window.getEmptyState();
-    window.hydrateUI();
-    window.calculateScores();
-
-    if (isHR || isCEO) {
-        document.getElementById('nav-hr-search-btn')?.classList.remove('hidden');
-        document.getElementById('nav-mgr-front-btn')?.classList.add('hidden');
-        document.getElementById('nav-backend-btn')?.classList.remove('hidden');
-        window.switchView('hr_search');
-    } else {
-        document.getElementById('nav-hr-search-btn')?.classList.add('hidden');
-        document.getElementById('nav-mgr-front-btn')?.classList.remove('hidden');
-        document.getElementById('nav-backend-btn')?.classList.remove('hidden');
-        window.switchView('mgr_front');
-    }
-
-    if (btnLogin) btnLogin.innerText = '登 入 系 統';
+const EMP_DB={
+  "F00001":{name:"徐暘智",dept:"逗點集團",role:"ADMIN"},
+  "F00003":{name:"劉芸諺",dept:"行政溝通處",role:"MGR"},
+  "F00004":{name:"黃乙凡",dept:"國高中營運處",role:"SENIOR_HS"},
+  "F00005":{name:"黃倪睨",dept:"國小營運處",role:"SENIOR_ES"},
+  "F00007":{name:"黃偉婷",dept:"青園展翅校",role:"MGR"},
+  "F00008":{name:"游立銘",dept:"中壢心夢想校",role:"MGR"},
+  "F00009":{name:"林思誼",dept:"園中方舟校",role:"MGR"},
+  "F00010":{name:"李安琇",dept:"青埔翱翔校",role:"MGR"},
+  "F00012":{name:"陳映竹",dept:"青埔旭日校",role:"MGR"},
+  "F00016":{name:"古欣平",dept:"文化極光校",role:"MGR"},
+  "F00022":{name:"鄒瑞紋",dept:"大園參天校",role:"MGR"},
+  "F00029":{name:"王欣俞",dept:"竹北知行校",role:"MGR"},
+  "F00031":{name:"許芳茹",dept:"大園晨光校",role:"MGR"},
+  "F00035":{name:"魏詩珊",dept:"人力資源處",role:"HR"},
+  "F00054":{name:"曾佳敏",dept:"人力資源處",role:"HR"},
+  "F00059":{name:"應羽涵",dept:"國小英文管理科",role:"MGR"},
+  "F00070":{name:"林依屏",dept:"青埔升大校",role:"MGR"},
+  "F00081":{name:"廖依珊",dept:"產品研發處",role:"MGR"},
+  "F00084":{name:"巫珮菱",dept:"內壢森耀校",role:"MGR"},
+  "F00086":{name:"呂鈺嬋",dept:"國高中營運處",role:"MGR"},
+  "F00092":{name:"蔡玉晴",dept:"快樂騰雲校",role:"MGR"}
 };
 
-        window.logout = function() {
-            window.currentUser = null;
-            document.getElementById('main-header')?.classList.add('hidden');
-            document.getElementById('action-bar')?.classList.add('hidden');
-            
-            // 安全隱藏所有選單按鈕
-            document.getElementById('nav-hr-search-btn')?.classList.add('hidden');
-            document.getElementById('nav-mgr-front-btn')?.classList.add('hidden');
-            document.getElementById('nav-backend-btn')?.classList.add('hidden');
-            
-            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-login')?.classList.add('active');
-            const pwdInput = document.getElementById('login-pwd');
-            if(pwdInput) pwdInput.value = "";
-        }
-
-        window.switchView = function(target) {
-            // 防呆：如果非人資帳號試圖進入 hr_search (例如手動竄改)，強制導向 mgr_front
-            if (target === 'hr_search' && window.currentUser && window.currentUser.role !== 'HR') {
-                target = 'mgr_front';
-            }
-
-            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
-            document.getElementById('action-bar')?.classList.add('hidden');
-            document.body.setAttribute('data-theme', 'blue'); 
-
-            if(target === 'hr_search') {
-                document.getElementById('view-hr-front')?.classList.add('active');
-            } else if (target === 'mgr_front') {
-                document.getElementById('view-mgr-front')?.classList.add('active');
-                document.getElementById('action-bar')?.classList.remove('hidden');
-                window.updateThemeManual(window.state.branch || window.currentUser.dept);
-            } else if (target === 'backend') {
-                document.getElementById('view-backend')?.classList.add('active');
-                window.loadBackendData();
-            }
-        }
-
-        window.getFilteredDB = function() {
-            const db = window.dbCache;
-            if (!window.currentUser) return db;
-
-            if (['F00035', 'F00054', 'F00001'].includes(window.currentUser.id)) {
-                return db; 
-            } else if (window.currentUser.id === 'F00004') {
-                const allowedDepts = ['大園參天校', '園中方舟校', '青埔旭日校', '中壢心夢想校', '國高中事業處'];
-                return db.filter(r => allowedDepts.includes(r.branch));
-            } else if (window.currentUser.id === 'F00005') {
-                const allowedDepts = ['青埔翱翔校', '青園展翅校', '大園晨光校', '內壢森耀校', '竹北知行校', '文化極光校', '快樂騰雲校', '國小事業處'];
-                return db.filter(r => allowedDepts.includes(r.branch));
-            } else {
-                return db.filter(r => r.branch === window.currentUser.dept);
-            }
-        }
-
-        window.searchHRFront = function() {
-            const sName = document.getElementById('search-name').value.trim();
-            const sBranch = document.getElementById('search-branch').value;
-            const db = window.dbCache;
-            
-            let filtered = db;
-            if(sName) filtered = filtered.filter(r => r.name.includes(sName));
-            if(sBranch) filtered = filtered.filter(r => r.branch === sBranch);
-
-            const resDiv = document.getElementById('hr-search-results');
-            if(filtered.length === 0) {
-                resDiv.innerHTML = `<tr><td colspan="8" class="text-center text-slate-400 py-10 font-bold">查無符合條件的已評分資料</td></tr>`;
-            } else {
-                resDiv.innerHTML = filtered.map((r, i) => {
-                    let statusBadge = '';
-                    if(r.docStatus === 'draft') statusBadge = '<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs">📝 筆試及職能面試題目暫存</span>';
-                    else if(r.docStatus === 'stage_done') statusBadge = '<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">⏳ 面試最終決策中</span>';
-                    else if(r.docStatus === 'completed') statusBadge = '<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs">✅ 面試完成</span>';
-
-                    return `
-                    <tr class="border-b hover:bg-blue-50/50 transition-colors cursor-pointer" onclick="window.viewDetailFromHR(${db.indexOf(r)})">
-                        <td class="p-3 text-slate-500">${r.date || '-'}</td>
-                        <td class="p-3 font-black text-blue-700">${r.name}</td>
-                        <td class="p-3 text-slate-600 font-medium">${r.branch}</td>
-                        <td class="p-3 text-slate-600">${r.position}</td>
-                        <td class="p-3 text-center font-black text-lg text-blue-600">${r.grandTotal || '0.00'}</td>
-                        <td class="p-3 text-center font-bold text-slate-600 text-xs">${statusBadge}</td>
-                        <td class="p-3 text-center font-bold ${r.finalDecision==='pass'?'text-emerald-600':r.finalDecision==='fail'?'text-red-600':'text-slate-400'}">${r.finalDecision==='pass'?'錄取':r.finalDecision==='fail'?'不錄取':'-'}</td>
-                        <td class="p-3 text-center">
-                            <button onclick="event.stopPropagation(); window.viewDetailFromHR(${db.indexOf(r)})" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">🔍 查看</button>
-                        </td>
-                    </tr>
-                `;}).join('');
-            }
-        }
-
-        window.startNewRating = function() {
-            window.state = window.getEmptyState();
-            window.hydrateUI();
-            window.calculateScores();
-            window.switchView('mgr_front');
-            window.scrollTo(0,0);
-        }
-        
-        window.viewDetailFromHR = function(originalIdx) { 
-            const db = window.dbCache;
-            const r = db[originalIdx];
-            if(r.docStatus === 'draft') {
-                if(!confirm(`已找到未完成的暫存人才，要讀取嗎？`)) return;
-            } else if (r.docStatus === 'stage_done' || r.docStatus === 'completed') {
-                if(!confirm(`已找到評分完成人才，要查看嗎？`)) return;
-            }
-            window.state = r;
-            window.hydrateUI();
-            window.calculateScores();
-            window.switchView('mgr_front');
-            window.scrollTo(0,0);
-            window.showToast('✅ 已載入面試紀錄');
-        }
-
-        window.loadBackendData = function() {
-            const db = window.dbCache;
-            const viewDb = window.getFilteredDB();
-            const canDelete = window.currentUser && ['F00035', 'F00054', 'F00001'].includes(window.currentUser.id);
-
-            const tbody = document.getElementById('db-list-tbody');
-            if(viewDb.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="13" class="p-8 text-center text-slate-400 font-bold">目前尚無歷史評分紀錄</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = viewDb.slice().reverse().map((r, revI) => {
-                const originalIdxInView = viewDb.length - 1 - revI; 
-                const realDbIdx = db.findIndex(item => item.name === r.name && item.date === r.date);
-
-                let statusText = '';
-                if(r.docStatus === 'draft') statusText = '筆試及職能面試題目暫存';
-                else if(r.docStatus === 'stage_done') statusText = '面試最終決策中';
-                else statusText = '面試完成';
-                
-                let decText = r.finalDecision === 'pass' ? '錄取' : r.finalDecision === 'fail' ? '不錄取' : '-';
-                
-                return `
-                <tr class="border-b hover:bg-blue-50/50 transition-colors">
-                    <td class="p-3 text-slate-500">${r.date || '-'}</td>
-                    <td class="p-3 font-black text-blue-700">${r.name}</td>
-                    <td class="p-3 text-slate-600 font-medium">${r.branch}</td>
-                    <td class="p-3 text-slate-600">${r.position}</td>
-                    <td class="p-3 text-center text-slate-600">${r.otherPosition || '-'}</td>
-                    <td class="p-3 text-center font-bold text-indigo-500">${r.s1Final || '0.00'}</td>
-                    <td class="p-3 text-center font-bold text-orange-500">${r.s3Final || '0.00'}</td>
-                    <td class="p-3 text-center font-bold text-emerald-500">${r.s2Final || '0.00'}</td>
-                    <td class="p-3 text-center font-black text-lg text-blue-600">${r.grandTotal || '0.00'}</td>
-                    <td class="p-3 text-center font-bold text-slate-600 text-xs">${statusText}</td>
-                    <td class="p-3 text-center font-bold ${r.finalDecision==='pass'?'text-emerald-600':r.finalDecision==='fail'?'text-red-600':'text-slate-400'}">${decText}</td>
-                    <td class="p-3 text-slate-600 text-xs max-w-[150px] truncate" title="${r.interviewNote||''}">${r.interviewNote || '-'}</td>
-                    <td class="p-3 text-center flex justify-center gap-2">
-                        <button onclick="window.editRecord(${realDbIdx})" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">查看/編輯</button>
-                        ${canDelete ? `<button onclick="window.deleteRecord(${realDbIdx})" class="bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">刪除</button>` : ''}
-                    </td>
-                </tr>
-                `;
-            }).join('');
-        }
-        
-        window.editRecord = function(realDbIdx) {
-            window.state = window.dbCache[realDbIdx];
-            window.hydrateUI();
-            window.calculateScores();
-            
-            window.switchView('mgr_front');
-            window.scrollTo(0,0);
-            window.showToast('✅ 已載入紀錄，您可以繼續編輯');
-        }
-
-        window.deleteRecord = async function(realDbIdx) {
-            if(confirm('確定要刪除此應徵者的資料嗎？此操作無法復原。')) {
-                const target = window.dbCache[realDbIdx];
-                const docId = target.name + "_" + target.date;
-                
-                window.dbCache.splice(realDbIdx, 1);
-                window.loadBackendData(); 
-                window.showToast('🗑️ 正在刪除雲端資料...');
-
-                try {
-                    fetch(window.SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        redirect: 'follow',
-                        body: JSON.stringify({ action: 'delete', docId: docId }),
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                    });
-                    window.showToast('✅ 雲端資料已成功刪除');
-                } catch(e) {
-                    console.error(e);
-                }
-            }
-        }
-
-        window.closeMissingModal = function() {
-            const mm = document.getElementById('missing-modal');
-            if (mm) mm.classList.remove('show');
-        }
-
-        window.syncState = function() {
-            const elName = document.getElementById('ipt-name'); if(elName) window.state.name = elName.value.trim();
-            const elBranch = document.getElementById('sel-branch');
-            if(elBranch) {
-                window.state.branch = elBranch.value;
-            }
-            const elPos = document.getElementById('sel-position'); if(elPos) window.state.position = elPos.value;
-            const elOtherPos = document.getElementById('ipt-other-position'); if(elOtherPos) window.state.otherPosition = elOtherPos.value;
-            const elDate = document.getElementById('interview-date'); if(elDate) window.state.date = elDate.value;
-            const elTime = document.getElementById('interview-time'); if(elTime) window.state.time = elTime.value;
-            const elStage = document.getElementById('sel-stage'); if(elStage) window.state.stage = elStage.value;
-            const elBonus = document.getElementById('bonus-method-input'); if(elBonus) window.state.bonusMethod = elBonus.value;
-            
-            const bonTextEl = document.getElementById('s1-bon-text');
-            if(bonTextEl) window.state.s1.bonText = bonTextEl.value;
-
-            const noteEl = document.getElementById('interview-note-input');
-            if (noteEl) window.state.interviewNote = noteEl.value;
-            const chks = document.querySelectorAll('.chk-item');
-            if(chks.length > 0) window.state.checklist = Array.from(chks).map(chk => chk.checked);
-        }
-
-        window.checkExistingRecord = function() {
-            const elName = document.getElementById('ipt-name');
-            if(!elName) return;
-            let name = elName.value.trim();
-            if(!name) return;
-
-            let existing = window.dbCache.find(r => r.name === name);
-
-            if(existing) {
-                if(existing.docStatus !== 'completed' && existing.docStatus !== 'stage_done') {
-                    if(confirm(`已找到未完成的暫存人才，要讀取嗎？`)) {
-                        window.state = existing;
-                        window.hydrateUI(); 
-                        window.calculateScores(); 
-                        window.showToast('✅ 已載入未完成資料');
-                    } else {
-                        let currentBranch = window.state.branch;
-                        window.state = window.getEmptyState();
-                        window.state.name = name;
-                        window.state.branch = currentBranch;
-                        window.hydrateUI();
-                        window.calculateScores();
-                    }
-                } else {
-                     if(confirm(`已找到評分完成人才，要查看嗎？`)) {
-                         window.state = existing; window.hydrateUI(); window.calculateScores();
-                     }
-                }
-            }
-        }
-
-        window.hydrateUI = function() {
-            window.ensureStateStructure();
-            const elName = document.getElementById('ipt-name'); if(elName) elName.value = window.state.name;
-            
-            const elBranch = document.getElementById('sel-branch'); 
-            if(elBranch) {
-                // 判斷是否為處長、管理科、人資或執行長
-                const isHighLevel = window.currentUser && (
-                    window.currentUser.role === 'HR' || 
-                    !window.currentUser.dept.includes('校') ||
-                    ['F00001', 'F00004', 'F00005'].includes(window.currentUser.id)
-                );
-
-                if (isHighLevel) {
-                    elBranch.disabled = false;
-                    elBranch.classList.remove('cursor-not-allowed', 'bg-slate-100');
-                    elBranch.classList.add('bg-slate-50', 'cursor-pointer');
-                    elBranch.value = window.state.branch || (window.currentUser ? window.currentUser.dept : "");
-                } else {
-                    elBranch.disabled = true;
-                    elBranch.classList.remove('bg-slate-50', 'cursor-pointer');
-                    elBranch.classList.add('cursor-not-allowed', 'bg-slate-100');
-                    elBranch.value = window.currentUser ? window.currentUser.dept : "";
-                    window.state.branch = elBranch.value;
-                }
-            }
-
-            const mainIntInput = document.querySelector('.ipt-interviewer');
-            if (mainIntInput && !mainIntInput.value && window.currentUser) {
-                mainIntInput.value = window.currentUser.name;
-            }
-
-            const elPos = document.getElementById('sel-position'); if(elPos) elPos.value = window.state.position;
-            const elOtherPos = document.getElementById('ipt-other-position'); if(elOtherPos) elOtherPos.value = window.state.otherPosition || "";
-            const elStage = document.getElementById('sel-stage'); if(elStage) elStage.value = window.state.stage || "階段一筆試";
-            const elDate = document.getElementById('interview-date'); if(elDate && window.state.date) elDate.value = window.state.date;
-            const elTime = document.getElementById('interview-time'); if(elTime && window.state.time) elTime.value = window.state.time;
-            const elLvl = document.getElementById('job-level-select'); if(elLvl) elLvl.value = window.state.level;
-            const elBonus = document.getElementById('bonus-method-input'); if(elBonus) elBonus.value = window.state.bonusMethod || "";
-            
-            const btnPass = document.getElementById('btn-pass');
-            const btnFail = document.getElementById('btn-fail');
-            
-            if(btnPass) {
-                btnPass.className = 'decision-btn flex-1 bg-slate-700 text-slate-300 py-2 rounded-xl font-black text-base hover:bg-slate-600 shadow-md';
-                if(window.state.finalDecision === 'pass') btnPass.classList.add('active-pass');
-            }
-            if(btnFail) {
-                btnFail.className = 'decision-btn flex-1 bg-slate-700 text-slate-300 py-2 rounded-xl font-black text-base hover:bg-slate-600 shadow-md';
-                if(window.state.finalDecision === 'fail') btnFail.classList.add('active-fail');
-            }
-
-            const noteEl = document.getElementById('interview-note-input');
-            if(noteEl) noteEl.value = window.state.interviewNote || "";
-            const chks = document.querySelectorAll('.chk-item');
-            chks.forEach((chk, i) => { chk.checked = window.state.checklist ? !!window.state.checklist[i] : false; });
-            
-            window.updateThemeManual(window.state.branch); window.updateDateTimeDisplay();
-            window.renderS1(); window.renderS2(); window.renderS3();
-        }
-
-        window.updateThemeManual = function(branch) {
-            const b = document.body;
-            if (["青埔升大校"].includes(branch)) b.setAttribute("data-theme", "green");
-            else if (["青埔翱翔校", "青園展翅校", "大園晨光校", "內壢森耀校", "竹北知行校", "文化極光校", "快樂騰雲校"].includes(branch)) b.setAttribute("data-theme", "yellow");
-            else if (["行政溝通處", "人力資源處", "財務會計處", "國小事業處", "國高中事業處", "產品研發處", "品牌行銷處", "行銷辦公室", "國小英文管理科"].includes(branch)) b.setAttribute("data-theme", "black");
-            else b.setAttribute("data-theme", "blue");
-        }
-
-        window.updateDateTimeDisplay = function() {
-            const dInput = document.getElementById('interview-date')?.value;
-            const tInput = document.getElementById('interview-time')?.value;
-            if(!dInput) return; const d = new Date(dInput);
-            window.setTxt('datetime-preview', `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} (${["日","一","二","三","四","五","六"][d.getDay()]}) ${tInput ? '/ '+tInput+' 開始':''}`);
-        }
-
-        // ================= 資料庫與 Google Sheet 傳送功能 =================
-        window.saveToDB = function(status) {
-            window.syncState();
-            if(!window.state.name.trim()) return false;
-            
-            window.state.docStatus = status;
-
-            let existingIdx = window.dbCache.findIndex(r => r.name === window.state.name && r.date === window.state.date);
-            if(existingIdx >= 0) {
-                window.dbCache[existingIdx] = JSON.parse(JSON.stringify(window.state)); 
-            } else {
-                window.dbCache.push(JSON.parse(JSON.stringify(window.state))); 
-            }
-            return true;
-        }
-
-        window.sendToGoogleSheet = function(sheetName) {
-            const interviewerInputs = document.querySelectorAll('.ipt-interviewer');
-            const interviewers = Array.from(interviewerInputs).map(inp => inp.value).filter(v => v).join('、');
-
-            let s1Scores = [];
-            window.S1_DATA.forEach(g => {
-                if(g.id === 'bon') {
-                    const bonNote = window.state.s1.bonText ? window.state.s1.bonText.replace(/\n/g, ' ') : '';
-                    s1Scores.push(bonNote + " (" + window.state.s1[g.id][0] + "分)");
-                } else {
-                    g.qs.forEach((q, i) => s1Scores.push(window.state.s1[g.id][i]));
-                }
-            });
-
-            let s3Data = [];
-            window.state.s3Texts.core.forEach(item => {
-                s3Data.push(item.bei.replace(/\n/g, ' '), item.c.replace(/\n/g, ' '), item.a.replace(/\n/g, ' '), item.r.replace(/\n/g, ' '));
-            });
-            window.state.s3Texts.mgmt.forEach(item => {
-                s3Data.push(item.bei.replace(/\n/g, ' '), item.c.replace(/\n/g, ' '), item.a.replace(/\n/g, ' '), item.r.replace(/\n/g, ' '));
-            });
-
-            let s2Scores = window.state.s2;
-            let stageStatus = window.state.stage; 
-            let decisionStr = window.state.finalDecision === 'pass' ? '錄取' : (window.state.finalDecision === 'fail' ? '不錄取' : '');
-
-            // 合併其他職位至 position 欄位
-            let sheetPosition = window.state.position === '其他' && window.state.otherPosition 
-                ? `其他 (${window.state.otherPosition})` 
-                : window.state.position;
-
-            const payload = {
-                sheetName: sheetName,
-                date: window.state.date,
-                candidate: window.state.name,
-                branch: window.state.branch,
-                position: sheetPosition,
-                interviewer: interviewers,
-                s1: s1Scores,
-                s3: s3Data,
-                s2: s2Scores,
-                total: document.getElementById('report-grand-total').innerText,
-                status: stageStatus, 
-                result: decisionStr,
-                note: window.state.interviewNote ? window.state.interviewNote.replace(/\n/g, ' ') : '',
-                state: window.state 
-            };
-
-            try {
-                fetch(window.SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    redirect: 'follow',
-                    body: JSON.stringify(payload),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                });
-                console.log("Google Sheet 傳送請求已發出");
-            } catch(e) {
-                console.error(e);
-            }
-        };
-
-        window.handleSaveDraft = function() {
-            if(!window.state.name.trim()) return alert('請先輸入「應徵者姓名」才能暫存！');
-            window.syncState();
-            
-            const chkMustFill = document.getElementById('chk-must-fill');
-            if (chkMustFill && !chkMustFill.checked) {
-                alert("無法暫存：請先在右上角「檢核表」中，確認並勾選「已於二、職能面試中填上要詢問的問題」！");
-                window.toggleChecklist(true); 
-                return;
-            }
-
-            window.saveToDB('draft');
-            window.sendToGoogleSheet('人才暫存');
-            window.alert("提醒：下階段面試前請先完成檢核表內容（面試前）");
-            window.showToast(`✅ 已暫存人才評分進度並同步至 Google Sheet！`);
-        }
-
-        window.handleStageComplete = function() {
-            if(!window.state.name.trim()) return alert('請先輸入「應徵者姓名」！');
-            let missing = [];
-            window.S1_DATA.forEach(g => { if (g.id !== 'bon') g.qs.forEach((q, i) => { if (window.state.s1[g.id][i] === 0) missing.push(`[一、筆試] ${g.title}`); }); });
-            window.S2_QUESTIONS.forEach((q, i) => { if (window.state.s2[i] === 0) missing.push(`[三、外顯特質] ${q}`); });
-            window.S3_BARS_CORE.forEach((c, i) => { if (window.state.s3.core[i] === 0) missing.push(`[二、職能面試] 核心-${c.name}`); });
-            window.S3_BARS_MGMT.forEach((m, i) => { if (window.state.s3.mgmt[i] === 0) missing.push(`[二、職能面試] 管理-${m.name}`); });
-
-            if (missing.length > 0) {
-                const uniqueMissing = [...new Set(missing)];
-                const modal = document.getElementById('missing-modal');
-                if (modal) {
-                    const ml = document.getElementById('missing-modal-list');
-                    if (ml) ml.innerHTML = uniqueMissing.map(m => `<li>${m}</li>`).join('');
-                    modal.classList.add('show');
-                } else {
-                    alert("尚有未完成的評分項目：\n" + uniqueMissing.join('\n'));
-                }
-                return;
-            } 
-
-            window.alert("提醒：檢核表請確認已完成至『面試中』階段");
-            window.saveToDB('stage_done');
-            window.showToast('✅ 階段評分已更新！請進行最終決策。');
-            const rc = document.getElementById('report-card-section');
-            if(rc) rc.scrollIntoView({behavior: 'smooth'});
-        }
-
-        window.handleFinalDecision = function(type) {
-            const btnPass = document.getElementById('btn-pass');
-            const btnFail = document.getElementById('btn-fail');
-            if(btnPass) btnPass.classList.remove('active-pass');
-            if(btnFail) btnFail.classList.remove('active-fail');
-            
-            if(type==='pass' && btnPass) { btnPass.classList.add('active-pass'); window.state.finalDecision = 'pass'; }
-            if(type==='fail' && btnFail) { btnFail.classList.add('active-fail'); window.state.finalDecision = 'fail'; }
-            window.syncState(); 
-        }
-
-        window.handleFinalSubmit = function() {
-            window.syncState();
-            if(!window.state.finalDecision) {
-                alert("請先在成績單區塊選擇「確認錄取」或「不予錄取」！");
-                return;
-            }
-            window.saveToDB('completed');
-            window.sendToGoogleSheet('完成人才面試');
-            window.alert("辛苦了！請產出成績單給人資。\n(提醒：面試後檢核表請確實完成)");
-            window.showToast('☁️ 最終決策已送出！資料已同步至雲端 Google Sheet。');
-
-            const submitBtn = document.getElementById('btn-final-submit');
-            const submitBtnText = document.getElementById('btn-final-submit-text');
-            if(submitBtn && submitBtnText) {
-                submitBtn.classList.remove('bg-emerald-500', 'hover:bg-emerald-600');
-                submitBtn.classList.add('bg-slate-500');
-                submitBtnText.innerText = "已完成 ✅";
-                setTimeout(() => {
-                    submitBtn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
-                    submitBtn.classList.remove('bg-slate-500');
-                    submitBtnText.innerText = "確認送出檢核並建檔";
-                }, 3000);
-            }
-        }
-
-        window.showToast = function(msg) { const t = document.getElementById('toast'); if(t) { t.innerText = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1500); } }
-        
-        window.addInterviewer = function() {
-            const container = document.getElementById('interviewer-list');
-            const div = document.createElement('div'); div.className = 'flex gap-2 animate-small-pop';
-            div.innerHTML = `<input type="text" class="ipt-interviewer flex-1 border-b-2 border-slate-200 p-1.5 text-base outline-none bg-slate-50 focus:border-blue-500 transition-all" oninput="window.syncState()"><button onclick="this.parentElement.remove(); window.syncState();" class="text-red-500 font-bold px-2">✕</button>`;
-            container.appendChild(div);
-        }
-
-        // ================= 渲染邏輯 =================
-        window.renderS1 = function() {
-            window.S1_DATA.forEach(group => {
-                const container = document.getElementById(`s1-${group.id}-section`);
-                if(!container) return;
-                let html = `<div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm mb-2"><div class="flex justify-between border-b-2 border-slate-100 pb-1"><h3 class="font-bold text-sm text-slate-800">${group.title}</h3></div><div class="space-y-1.5 mt-1.5">`;
-                if (group.id === 'bon') {
-                    html += `<div class="bg-slate-50 p-2.5 rounded flex flex-col gap-2"><div class="text-[13px] font-medium text-slate-700 w-full">${group.qs[0]} <span class="text-[10px] text-slate-400 font-normal">(選填)</span></div><textarea id="s1-bon-text" oninput="window.syncState()" rows="2" class="input-cell w-full text-sm" placeholder="請填寫加分項目說明...">${window.state.s1.bonText||''}</textarea><div class="flex gap-1.5 self-end">`;
-                    [1,2,3,4,5].map(v => {
-                        const isActive = window.state.s1[group.id][0] == v;
-                        html += `<button onclick="window.setScore('s1-${group.id}', 0, ${v}, this)" class="score-btn w-7 h-7 rounded text-xs font-bold text-slate-600 ${isActive?'active':''}" data-val="${v}">${v}</button>`;
-                    });
-                    html += `</div></div>`;
-                } else {
-                    group.qs.forEach((q, i) => {
-                        html += `<div class="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center justify-between gap-4 hover:bg-slate-100 transition-colors"><div class="text-[13px] text-slate-700 font-medium w-3/5 md:w-4/5">${q}</div><div class="flex gap-1.5 shrink-0 pr-2">`;
-                        [1,2,3,4,5].map(v => {
-                            const isActive = window.state.s1[group.id][i] == v;
-                            html += `<button onclick="window.setScore('s1-${group.id}', ${i}, ${v}, this)" class="score-btn w-7 h-7 md:w-8 md:h-8 rounded shadow-sm text-xs font-bold text-slate-600 ${isActive?'active':''}" data-val="${v}">${v}</button>`;
-                        });
-                        html += `</div></div>`;
-                    });
-                }
-                container.innerHTML = html + `</div>`;
-            });
-        }
-
-        window.renderS2 = function() {
-            const container = document.getElementById('s2-container');
-            if(!container) return;
-            container.className = "p-3 space-y-1.5";
-            container.innerHTML = window.S2_QUESTIONS.map((q, i) => {
-                let btns = [1,2,3,4,5].map(v => {
-                    const isActive = window.state.s2[i] == v;
-                    return `<button onclick="window.setScore('s2', ${i}, ${v}, this)" class="score-btn w-7 h-7 md:w-8 md:h-8 rounded shadow-sm text-xs font-bold text-slate-600 ${isActive?'active':''}" data-val="${v}">${v}</button>`;
-                }).join('');
-                return `<div class="flex items-center justify-between gap-4 border-b border-slate-100 py-2 hover:bg-slate-50 px-3 rounded-lg"><span class="text-[13px] text-slate-700 font-medium flex-1">${q}</span><div class="flex gap-1.5 shrink-0">${btns}</div></div>`;
-            }).join('');
-        }
-
-        window.renderS3 = function() {
-            const tbody = document.getElementById('s3-tbody'); 
-            if(!tbody) return;
-            const d = window.S3_LEVELS[window.state.level] || window.S3_LEVELS[1]; let html = '';
-            
-            window.ensureStateStructure();
-
-            window.S3_BARS_CORE.forEach((item, i) => {
-                html += `<tr class="border-b border-slate-200"><td class="p-1.5 border-r bg-blue-50 font-bold text-center text-xs w-[60px]">核心<br><span class="text-[10px] text-blue-600">(${d.c[i]}%)</span></td><td class="p-1.5 border-r font-bold text-xs text-center w-[100px]">${item.name}</td>
-                <td class="bg-blue-50/10 p-1 border-r"><textarea class="input-cell text-xs" rows="2" oninput="window.state.s3Texts.core[${i}].bei=this.value">${window.state.s3Texts.core[i].bei || ''}</textarea></td>
-                <td class="bg-indigo-50/10 p-1 border-r"><textarea class="input-cell text-xs" rows="2" oninput="window.state.s3Texts.core[${i}].c=this.value">${window.state.s3Texts.core[i].c || ''}</textarea></td>
-                <td class="bg-indigo-50/10 p-1 border-r"><textarea class="input-cell text-xs" rows="2" oninput="window.state.s3Texts.core[${i}].a=this.value">${window.state.s3Texts.core[i].a || ''}</textarea></td>
-                <td class="bg-indigo-50/10 p-1 border-r"><textarea class="input-cell text-xs" rows="2" oninput="window.state.s3Texts.core[${i}].r=this.value">${window.state.s3Texts.core[i].r || ''}</textarea></td>
-                <td class="p-1.5 text-center relative"><div class="flex gap-1 justify-center">`;
-                [1,2,3,4,5].map(v => {
-                    const isActive = window.state.s3.core[i] == v;
-                    html += `<button onclick="window.setScore('s3-core', ${i}, ${v}, this)" class="score-btn w-6 h-6 md:w-7 md:h-7 rounded text-[11px] font-bold text-slate-600 ${isActive?'active':''}" data-val="${v}">${v}<span class="tooltip-text">${item.levels[v-1]}</span></button>`;
-                });
-                html += `</div></td></tr>`;
-                const desc = window.state.s3.core[i] > 0 ? item.descs[window.state.s3.core[i]-1] : '';
-                html += `<tr id="desc-core-${i}" class="bg-slate-50 text-[11px] text-slate-600 ${window.state.s3.core[i]>0?'':'hidden'}"><td colspan="7" class="p-1.5 border-b"><span class="font-bold text-blue-700">行為描述：</span> <span id="desc-text-core-${i}">${desc}</span></td></tr>`;
-            });
-
-            window.S3_BARS_MGMT.forEach((item, i) => {
-                html += `<tr class="border-b border-slate-200"><td class="p-1.5 border-r bg-green-50 font-bold text-center text-xs w-[60px]">管理<br><span class="text-[10px] text-green-600">(${d.m[i]}%)</span></td><td class="p-1.5 border-r font-bold text-xs text-center w-[100px]">${item.name}</td>
-                <td class="bg-blue-50/10 p-1 border-r"><textarea class="input-cell text-xs" rows="2" oninput="window.state.s3Texts.mgmt[${i}].bei=this.value">${window.state.s3Texts.mgmt[i].bei || ''}</textarea></td>
-                <td class="bg-indigo-50/10 p-1 border-r"><textarea class="input-cell text-xs" rows="2" oninput="window.state.s3Texts.mgmt[${i}].c=this.value">${window.state.s3Texts.mgmt[i].c || ''}</textarea></td>
-                <td class="bg-indigo-50/10 p-1 border-r"><textarea class="input-cell text-xs" rows="2" oninput="window.state.s3Texts.mgmt[${i}].a=this.value">${window.state.s3Texts.mgmt[i].a || ''}</textarea></td>
-                <td class="bg-indigo-50/10 p-1 border-r"><textarea class="input-cell text-xs" rows="2" oninput="window.state.s3Texts.mgmt[${i}].r=this.value">${window.state.s3Texts.mgmt[i].r || ''}</textarea></td>
-                <td class="p-1.5 text-center relative"><div class="flex gap-1 justify-center">`;
-                [1,2,3,4,5].map(v => {
-                    const isActive = window.state.s3.mgmt[i] == v;
-                    html += `<button onclick="window.setScore('s3-mgmt', ${i}, ${v}, this)" class="score-btn w-6 h-6 md:w-7 md:h-7 rounded text-[11px] font-bold text-slate-600 ${isActive?'active':''}" data-val="${v}">${v}<span class="tooltip-text">${item.levels[v-1]}</span></button>`;
-                });
-                html += `</div></td></tr>`;
-                const desc = window.state.s3.mgmt[i] > 0 ? item.descs[window.state.s3.mgmt[i]-1] : '';
-                html += `<tr id="desc-mgmt-${i}" class="bg-slate-50 text-[11px] text-slate-600 ${window.state.s3.mgmt[i]>0?'':'hidden'}"><td colspan="7" class="p-1.5 border-b"><span class="font-bold text-green-700">行為描述：</span> <span id="desc-text-mgmt-${i}">${desc}</span></td></tr>`;
-            });
-            tbody.innerHTML = html;
-        }
-
-        window.updateLevelLogic = function() { 
-            const selectEl = document.getElementById('job-level-select');
-            if(selectEl) window.state.level = parseInt(selectEl.value); 
-            window.renderS3(); window.calculateScores(); 
-        }
-
-        window.setScore = function(group, idx, val, btn) {
-            Array.from(btn.parentElement.children).forEach(b => b.classList.remove('active'));
-            
-            let currentVal = 0;
-            if(group === 's2') currentVal = window.state.s2[idx];
-            else if(group.startsWith('s1-')) currentVal = window.state.s1[group.split('-')[1]][idx];
-            else if(group.startsWith('s3-')) currentVal = window.state.s3[group.split('-')[1]][idx];
-
-            let newVal = (currentVal === val) ? 0 : val; 
-            if(newVal > 0) btn.classList.add('active');
-
-            if(group === 's2') window.state.s2[idx] = newVal;
-            else if(group.startsWith('s1-')) window.state.s1[group.split('-')[1]][idx] = newVal;
-            else if(group.startsWith('s3-')) {
-                const sub = group.split('-')[1];
-                window.state.s3[sub][idx] = newVal;
-                
-                const BARS = sub === 'core' ? window.S3_BARS_CORE : window.S3_BARS_MGMT;
-                const descRow = document.getElementById(`desc-${sub}-${idx}`);
-                const descText = document.getElementById(`desc-text-${sub}-${idx}`);
-                if(newVal > 0 && descRow && descText) {
-                    descText.innerText = BARS[idx].descs[newVal-1];
-                    descRow.classList.remove('hidden');
-                } else if (descRow) {
-                    descRow.classList.add('hidden');
-                }
-            }
-            
-            window.calculateScores();
-        }
-
-        window.calculateScores = function() {
-            const sumArr = arr => arr.reduce((a,b)=>a+b, 0);
-
-            let s1PctTotal = 0, s1RawTotal = 0, motScore = 0; 
-            window.S1_DATA.forEach(g => {
-                const raw = sumArr(window.state.s1[g.id]); s1RawTotal += raw;
-                if(g.id === 'mot') motScore = raw;
-                s1PctTotal += raw > 0 ? (raw/g.max)*100*g.weight : 0;
-            });
-            const s1Final = (s1PctTotal/100)*30; 
-            window.setTxt('s1-final', s1Final.toFixed(2));
-
-            const s2Raw = sumArr(window.state.s2);
-            const s2Pct = s2Raw > 0 ? (s2Raw/85)*100 : 0;
-            const s2Final = s2Pct * 0.10;
-            window.setTxt('s2-final', s2Final.toFixed(2));
-
-            const d = window.S3_LEVELS[window.state.level] || window.S3_LEVELS[1];
-            let coreScore = 0, mgmtScore = 0;
-            window.state.s3.core.forEach((v,i) => coreScore += v*(d.c[i]/100));
-            window.state.s3.mgmt.forEach((v,i) => mgmtScore += v*(d.m[i]/100));
-            const s3RawTotal = ((coreScore/5)*100*(d.ratio.c/100)) + ((mgmtScore/5)*100*(d.ratio.m/100));
-            const s3Final = s3RawTotal * 0.60;
-            window.setTxt('s3-final', s3Final.toFixed(2));
-
-            const grandTotal = s1Final + s2Final + s3Final;
-            
-            window.state.s1Final = s1Final.toFixed(2);
-            window.state.s2Final = s2Final.toFixed(2);
-            window.state.s3Final = s3Final.toFixed(2);
-            window.state.grandTotal = grandTotal.toFixed(2);
-
-            window.setTxt('header-total', window.state.grandTotal);
-            window.setTxt('report-grand-total', window.state.grandTotal);
-            window.setTxt('footer-total', window.state.grandTotal);
-
-            const statusDiv = document.getElementById('ideal-status-text');
-            const expDiv = document.getElementById('ideal-status-exp');
-            const hintArea = document.getElementById('bonus-hint-area');
-            const inputArea = document.getElementById('bonus-method-input');
-
-            if(grandTotal === 0) {
-                 if (statusDiv) statusDiv.innerText = "等待評分...";
-                 if (expDiv) expDiv.innerText = "-";
-                 if (hintArea) hintArea.classList.add('hidden');
-                 return;
-            }
-
-            let finalStatusIndex = 5, baseDesc = "";
-            if (grandTotal >= 90) { finalStatusIndex = 0; baseDesc = "面試與筆試表現皆出色，具高度文化契合度與執行潛力。"; }
-            else if (grandTotal >= 80) { finalStatusIndex = 1; baseDesc = "穩定且具培育潛力，文化契合良好，能快速上線。"; }
-            else if (grandTotal >= 70) { finalStatusIndex = 2; baseDesc = "職能或筆試略有不足，但態度正向、文化契合度高。"; }
-            else if (grandTotal >= 60) { finalStatusIndex = 3; baseDesc = "能力或穩定度不足，需進一步觀察。"; }
-            else if (grandTotal >= 50) { finalStatusIndex = 5; baseDesc = "未達職能與文化基準，需大量培訓或文化落差大。"; }
-            else { finalStatusIndex = 5; baseDesc = "明顯不符核心職能與價值觀。"; }
-
-            let vetoReasons = [], vetoHints = [];
-            if (s1RawTotal > 0 && s1RawTotal < 30) { vetoReasons.push("筆試總分 < 30分"); vetoHints.push("確認該低分項目未來是否有機會提高分數？方法？"); finalStatusIndex = Math.max(finalStatusIndex, 2); }
-            if (motScore > 0 && motScore < 7) { vetoReasons.push("動機與價值觀 < 7分"); vetoHints.push("在初衷上需要對頻更多，需提出解決辦法。"); finalStatusIndex = Math.max(finalStatusIndex, 4); }
-            if (s2Raw > 0 && s2Final < 7) { vetoReasons.push("外顯特質得分率 < 70%"); vetoHints.push("找出外顯特質低於3分的內容確認日後是否可訓練。"); finalStatusIndex = Math.max(finalStatusIndex, 4); }
-            let lowCoreNames = []; window.state.s3.core.forEach((v, i) => { if(v===1) lowCoreNames.push(window.S3_BARS_CORE[i].name); });
-            if (lowCoreNames.length > 0) { vetoReasons.push(`${lowCoreNames.join('、')} 低於2分`); vetoHints.push("補充培訓（1~3月）計劃提高職能分數。"); finalStatusIndex = Math.max(finalStatusIndex, 2); }
-
-            const STATUS = ["優先錄取", "建議錄取", "可培養 / 備取", "條件式錄取（限缺時）", "不建議錄取", "不錄取"];
-            
-            if (statusDiv) {
-                statusDiv.innerText = STATUS[finalStatusIndex]; 
-                window.state.idealStatus = STATUS[finalStatusIndex];
-                if (document.body.classList.contains('report-mode')) {
-                    statusDiv.className = "text-xl font-black mb-2 text-slate-800";
-                } else {
-                    statusDiv.className = `text-xl font-black mb-2 ${finalStatusIndex<=1?'text-emerald-400':(finalStatusIndex<=3?'text-amber-400':'text-red-400')}`;
-                }
-            }
-
-            if(vetoReasons.length > 0) {
-                if (expDiv) expDiv.innerHTML = `<span class="text-red-500 font-bold">⚠️ 判定原因：</span> ${vetoReasons.join('、')}。`;
-                if (hintArea) { hintArea.innerHTML = "💡 系統加分提示：<br>• " + vetoHints.join('<br>• '); hintArea.classList.remove('hidden'); }
-                if (inputArea) inputArea.classList.remove('rounded-t-lg');
-            } else {
-                let rangeText = grandTotal>=90?"90~100分":grandTotal>=80?"80~89分":grandTotal>=70?"70~79分":grandTotal>=60?"60~69分":grandTotal>=50?"50~59分":"小於50分";
-                if (expDiv) expDiv.innerHTML = `<span class="text-blue-500 font-bold">${grandTotal.toFixed(2)}分</span> 落在 ${rangeText} 級距，<br>${baseDesc}`;
-                if (hintArea) hintArea.classList.add('hidden');
-                if (inputArea) inputArea.classList.add('rounded-t-lg');
-            }
-        }
-
-        window.toggleReportMode = function(isReport) {
-            const reportBar = document.getElementById('report-exit-bar');
-            const actionBar = document.getElementById('action-bar');
-            
-            if(isReport) {
-                document.body.classList.add('report-mode');
-                if(actionBar) actionBar.classList.add('hidden');
-                if(reportBar) reportBar.classList.remove('hidden');
-                window.calculateScores();
-                window.scrollTo(0,0); setTimeout(() => window.print(), 500);
-            } else {
-                document.body.classList.remove('report-mode');
-                if(actionBar) actionBar.classList.remove('hidden');
-                if(reportBar) reportBar.classList.add('hidden');
-                window.calculateScores(); 
-            }
-        }
-
-        // ================= 後台資料匯出 (CSV) =================
-        window.exportCSV = function() {
-            let csv = "\uFEFF面試日期,應徵者姓名,單位,職位,其他職務,一、筆試和綜合面談,二、外顯特質,三、職能面試,總得分,進度狀態,結果,面試官備註\n";
-            const dbData = window.dbCache || [];
-            let viewDb = dbData;
-            
-            if (window.currentUser && window.currentUser.role === 'MGR' && !['F00001', 'F00004', 'F00005'].includes(window.currentUser.id)) {
-                viewDb = dbData.filter(r => r.branch === window.currentUser.dept);
-            }
-
-            viewDb.forEach(r => { 
-                let statusText = r.docStatus === 'draft' ? '筆試及職能面試題目暫存' : r.docStatus === 'stage_done' ? '面試最終決策中' : '面試完成';
-                let decText = r.finalDecision === 'pass' ? '錄取' : r.finalDecision === 'fail' ? '不錄取' : '-';
-                let note = (r.interviewNote || '').replace(/\n/g, ' | ').replace(/"/g, '""');
-                csv += `"${r.date}","${r.name}","${r.branch}","${r.position}","${r.otherPosition || ''}","${r.s1Final}","${r.s2Final}","${r.s3Final}","${r.grandTotal}","${statusText}","${decText}","${note}"\n`; 
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-            link.download = `逗點面試資料庫匯出_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            
-            window.showToast('✅ 已下載 CSV 報表！');
-        }
-
-        // ================= 4. 初始化執行 =================
-        window.onload = () => {
-            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-login').classList.add('active');
-            
-            const dateInput = document.getElementById('interview-date');
-            if(dateInput) dateInput.value = new Date().toISOString().split('T')[0];
-            
-            window.updateDateTimeDisplay();
-            window.ensureStateStructure();
-            window.hydrateUI(); 
-            window.renderS1(); 
-            window.renderS2(); 
-            window.renderS3(); 
-            window.calculateScores();
-        };
-    </script>
+const S1_DATA=[
+  {id:'exp',title:"工作經歷",weight:0.20,max:5,qs:["最能代表其專業能力及理想的經歷？"]},
+  {id:'mot',title:"動機與價值",weight:0.35,max:10,qs:["與我們最契合的價值觀？","影響個人去留的主因？"]},
+  {id:'sty',title:"工作風格",weight:0.25,max:10,qs:["最滿意或欣賞的工作環境、管理制度？","感到挫敗或壓力最大的案例？當時如何應對？"]},
+  {id:'sal',title:"薪資與期待",weight:0.20,max:15,qs:["期望月薪/年薪及初期最低薪資？","最感興趣的工作任務與職涯關聯？","想了解或擔心的部分？"]},
+  {id:'bon',title:"特別加分題",weight:0.01,max:5,qs:["補充說明"]}
+];
+const S2_QUESTIONS=["儀容穿著","禮貌應對","表達流暢","自信穩健","誠懇親和","對分校了解","對職務認知","企圖心展現","配合度","邏輯思考","臨場反應","學習意願","情緒穩定","抗壓性","團隊合作","經歷相關","專業知識"];
+const S3_LEVELS={
+  1:{c:[30,20,20,15,10,5],m:[30,30,40],ratio:{c:90,m:10}},
+  4:{c:[20,15,20,15,15,15],m:[30,40,30],ratio:{c:60,m:40}},
+  7:{c:[15,10,20,15,20,20],m:[40,35,25],ratio:{c:30,m:70}}
+};
+const S3_CORE=[
+  {name:"品質成果導向",levels:["逃避責任","被動執行","穩定執行","主動精進","卓越引領"],descs:["經常拖延，需多次提醒才執行；遇問題傾向抱怨，品質不穩。","僅完成明確指示，缺乏自我檢查；需主管持續監督。","理解任務並依計畫執行；遇困難主動回報，品質大致穩定。","清楚拆解目標並優化流程；面對挑戰能分析並協調資源，具高責任感。","高度自我要求，帶領他人檢視改進；建立標準化機制與信任文化。"]},
+  {name:"顧客導向",levels:["忽視需求","被動回應","穩定服務","主動協助","建立信任"],descs:["對家長反應漠不關心，傾向以規則回應，不願理解對方焦慮。","僅被詢問時回覆；面對抱怨易緊張防禦，缺乏安撫技巧。","能友善回覆，並在指導下處理簡單抱怨；維持禮貌與穩定。","察覺家長焦慮並主動關懷，提供具體協助；平衡雙方期待。","化解負面情緒並建立信任，帶領團隊形成穩定服務文化。"]},
+  {name:"問題解決",levels:["逃避問題","被動回報","穩定修正","主動分析","系統改善"],descs:["面對問題閃避或推卸責任，缺乏改善行動。","察覺問題但僅通報主管，未嘗試分析或提出方案。","在指導下釐清問題，提出可行修正並完成任務。","獨立找出根源、提出並執行方案，追蹤結果防止重複。","整合團隊經驗建立SOP，推動持續改善與風險預警。"]},
+  {name:"團隊合作",levels:["抗拒合作","被動配合","穩定參與","主動支援","領導團隊"],descs:["缺乏團隊意識，只顧自身任務，對他人需求漠不關心。","願意合作但僅在被要求時行動，難以主動協助。","理解目標並完成分配任務，衝突時保持理性尊重。","協調不同意見、推動共識，主動分享經驗協助同儕。","帶領團隊形成穩定機制，推動跨部門協作建立信任。"]},
+  {name:"溝通協調",levels:["表達混亂","被動回應","清楚表達","彈性調整","影響引導"],descs:["溝通缺乏邏輯或情緒化，易造成誤會或衝突。","單向表達未確認對方理解；常需他人重複解釋。","條理說明工作，能傾聽並確認理解。","依對象調整語氣方式，協助建立共識與合作。","跨部門清晰表達觀點，影響他人並維護形象。"]},
+  {name:"創新能力",levels:["抗拒改變","被動接受","穩定嘗試","主動創新","引領創新"],descs:["拒絕新做法，傾向維持現狀或否定他人創意。","願意嘗試但缺乏主動觀察；需指導才能執行。","配合新流程，並在指導下提出小幅優化。","獨立觀察問題、提出新做法並追蹤結果，積極改善。","發展創新專案或制度，推動團隊建立優化文化。"]}
+];
+const S3_MGMT=[
+  {name:"策略性思考",levels:["僅執行命令","理解指令","基本分析","前瞻規劃","組織引領"],descs:["只關注自身任務，不理解組織方向；缺乏思考長期影響。","能理解策略但無法轉化行動；僅依他人決策行動。","能分析資料、理解願景並與部門任務連結。","能發現趨勢或問題，提出可行策略建議並落實。","能設計策略地圖、影響決策並推動長期發展。"]},
+  {name:"人才發展",levels:["無學習動機","被動學習","穩定學習","主動培育","系統傳承"],descs:["對自身或他人發展無興趣，不參與訓練也不支持學習。","僅完成要求的培訓，偶爾給予同事建議但缺乏持續追蹤。","能自我成長並主動協助新進同事適應任務。","能計畫學習方向、提供具體回饋，帶領同儕進步。","能設計培訓制度、建立導師文化，推動組織人才成長。"]},
+  {name:"文化落實",levels:["不認同","被動參與","穩定實踐","主動傳遞","文化引領"],descs:["行為與組織價值相悖，對文化活動冷漠或抵制。","表面配合但缺乏實際行動，僅在被要求時參與。","認同價值觀並在工作中展現，能主動參與文化活動。","以行動影響他人、推動文化活動，展現正向力量。","能建立文化制度、引領團隊內化價值並對外傳遞品牌信念。"]}
+];
+
+let currentUser=null,state=null,dbCache=[];
+
+function getEmptyState(){
+  return{
+    name:"",branch:"",position:"",otherPosition:"",date:"",time:"",
+    level:1,finalDecision:null,bonusMethod:"",idealStatus:"",grandTotal:"0.00",
+    s1Final:"0.00",s2Final:"0.00",s3Final:"0.00",docStatus:"new",interviewNote:"",
+    s1:{exp:[0],mot:[0,0],sty:[0,0],sal:[0,0,0],bon:[0],bonText:""},
+    s2:Array(S2_QUESTIONS.length).fill(0),
+    s3:{core:Array(6).fill(0),mgmt:Array(3).fill(0)},
+    s3Texts:{core:Array(6).fill(null).map(()=>({bei:'',c:'',a:'',r:''})),mgmt:Array(3).fill(null).map(()=>({bei:'',c:'',a:'',r:''}))}
+  };
+}
+
+async function handleLogin(){
+  const empId=document.getElementById('login-emp').value.trim().toUpperCase();
+  const pwd=document.getElementById('login-pwd').value.trim();
+  if(!empId)return alert('請輸入員工編號');
+  if(pwd!=='0000')return alert('密碼錯誤（測試密碼：0000）');
+  if(!EMP_DB[empId])return alert('查無此員工編號，請確認後再試');
+  const btn=document.getElementById('btn-login-text');
+  document.querySelector('.btn-login').textContent='登入中...';
+  currentUser={...EMP_DB[empId],id:empId};
+  await fetchCloudDB();
+  document.getElementById('header-user-info').textContent=`${currentUser.name}（${currentUser.dept}）`;
+  document.getElementById('main-header').style.display='block';
+  document.getElementById('nav-front-btn').style.display='inline-block';
+  document.getElementById('nav-backend-btn').style.display='inline-block';
+  state=getEmptyState();
+  if(!['HR','ADMIN'].includes(currentUser.role))state.branch=currentUser.dept;
+  hydrateUI();calculateScores();
+  switchView('front');
+  document.querySelector('.btn-login').textContent='登 入 系 統';
+}
+
+function handleLogout(){
+  currentUser=null;state=null;dbCache=[];
+  document.getElementById('main-header').style.display='none';
+  document.getElementById('bottom-bar').style.display='none';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-login').classList.add('active');
+  document.getElementById('login-pwd').value='';
+}
+
+function switchView(target){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('bottom-bar').style.display='none';
+  if(target==='front'){
+    document.getElementById('page-front').classList.add('active');
+    document.getElementById('bottom-bar').style.display='block';
+  }else if(target==='backend'){
+    const params=new URLSearchParams({emp:currentUser.id,name:currentUser.name});
+    window.location.href='admin.html?'+params.toString();
+  }
+}
+
+async function fetchCloudDB(){
+  try{
+    showToast('同步資料中...');
+    const{data,error}=await sb.from('interviews').select('*').order('created_at',{ascending:false});
+    if(error)throw error;
+    dbCache=(data||[]).map(r=>({...r.state_json,_doc_id:r.doc_id,_db_id:r.id}));
+    showToast('✓ 同步完成');
+  }catch(e){dbCache=[];showToast('離線模式');}
+}
+
+async function saveToSupabase(){
+  syncState();
+  const interviewers=Array.from(document.querySelectorAll('.ipt-interviewer')).map(i=>i.value).filter(v=>v).join('、');
+  const docId=(state.name+'_'+state.date).replace(/\s/g,'_');
+  const payload={
+    doc_id:docId,candidate_name:state.name,branch:state.branch,
+    position:state.position,other_position:state.otherPosition||'',
+    interviewer:interviewers,interview_date:state.date,interview_time:state.time,
+    s1_final:parseFloat(state.s1Final)||0,s2_final:parseFloat(state.s2Final)||0,
+    s3_final:parseFloat(state.s3Final)||0,grand_total:parseFloat(state.grandTotal)||0,
+    doc_status:state.docStatus,final_decision:state.finalDecision||'',
+    bonus_method:state.bonusMethod||'',ideal_status:state.idealStatus||'',
+    interview_note:state.interviewNote||'',state_json:state
+  };
+  const{error}=await sb.from('interviews').upsert(payload,{onConflict:'doc_id'});
+  if(error){showToast('儲存失敗：'+error.message);return false;}
+  const idx=dbCache.findIndex(r=>r._doc_id===docId);
+  const entry={...state,_doc_id:docId};
+  if(idx>=0)dbCache[idx]=entry;else dbCache.push(entry);
+  return true;
+}
+
+async function handleSaveDraft(){
+  if(!state.name.trim())return alert('請先輸入應徵者姓名');
+  state.docStatus='draft';
+  const ok=await saveToSupabase();
+  if(ok)showToast('✓ 暫存成功');
+}
+
+async function handleFinalSubmit(){
+  syncState();
+  if(!state.finalDecision)return alert('請先選擇錄取或不錄取');
+  state.docStatus='completed';
+  const ok=await saveToSupabase();
+  if(ok){showToast('✓ 已送出並建檔');alert('面試資料已成功送出！');}
+}
+
+function handleDecision(type){
+  document.getElementById('btn-pass').classList.remove('active-pass');
+  document.getElementById('btn-fail').classList.remove('active-fail');
+  if(type==='pass'){document.getElementById('btn-pass').classList.add('active-pass');state.finalDecision='pass';}
+  else{document.getElementById('btn-fail').classList.add('active-fail');state.finalDecision='fail';}
+  syncState();
+}
+
+function handleClear(){
+  if(!confirm('確定要清除所有資料，開始填寫下一位應徵者嗎？'))return;
+  const branch=state.branch;
+  state=getEmptyState();
+  if(!['HR','ADMIN'].includes(currentUser.role))state.branch=currentUser.dept;
+  else state.branch=branch;
+  hydrateUI();calculateScores();window.scrollTo(0,0);
+  showToast('已清除，可填寫下一位');
+}
+
+function addInterviewer(){
+  const c=document.getElementById('interviewer-list');
+  const d=document.createElement('div');d.className='interviewer-row';
+  d.innerHTML=`<input type="text" class="ipt-interviewer info-input" oninput="syncState()" placeholder="面試官姓名"><button class="btn-rm-int" onclick="this.parentElement.remove();syncState()">✕</button>`;
+  c.appendChild(d);
+}
+
+function closeMissingModal(){document.getElementById('missing-modal').classList.remove('show');}
+
+function renderS1(){
+  const body=document.getElementById('s1-body');let html='';
+  S1_DATA.forEach(g=>{
+    html+=`<div class="s1-group"><div class="s1-group-title">${g.title}</div>`;
+    if(g.id==='bon'){
+      html+=`<div class="bon-wrap"><textarea id="s1-bon-text" class="bon-textarea" rows="2" placeholder="補充說明（選填）..." oninput="state.s1.bonText=this.value">${state.s1.bonText||''}</textarea>`;
+      html+=`<div class="score-row"><div class="score-q">特別加分評分</div><div class="score-btns">`;
+      [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-bon',0,${v},this)" class="score-btn${state.s1.bon[0]==v?' active':''}" data-val="${v}">${v}</button>`;});
+      html+=`</div></div></div>`;
+    }else{
+      g.qs.forEach((q,i)=>{
+        html+=`<div class="score-row"><div class="score-q">${q}</div><div class="score-btns">`;
+        [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-${g.id}',${i},${v},this)" class="score-btn${state.s1[g.id][i]==v?' active':''}" data-val="${v}">${v}</button>`;});
+        html+=`</div></div>`;
+      });
+    }
+    html+=`</div>`;
+  });
+  body.innerHTML=html;
+}
+
+function renderS2(){
+  document.getElementById('s2-body').innerHTML=S2_QUESTIONS.map((q,i)=>{
+    let btns=[1,2,3,4,5].map(v=>`<button onclick="setScore('s2',${i},${v},this)" class="score-btn${state.s2[i]==v?' active':''}" data-val="${v}">${v}</button>`).join('');
+    return`<div class="score-row"><div class="score-q">${q}</div><div class="score-btns">${btns}</div></div>`;
+  }).join('');
+}
+
+function renderS3(){
+  const lv=state.level||1;const d=S3_LEVELS[lv]||S3_LEVELS[1];let html='';
+  S3_CORE.forEach((item,i)=>{
+    html+=`<tr>
+      <td class="s3-dim"><span class="s3-dim-core">核心</span><br><span style="font-size:10px;color:#1D6FD8;">(${d.c[i]}%)</span></td>
+      <td class="s3-name">${item.name}</td>
+      <td><textarea class="s3-textarea" rows="4" placeholder="BEI 問題描述..." oninput="state.s3Texts.core[${i}].bei=this.value">${state.s3Texts.core[i].bei||''}</textarea></td>
+      <td><textarea class="s3-textarea" rows="4" placeholder="狀況..." oninput="state.s3Texts.core[${i}].c=this.value">${state.s3Texts.core[i].c||''}</textarea></td>
+      <td><textarea class="s3-textarea" rows="4" placeholder="行動..." oninput="state.s3Texts.core[${i}].a=this.value">${state.s3Texts.core[i].a||''}</textarea></td>
+      <td><textarea class="s3-textarea" rows="4" placeholder="結果..." oninput="state.s3Texts.core[${i}].r=this.value">${state.s3Texts.core[i].r||''}</textarea></td>
+      <td class="s3-score-cell"><div class="s3-score-btns">${[1,2,3,4,5].map(v=>`<button onclick="setS3Score('core',${i},${v},this)" class="s3-score-btn${state.s3.core[i]==v?' active':''}" data-val="${v}">${v}<span class="s3-tooltip">${item.levels[v-1]}</span></button>`).join('')}</div></td>
+    </tr>
+    <tr id="desc-core-${i}" class="s3-desc-row${state.s3.core[i]>0?'':' hidden'}"><td colspan="7"><span style="font-weight:700;color:#1D6FD8;font-size:11px;">行為描述：</span><span style="font-size:11px;" id="desc-text-core-${i}">${state.s3.core[i]>0?item.descs[state.s3.core[i]-1]:''}</span></td></tr>`;
+  });
+  S3_MGMT.forEach((item,i)=>{
+    html+=`<tr>
+      <td class="s3-dim"><span class="s3-dim-mgmt">管理</span><br><span style="font-size:10px;color:#059669;">(${d.m[i]}%)</span></td>
+      <td class="s3-name">${item.name}</td>
+      <td><textarea class="s3-textarea" rows="4" placeholder="BEI 問題描述..." oninput="state.s3Texts.mgmt[${i}].bei=this.value">${state.s3Texts.mgmt[i].bei||''}</textarea></td>
+      <td><textarea class="s3-textarea" rows="4" placeholder="狀況..." oninput="state.s3Texts.mgmt[${i}].c=this.value">${state.s3Texts.mgmt[i].c||''}</textarea></td>
+      <td><textarea class="s3-textarea" rows="4" placeholder="行動..." oninput="state.s3Texts.mgmt[${i}].a=this.value">${state.s3Texts.mgmt[i].a||''}</textarea></td>
+      <td><textarea class="s3-textarea" rows="4" placeholder="結果..." oninput="state.s3Texts.mgmt[${i}].r=this.value">${state.s3Texts.mgmt[i].r||''}</textarea></td>
+      <td class="s3-score-cell"><div class="s3-score-btns">${[1,2,3,4,5].map(v=>`<button onclick="setS3Score('mgmt',${i},${v},this)" class="s3-score-btn${state.s3.mgmt[i]==v?' active':''}" data-val="${v}">${v}<span class="s3-tooltip">${item.levels[v-1]}</span></button>`).join('')}</div></td>
+    </tr>
+    <tr id="desc-mgmt-${i}" class="s3-desc-row${state.s3.mgmt[i]>0?'':' hidden'}"><td colspan="7"><span style="font-weight:700;color:#059669;font-size:11px;">行為描述：</span><span style="font-size:11px;" id="desc-text-mgmt-${i}">${state.s3.mgmt[i]>0?item.descs[state.s3.mgmt[i]-1]:''}</span></td></tr>`;
+  });
+  document.getElementById('s3-tbody').innerHTML=html;
+}
+
+function hydrateUI(){
+  const g=id=>{const e=document.getElementById(id);return e?e:null};
+  if(g('ipt-name'))g('ipt-name').value=state.name||'';
+  if(g('sel-position'))g('sel-position').value=state.position||'';
+  if(g('ipt-other-pos'))g('ipt-other-pos').value=state.otherPosition||'';
+  if(g('ipt-date'))g('ipt-date').value=state.date||new Date().toISOString().split('T')[0];
+  if(g('ipt-time'))g('ipt-time').value=state.time||'';
+  if(g('job-level-select'))g('job-level-select').value=state.level||1;
+  if(g('bonus-method-input'))g('bonus-method-input').value=state.bonusMethod||'';
+  const sb2=g('sel-branch');
+  if(sb2){
+    const restricted=!['HR','ADMIN','SENIOR_HS','SENIOR_ES'].includes(currentUser.role);
+    if(restricted){sb2.value=currentUser.dept;sb2.disabled=true;}
+    else{sb2.disabled=false;sb2.value=state.branch||'';}
+  }
+  const fi=document.querySelector('.ipt-interviewer');
+  if(fi&&!fi.value&&currentUser)fi.value=currentUser.name;
+  const bp=g('btn-pass'),bf=g('btn-fail');
+  if(bp){bp.classList.remove('active-pass');if(state.finalDecision==='pass')bp.classList.add('active-pass');}
+  if(bf){bf.classList.remove('active-fail');if(state.finalDecision==='fail')bf.classList.add('active-fail');}
+  renderS1();renderS2();renderS3();
+}
+
+function syncState(){
+  const v=id=>{const e=document.getElementById(id);return e?e.value:'';};
+  state.name=v('ipt-name');
+  const sb2=document.getElementById('sel-branch');
+  if(sb2&&!sb2.disabled)state.branch=sb2.value;
+  state.position=v('sel-position');state.otherPosition=v('ipt-other-pos');
+  state.date=v('ipt-date');state.time=v('ipt-time');state.bonusMethod=v('bonus-method-input');
+  const bt=document.getElementById('s1-bon-text');if(bt)state.s1.bonText=bt.value;
+}
+
+function setScore(group,idx,val,btn){
+  Array.from(btn.parentElement.children).forEach(b=>b.classList.remove('active'));
+  let cur=0;
+  if(group==='s2')cur=state.s2[idx];
+  else if(group.startsWith('s1-'))cur=state.s1[group.split('-')[1]][idx];
+  const nv=(cur===val)?0:val;
+  if(nv>0)btn.classList.add('active');
+  if(group==='s2')state.s2[idx]=nv;
+  else if(group.startsWith('s1-'))state.s1[group.split('-')[1]][idx]=nv;
+  calculateScores();
+}
+
+function setS3Score(sub,idx,val,btn){
+  Array.from(btn.parentElement.children).forEach(b=>b.classList.remove('active'));
+  const cur=state.s3[sub][idx];const nv=(cur===val)?0:val;
+  if(nv>0)btn.classList.add('active');
+  state.s3[sub][idx]=nv;
+  const BARS=sub==='core'?S3_CORE:S3_MGMT;
+  const dr=document.getElementById(`desc-${sub}-${idx}`);
+  const dt=document.getElementById(`desc-text-${sub}-${idx}`);
+  if(dr&&dt){if(nv>0){dt.textContent=BARS[idx].descs[nv-1];dr.classList.remove('hidden');}else dr.classList.add('hidden');}
+  calculateScores();
+}
+
+function updateLevelLogic(){
+  const sel=document.getElementById('job-level-select');
+  if(sel)state.level=parseInt(sel.value);
+  renderS3();calculateScores();
+}
+
+function calculateScores(){
+  const sum=arr=>arr.reduce((a,b)=>a+b,0);
+  let s1p=0,motScore=0,s1Raw=0;
+  S1_DATA.forEach(g=>{
+    const raw=sum(state.s1[g.id]);s1Raw+=raw;
+    if(g.id==='mot')motScore=raw;
+    if(raw>0)s1p+=(raw/g.max)*100*g.weight;
+  });
+  const s1f=(s1p/100)*30;
+  const s2r=sum(state.s2),s2f=s2r>0?(s2r/85)*100*0.10:0;
+  const lv=state.level||1;const d=S3_LEVELS[lv]||S3_LEVELS[1];
+  let cs=0,ms=0;
+  state.s3.core.forEach((v,i)=>cs+=v*(d.c[i]/100));
+  state.s3.mgmt.forEach((v,i)=>ms+=v*(d.m[i]/100));
+  const s3r=((cs/5)*100*(d.ratio.c/100))+((ms/5)*100*(d.ratio.m/100));
+  const s3f=s3r*0.60;const gt=s1f+s2f+s3f;
+  state.s1Final=s1f.toFixed(2);state.s2Final=s2f.toFixed(2);state.s3Final=s3f.toFixed(2);state.grandTotal=gt.toFixed(2);
+  const st=id=>{const e=document.getElementById(id);if(e)e.textContent=arguments[1]||'';};
+  ['s1-final','s2-final','s3-final','report-grand-total','report-s1','report-s2','report-s3','footer-total'].forEach(id=>{
+    const e=document.getElementById(id);if(!e)return;
+    if(id==='s1-final'||id==='report-s1')e.textContent=state.s1Final;
+    else if(id==='s2-final'||id==='report-s2')e.textContent=state.s2Final;
+    else if(id==='s3-final'||id==='report-s3')e.textContent=state.s3Final;
+    else e.textContent=state.grandTotal;
+  });
+  if(gt===0){
+    const ste=document.getElementById('ideal-status-text');if(ste)ste.textContent='等待評分...';
+    const expe=document.getElementById('ideal-status-exp');if(expe)expe.textContent='-';
+    state.idealStatus='';return;
+  }
+  let si=5,desc='';
+  if(gt>=90){si=0;desc='面試與筆試表現皆出色，具高度文化契合度。';}
+  else if(gt>=80){si=1;desc='穩定且具培育潛力，文化契合良好。';}
+  else if(gt>=70){si=2;desc='職能或筆試略有不足，但態度正向。';}
+  else if(gt>=60){si=3;desc='能力或穩定度不足，需進一步觀察。';}
+  else{si=5;desc='未達職能與文化基準。';}
+  let veto=[];
+  if(s1Raw>0&&s1Raw<30){veto.push('筆試總分低於30分');si=Math.max(si,2);}
+  if(motScore>0&&motScore<7){veto.push('動機與價值觀低於7分');si=Math.max(si,4);}
+  if(s2r>0&&s2f<7){veto.push('外顯特質得分率低於70%');si=Math.max(si,4);}
+  const STATUS=['優先錄取','建議錄取','可培養/備取','條件式錄取','不建議錄取','不錄取'];
+  const COLORS=['#059669','#059669','#D97706','#D97706','#DC2626','#DC2626'];
+  const ste=document.getElementById('ideal-status-text');
+  if(ste){ste.textContent=STATUS[si];ste.style.color=COLORS[si];}
+  state.idealStatus=STATUS[si];
+  const expe=document.getElementById('ideal-status-exp');
+  if(expe)expe.textContent=veto.length>0?`原因：${veto.join('、')}`:desc;
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+}
+
+window.onload=()=>{
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-login').classList.add('active');
+  state=getEmptyState();
+  // Check if coming from admin with edit
+  const params=new URLSearchParams(window.location.search);
+  const empId=params.get('emp');
+  if(empId&&EMP_DB[empId]){
+    currentUser={...EMP_DB[empId],id:empId};
+    const editState=sessionStorage.getItem('edit_state');
+    if(editState){
+      try{state=JSON.parse(editState);sessionStorage.removeItem('edit_state');}catch(e){}
+    }else{
+      if(!['HR','ADMIN'].includes(currentUser.role))state.branch=currentUser.dept;
+    }
+    fetchCloudDB().then(()=>{
+      document.getElementById('header-user-info').textContent=`${currentUser.name}（${currentUser.dept}）`;
+      document.getElementById('main-header').style.display='block';
+      document.getElementById('nav-front-btn').style.display='inline-block';
+      document.getElementById('nav-backend-btn').style.display='inline-block';
+      hydrateUI();calculateScores();switchView('front');
+    });
+  }
+};
+</script>
 </body>
 </html>
