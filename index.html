@@ -14,7 +14,7 @@
   --border:#DDE4EF;--border2:#C8D6EE;
   --text:#1A2338;--text2:#4B5C7A;--text3:#8898B4;
   --green:#059669;--red:#DC2626;--amber:#D97706;
-  --shadow:0 1px 4px rgba(29,111,216,.08);
+  --shadow:0 1px 3px rgba(29,111,216,.07);
   --shadow-md:0 4px 16px rgba(29,111,216,.12);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -24,220 +24,205 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 #page-login.active{display:flex!important;}
 
 /* LOGIN */
-#page-login{
-  min-height:100vh;background:linear-gradient(135deg,#EBF3FF 0%,#F4F7FB 60%,#E8F0FE 100%);
-  align-items:center;justify-content:center;
-}
-.login-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:44px 40px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(29,111,216,.14);}
+#page-login{min-height:100vh;background:linear-gradient(135deg,#EBF3FF 0%,#F4F7FB 50%,#E8F0FE 100%);align-items:center;justify-content:center;}
+.login-card{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:44px 40px;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(29,111,216,.12);}
 .login-logo{text-align:center;margin-bottom:24px;}
-.login-logo img{height:72px;width:72px;object-fit:cover;border-radius:50%;}
+.login-logo img{height:80px;width:80px;object-fit:cover;border-radius:50%;display:block;margin:0 auto;}
 .login-title{font-size:22px;font-weight:900;color:var(--text);text-align:center;margin-bottom:4px;}
 .login-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:28px;}
 .form-group{margin-bottom:16px;}
-.form-label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;letter-spacing:.06em;}
-.form-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-weight:500;color:var(--text);outline:none;transition:all .2s;font-family:'Noto Sans TC',sans-serif;}
-.form-input:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(29,111,216,.1);}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;letter-spacing:.05em;}
+.required-star{color:var(--red);margin-left:2px;}
+.form-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:3px;padding:10px 13px;font-size:14px;font-weight:500;color:var(--text);outline:none;transition:border-color .2s;font-family:'Noto Sans TC',sans-serif;}
+.form-input:focus{border-color:var(--blue);background:var(--white);}
 .form-input::placeholder{color:var(--text3);}
-.btn-login{width:100%;background:var(--blue);color:white;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:900;cursor:pointer;transition:all .2s;margin-top:4px;font-family:'Noto Sans TC',sans-serif;box-shadow:0 4px 12px rgba(29,111,216,.3);}
-.btn-login:hover{background:var(--blue-dark);transform:translateY(-1px);}
+.btn-login{width:100%;background:var(--blue);color:white;border:none;border-radius:3px;padding:12px;font-size:15px;font-weight:900;cursor:pointer;transition:all .2s;font-family:'Noto Sans TC',sans-serif;box-shadow:0 2px 8px rgba(29,111,216,.3);}
+.btn-login:hover{background:var(--blue-dark);}
 .login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;}
 
 /* HEADER */
-#main-header{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(29,111,216,.06);}
-.header-inner{max-width:1300px;margin:0 auto;padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;}
+#main-header{background:var(--white);border-bottom:2px solid var(--blue);position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(29,111,216,.08);}
+.header-inner{max-width:1400px;margin:0 auto;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;}
 .header-left{display:flex;align-items:center;gap:10px;}
-.header-logo-img{height:36px;width:36px;object-fit:cover;border-radius:50%;}
-.header-info .header-title{font-size:15px;font-weight:900;color:var(--text);}
-.header-info .header-sub{font-size:11px;color:var(--text3);}
+.header-logo-img{height:34px;width:34px;object-fit:cover;border-radius:50%;}
+.header-title{font-size:15px;font-weight:900;color:var(--text);}
+.header-sub{font-size:11px;color:var(--text3);}
 .header-nav{display:flex;align-items:center;gap:8px;}
-.nav-btn{padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Noto Sans TC',sans-serif;border:1.5px solid transparent;}
-.nav-btn-outline{background:transparent;border-color:var(--border2);color:var(--text2);}
-.nav-btn-outline:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
-.nav-btn-blue{background:var(--blue);color:white;}
-.nav-btn-blue:hover{background:var(--blue-dark);}
+.nav-btn{padding:5px 14px;border-radius:2px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Noto Sans TC',sans-serif;border:1.5px solid var(--border2);background:transparent;color:var(--text2);}
+.nav-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
+.nav-btn-blue{background:var(--blue);color:white;border-color:var(--blue);}
+.nav-btn-blue:hover{background:var(--blue-dark);color:white;}
 .nav-btn-ghost{background:transparent;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
 .nav-btn-ghost:hover{color:var(--text);}
 
 /* PAGE */
 #page-front{padding:16px 24px 120px;}
-.container{max-width:1300px;margin:0 auto;}
+.container{max-width:1400px;margin:0 auto;}
 
-/* CARD */
-.card{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow);}
-.card-header{padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+/* CARD - 直角大框 */
+.card{background:var(--white);border:1px solid var(--border);border-radius:0;overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow);}
+.card-header{padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);}
 .card-title{font-size:14px;font-weight:700;}
 .card-score{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:3px;}
-.score-num{font-size:17px;font-weight:900;}
+.score-num{font-size:16px;font-weight:900;}
 .card-body{padding:12px 16px;}
 
 /* INFO GRID */
 .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
 @media(max-width:900px){.info-grid{grid-template-columns:1fr 1fr;}}
 .info-field label{display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase;}
-.info-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-weight:600;color:var(--text);outline:none;transition:all .2s;font-family:'Noto Sans TC',sans-serif;}
+.info-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:3px;padding:7px 10px;font-size:13px;font-weight:600;color:var(--text);outline:none;transition:border-color .2s;font-family:'Noto Sans TC',sans-serif;}
 .info-input:focus{border-color:var(--blue);background:var(--white);}
 .info-input:disabled{background:#EAEFF7;color:var(--text2);cursor:not-allowed;}
 .interviewer-list{display:flex;flex-direction:column;gap:5px;}
 .interviewer-row{display:flex;gap:5px;align-items:center;}
-.btn-add-int{font-size:11px;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.btn-add-int{font-size:11px;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;padding:0;}
 .btn-add-int:hover{text-decoration:underline;}
-.btn-rm-int{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:4px;}
-.btn-rm-int:hover{background:#FEF2F2;}
+.btn-rm-int{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:2px 4px;}
 
-/* S1 SCORE */
+/* POSITION ROWS */
+.position-list{display:flex;flex-direction:column;gap:5px;}
+.position-row{display:flex;gap:5px;align-items:center;}
+
+/* S1 */
 .s1-group{margin-bottom:8px;}
-.s1-group-title{font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;padding-left:2px;}
-.score-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;margin-bottom:4px;background:var(--bg);border:1px solid var(--border);gap:8px;transition:background .15s;}
+.s1-group-title{font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;padding-left:2px;border-left:2px solid var(--blue);padding-left:6px;}
+.score-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;margin-bottom:3px;background:var(--bg);border:1px solid var(--border);gap:8px;transition:background .15s;}
 .score-row:hover{background:var(--blue-light);}
 .score-q{font-size:13px;color:var(--text);line-height:1.4;flex:1;min-width:0;}
 .score-btns{display:flex;gap:4px;flex-shrink:0;}
-.score-btn{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border2);background:var(--white);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans TC',sans-serif;}
-.score-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);transform:translateY(-1px);}
-.score-btn.active{transform:scale(1.08);}
+.score-btn{width:30px;height:30px;border-radius:4px;border:1.5px solid var(--border2);background:var(--white);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans TC',sans-serif;}
+.score-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
+.score-btn.active{transform:scale(1.05);}
 .score-btn.active[data-val="1"]{background:#FEE2E2;border-color:#EF4444;color:#B91C1C;}
 .score-btn.active[data-val="2"]{background:#FFEDD5;border-color:#F97316;color:#C2410C;}
 .score-btn.active[data-val="3"]{background:#FEF9C3;border-color:#EAB308;color:#A16207;}
 .score-btn.active[data-val="4"]{background:#DCFCE7;border-color:#22C55E;color:#15803D;}
 .score-btn.active[data-val="5"]{background:#DCFCE7;border-color:#16A34A;color:#166534;}
 .bon-wrap{display:flex;flex-direction:column;gap:6px;}
-.bon-textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;resize:vertical;min-height:54px;font-family:'Noto Sans TC',sans-serif;transition:all .2s;}
-.bon-textarea:focus{border-color:var(--blue);background:var(--white);}
+.bon-textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:3px;padding:7px 10px;font-size:13px;color:var(--text);outline:none;resize:vertical;min-height:52px;font-family:'Noto Sans TC',sans-serif;transition:border-color .2s;}
+.bon-textarea:focus{border-color:var(--blue);}
 
-/* S2 外顯特質 - 兩欄並排 */
-.s2-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;}
+/* S2 外顯 */
+.s2-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;}
 @media(max-width:600px){.s2-grid{grid-template-columns:1fr;}}
-.s2-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:8px;background:var(--bg);border:1px solid var(--border);gap:8px;transition:background .15s;}
+.s2-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border:1px solid var(--border);gap:8px;transition:background .15s;}
 .s2-row:hover{background:var(--blue-light);}
-.s2-num{font-size:10px;font-weight:700;color:var(--text3);min-width:16px;}
+.s2-num{font-size:10px;font-weight:700;color:var(--text3);min-width:16px;flex-shrink:0;}
 .s2-q{font-size:12px;color:var(--text);flex:1;}
 .s2-btns{display:flex;gap:3px;flex-shrink:0;}
 
 /* S3 TABLE */
 .s3-scroll{overflow-x:auto;}
-.s3-table{width:100%;border-collapse:collapse;min-width:880px;}
-.s3-table th{background:var(--bg);padding:8px 10px;font-size:11px;font-weight:700;color:var(--text3);text-align:center;border:1px solid var(--border);letter-spacing:.03em;}
-.s3-table td{border:1px solid var(--border);padding:5px;vertical-align:top;}
-.s3-dim{background:#EFF6FF;text-align:center;font-size:11px;font-weight:700;width:54px;}
-.s3-name{background:var(--bg);text-align:center;font-size:12px;font-weight:700;color:var(--text);width:84px;}
-.s3-textarea{width:100%;background:transparent;border:none;padding:5px;font-size:12px;color:var(--text);outline:none;resize:none;min-height:76px;font-family:'Noto Sans TC',sans-serif;line-height:1.6;border-radius:4px;}
+.s3-table{width:100%;border-collapse:collapse;min-width:860px;}
+.s3-table th{background:#F0F4FA;padding:8px 10px;font-size:11px;font-weight:700;color:var(--text3);text-align:center;border:1px solid var(--border);}
+.s3-table td{border:1px solid var(--border);padding:5px;vertical-align:middle;}
+.s3-dim{background:#EFF6FF;text-align:center;font-size:11px;font-weight:700;width:52px;vertical-align:middle;}
+.s3-name{background:#F8FAFF;text-align:center;font-size:12px;font-weight:700;color:var(--text);width:82px;vertical-align:middle;}
+.s3-textarea{width:100%;background:transparent;border:none;padding:5px;font-size:12px;color:var(--text);outline:none;resize:none;min-height:72px;font-family:'Noto Sans TC',sans-serif;line-height:1.6;}
 .s3-textarea:focus{background:var(--blue-light);}
-/* 給分欄位 - 分數按鈕 + 行為描述緊貼 */
-.s3-score-cell{text-align:center;width:130px;background:var(--bg);vertical-align:top;}
-.s3-score-inner{padding:6px 4px;}
-.s3-score-btns{display:flex;gap:3px;justify-content:center;margin-bottom:0;}
-.s3-score-btn{width:22px;height:22px;border-radius:5px;border:1.5px solid var(--border2);background:var(--white);color:var(--text2);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;position:relative;font-family:'Noto Sans TC',sans-serif;}
+.s3-score-cell{text-align:center;width:120px;background:#F8FAFF;vertical-align:top;}
+.s3-score-inner{padding:8px 4px;}
+.s3-score-btns{display:flex;gap:3px;justify-content:center;margin-bottom:6px;}
+.s3-score-btn{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--border2);background:var(--white);color:var(--text2);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;position:relative;font-family:'Noto Sans TC',sans-serif;}
 .s3-score-btn:hover{border-color:var(--blue);color:var(--blue);}
-.s3-score-btn.active[data-val="1"]{background:#FEE2E2;border-color:#EF4444;color:#B91C1C;transform:scale(1.1);}
-.s3-score-btn.active[data-val="2"]{background:#FFEDD5;border-color:#F97316;color:#C2410C;transform:scale(1.1);}
-.s3-score-btn.active[data-val="3"]{background:#FEF9C3;border-color:#EAB308;color:#A16207;transform:scale(1.1);}
-.s3-score-btn.active[data-val="4"]{background:#DCFCE7;border-color:#22C55E;color:#15803D;transform:scale(1.1);}
-.s3-score-btn.active[data-val="5"]{background:#DCFCE7;border-color:#16A34A;color:#166534;transform:scale(1.1);}
-.s3-tooltip{visibility:hidden;opacity:0;position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:3px 7px;border-radius:5px;font-size:10px;white-space:nowrap;z-index:20;pointer-events:none;transition:opacity .15s;}
+.s3-score-btn.active[data-val="1"]{background:#FEE2E2;border-color:#EF4444;color:#B91C1C;}
+.s3-score-btn.active[data-val="2"]{background:#FFEDD5;border-color:#F97316;color:#C2410C;}
+.s3-score-btn.active[data-val="3"]{background:#FEF9C3;border-color:#EAB308;color:#A16207;}
+.s3-score-btn.active[data-val="4"]{background:#DCFCE7;border-color:#22C55E;color:#15803D;}
+.s3-score-btn.active[data-val="5"]{background:#DCFCE7;border-color:#16A34A;color:#166534;}
+.s3-tooltip{visibility:hidden;opacity:0;position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:3px 7px;border-radius:3px;font-size:10px;white-space:nowrap;z-index:20;pointer-events:none;transition:opacity .15s;}
 .s3-score-btn:hover .s3-tooltip{visibility:visible;opacity:1;}
-/* 行為描述直接在給分欄下方 */
-.s3-desc-box{margin-top:5px;padding:5px 6px;background:#EBF3FF;border-radius:5px;font-size:11px;color:var(--text2);line-height:1.5;display:none;text-align:left;}
+.s3-desc-box{background:#DBEAFE;padding:5px 7px;font-size:11px;color:#1e40af;line-height:1.5;display:none;text-align:left;border-top:1px solid #BFDBFE;}
 .s3-desc-box.show{display:block;}
-.s3-desc-label{font-weight:700;color:var(--blue);margin-bottom:2px;font-size:10px;}
-.level-select{background:var(--white);border:1.5px solid var(--border2);border-radius:7px;padding:4px 8px;font-size:11px;font-weight:700;color:var(--text2);outline:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
-.level-select:focus{border-color:var(--blue);}
+.s3-desc-label{font-weight:700;font-size:10px;margin-bottom:2px;color:#1D6FD8;}
 
-/* REPORT CARD */
-.report-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:var(--shadow);}
+/* 職等提示 */
+.level-required-tip{background:#FEF9C3;border:1px solid #FDE68A;padding:8px 12px;font-size:12px;color:#92400E;font-weight:700;text-align:center;margin-bottom:0;}
+.level-select{background:var(--white);border:1.5px solid var(--border2);border-radius:3px;padding:4px 8px;font-size:11px;font-weight:700;color:var(--text2);outline:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.level-select:focus{border-color:var(--blue);}
+.level-select.not-selected{border-color:#F59E0B;background:#FFFBEB;color:#B45309;}
+
+/* REPORT */
+.report-card{background:var(--white);border:1px solid var(--border);border-radius:0;padding:20px;margin-bottom:12px;box-shadow:var(--shadow);}
 .report-card-title{font-size:15px;font-weight:900;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-.report-card-title::before{content:'';width:4px;height:18px;background:var(--blue);border-radius:2px;display:block;}
-.report-total-row{background:linear-gradient(135deg,var(--blue) 0%,#2563EB 100%);border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;box-shadow:0 4px 16px rgba(29,111,216,.25);}
+.report-card-title::before{content:'';width:3px;height:18px;background:var(--blue);display:block;}
+.report-total-row{background:var(--blue);border-radius:2px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
 .report-total-label{font-size:13px;font-weight:700;color:rgba(255,255,255,.85);}
 .report-total-score{font-size:40px;font-weight:900;color:white;}
-.report-sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
-.report-sub-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px;text-align:center;}
+.report-sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.report-sub-box{background:var(--bg);border:1px solid var(--border);padding:10px;text-align:center;}
 .report-sub-label{font-size:10px;color:var(--text3);font-weight:700;margin-bottom:3px;}
 .report-sub-score{font-size:22px;font-weight:900;}
 .report-bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media(max-width:700px){.report-bottom{grid-template-columns:1fr;}}
-.report-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.report-box{background:var(--bg);border:1px solid var(--border);padding:14px;}
 .report-field-label{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
 .report-status-text{font-size:18px;font-weight:900;margin-bottom:8px;}
-.report-exp{font-size:12px;color:var(--text2);background:var(--white);padding:8px 10px;border-radius:7px;line-height:1.6;border:1px solid var(--border);}
-/* 加分摘要 */
-.bonus-summary{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;}
-.bonus-summary-title{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+.report-exp{font-size:12px;color:var(--text2);background:var(--white);padding:8px 10px;line-height:1.6;border:1px solid var(--border);margin-bottom:10px;}
+.bonus-summary-box{background:var(--white);border:1px solid var(--border);padding:9px 11px;}
 .bonus-summary-content{font-size:12px;color:var(--text2);line-height:1.6;}
-.report-textarea{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;resize:vertical;min-height:64px;font-family:'Noto Sans TC',sans-serif;transition:all .2s;}
+.report-textarea{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:2px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;resize:vertical;min-height:64px;font-family:'Noto Sans TC',sans-serif;transition:border-color .2s;}
 .report-textarea:focus{border-color:var(--blue);}
 .decision-row{display:flex;gap:8px;margin-top:10px;}
-.decision-btn{flex:1;padding:10px;border-radius:9px;font-size:13px;font-weight:900;cursor:pointer;transition:all .2s;background:var(--white);color:var(--text2);font-family:'Noto Sans TC',sans-serif;border:1.5px solid var(--border2);}
+.decision-btn{flex:1;padding:10px;border-radius:2px;font-size:13px;font-weight:900;cursor:pointer;transition:all .2s;background:var(--white);color:var(--text2);font-family:'Noto Sans TC',sans-serif;border:1.5px solid var(--border2);}
 .decision-btn:hover{border-color:var(--blue);color:var(--blue);}
 .decision-btn.active-pass{background:#ECFDF5;border-color:#10B981;color:#065F46;}
 .decision-btn.active-fail{background:#FEF2F2;border-color:#EF4444;color:#7F1D1D;}
 
 /* BOTTOM BAR */
-#bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);padding:10px 24px;z-index:50;box-shadow:0 -4px 16px rgba(29,111,216,.08);}
-.bottom-bar-inner{max-width:1300px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+#bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:2px solid var(--blue);padding:10px 24px;z-index:50;box-shadow:0 -2px 12px rgba(29,111,216,.1);}
+.bottom-bar-inner{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
 .bottom-total{font-size:14px;font-weight:700;color:var(--text2);}
 .bottom-total span{font-size:22px;font-weight:900;color:var(--blue);margin-left:6px;}
 .bottom-actions{display:flex;gap:8px;}
-.btn-bottom{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Noto Sans TC',sans-serif;border:1.5px solid transparent;}
-.btn-clear{background:var(--bg);border-color:var(--border2);color:var(--text2);}
-.btn-clear:hover{border-color:#EF4444;color:#EF4444;}
-.btn-save{background:var(--bg);border-color:var(--border2);color:var(--text2);}
-.btn-save:hover{border-color:var(--blue);color:var(--blue);}
-.btn-submit{background:var(--blue);color:white;border-color:var(--blue);box-shadow:0 2px 8px rgba(29,111,216,.3);}
-.btn-submit:hover{background:var(--blue-dark);}
+.btn-bottom{padding:8px 18px;border-radius:2px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Noto Sans TC',sans-serif;border:1.5px solid var(--border2);background:var(--white);color:var(--text2);}
+.btn-bottom:hover{border-color:var(--blue);color:var(--blue);}
+.btn-submit{background:var(--blue);color:white;border-color:var(--blue);}
+.btn-submit:hover{background:var(--blue-dark);color:white;}
+.btn-clear:hover{border-color:var(--red);color:var(--red);}
 
 /* TOAST */
-#toast{position:fixed;top:68px;right:20px;background:var(--white);border:1.5px solid var(--blue);color:var(--blue);padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;transform:translateX(150%);transition:transform .3s;z-index:9999;box-shadow:var(--shadow-md);}
+#toast{position:fixed;top:62px;right:16px;background:var(--white);border-left:3px solid var(--blue);border:1px solid var(--border);color:var(--blue);padding:10px 16px;font-size:13px;font-weight:700;transform:translateX(150%);transition:transform .3s;z-index:9999;box-shadow:var(--shadow-md);}
 #toast.show{transform:translateX(0);}
 
 /* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,35,56,.4);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,35,56,.4);z-index:9999;align-items:center;justify-content:center;}
 .modal-overlay.show{display:flex;}
-.modal-box{background:var(--white);border:1px solid var(--border);border-radius:14px;width:90%;max-width:440px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(29,111,216,.2);}
-.modal-header{background:var(--bg);padding:13px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+.modal-box{background:var(--white);border:1px solid var(--border);border-radius:0;width:90%;max-width:440px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(29,111,216,.2);}
+.modal-header{background:var(--bg);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);}
 .modal-title{font-size:14px;font-weight:700;color:var(--text);}
-.modal-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;border-radius:4px;padding:2px 6px;}
-.modal-close:hover{background:var(--bg);}
+.modal-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;}
 .modal-body{padding:16px;overflow-y:auto;flex:1;}
 .modal-footer{padding:12px 16px;border-top:1px solid var(--border);text-align:right;}
-.btn-modal-ok{padding:8px 20px;background:var(--blue);border:none;border-radius:7px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.btn-modal-ok{padding:8px 20px;background:var(--blue);border:none;border-radius:2px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
 </style>
 </head>
 <body>
 <div id="toast"></div>
-
 <div id="missing-modal" class="modal-overlay">
   <div class="modal-box">
-    <div class="modal-header">
-      <span class="modal-title">⚠ 尚有未評分項目</span>
-      <button class="modal-close" onclick="closeMissingModal()">✕</button>
-    </div>
+    <div class="modal-header"><span class="modal-title">⚠ 尚有未評分項目</span><button class="modal-close" onclick="closeMissingModal()">✕</button></div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">請補齊以下項目再送出：</p>
       <ul id="missing-list" style="list-style:disc;padding-left:20px;font-size:13px;font-weight:700;color:var(--text);line-height:2.2;"></ul>
     </div>
-    <div class="modal-footer">
-      <button class="btn-modal-ok" onclick="closeMissingModal()">我知道了</button>
-    </div>
+    <div class="modal-footer"><button class="btn-modal-ok" onclick="closeMissingModal()">我知道了</button></div>
   </div>
 </div>
 
 <!-- LOGIN -->
 <div id="page-login" class="page active">
   <div class="login-card">
-    <div class="login-logo">
-      <img id="login-logo-img" src="00逗點教室_各分校校徽_頭貼_總部.png" alt="逗點教室">
-    </div>
+    <div class="login-logo"><img id="login-logo-img" src="00逗點教室_各分校校徽_頭貼_總部.png" alt="逗點教室"></div>
     <div class="login-title">面試評分系統</div>
     <div class="login-sub">逗點集團人才招募平台</div>
     <div class="form-group">
       <label class="form-label">員工編號</label>
-      <input type="text" id="login-emp" class="form-input" placeholder="例：F00035"
-        style="text-transform:uppercase;" autocomplete="off"
-        onkeydown="if(event.key==='Enter')document.getElementById('login-pwd').focus()">
+      <input type="text" id="login-emp" class="form-input" placeholder="例：F00035" style="text-transform:uppercase;" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('login-pwd').focus()">
     </div>
     <div class="form-group">
       <label class="form-label">登入密碼</label>
-      <input type="password" id="login-pwd" class="form-input" placeholder="請輸入密碼"
-        onkeydown="if(event.key==='Enter')handleLogin()">
+      <input type="password" id="login-pwd" class="form-input" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')handleLogin()">
     </div>
     <button class="btn-login" id="btn-login-main" onclick="handleLogin()">登 入 系 統</button>
     <div class="login-hint">測試密碼：0000</div>
@@ -249,47 +234,39 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
   <div class="header-inner">
     <div class="header-left">
       <img id="header-logo-img" src="00逗點教室_各分校校徽_頭貼_總部.png" class="header-logo-img" alt="">
-      <div class="header-info">
-        <div class="header-title">面試評分系統</div>
-        <div class="header-sub" id="header-user-info"></div>
-      </div>
+      <div><div class="header-title">面試評分系統</div><div class="header-sub" id="header-user-info"></div></div>
     </div>
     <div class="header-nav">
-      <button class="nav-btn nav-btn-outline" id="nav-front-btn" onclick="switchView('front')" style="display:none;">前台評分</button>
+      <button class="nav-btn" id="nav-front-btn" onclick="switchView('front')" style="display:none;">前台評分</button>
       <button class="nav-btn nav-btn-blue" id="nav-backend-btn" onclick="switchView('backend')" style="display:none;">進入後台</button>
       <button class="nav-btn-ghost" onclick="handleLogout()">登出</button>
     </div>
   </div>
 </header>
 
-<!-- FRONT PAGE -->
+<!-- FRONT -->
 <div id="page-front" class="page">
   <div class="container">
-
     <!-- 基本資訊 -->
     <div class="card" style="margin-top:14px;">
-      <div class="card-header" style="background:#F8FAFF;">
-        <span class="card-title">面試基本資訊</span>
-      </div>
+      <div class="card-header" style="background:#F0F4FA;"><span class="card-title">面試基本資訊</span></div>
       <div class="card-body">
         <div class="info-grid">
           <div class="info-field">
-            <label>應徵者姓名</label>
+            <label>應徵者姓名 <span class="required-star">★</span></label>
             <input type="text" id="ipt-name" class="info-input" placeholder="輸入姓名" oninput="syncState()">
           </div>
           <div class="info-field" style="grid-row:span 2;">
             <label style="display:flex;justify-content:space-between;align-items:center;">
-              面試官
+              面試官 <span class="required-star">★</span>
               <button class="btn-add-int" onclick="addInterviewer()">+ 新增</button>
             </label>
             <div id="interviewer-list" class="interviewer-list">
-              <div class="interviewer-row">
-                <input type="text" class="ipt-interviewer info-input" oninput="syncState()" placeholder="面試官姓名">
-              </div>
+              <div class="interviewer-row"><input type="text" class="ipt-interviewer info-input" oninput="syncState()" placeholder="面試官姓名"></div>
             </div>
           </div>
           <div class="info-field">
-            <label>應徵分校/單位</label>
+            <label>應徵分校/單位 <span class="required-star">★</span></label>
             <select id="sel-branch" class="info-input" onchange="syncState()">
               <option value="">請選擇...</option>
               <optgroup label="各分校">
@@ -306,24 +283,31 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
             </select>
           </div>
           <div class="info-field">
-            <label>應徵職位</label>
-            <select id="sel-position" class="info-input" onchange="syncState()">
-              <option value="">請選擇...</option>
-              <option>班級導師</option><option>行政導師</option><option>授課師</option>
-              <option>主任</option><option>處長</option><option>總部</option><option>其他</option>
-            </select>
+            <label style="display:flex;justify-content:space-between;align-items:center;">
+              應徵職位 <span class="required-star">★</span>
+              <button class="btn-add-int" onclick="addPosition()">+ 新增</button>
+            </label>
+            <div id="position-list" class="position-list">
+              <div class="position-row">
+                <select class="ipt-position info-input" onchange="syncState()">
+                  <option value="">請選擇...</option>
+                  <option>班級導師</option><option>行政導師</option><option>授課師</option>
+                  <option>主任</option><option>處長</option><option>總部</option><option>其他</option>
+                </select>
+              </div>
+            </div>
           </div>
           <div class="info-field">
-            <label>其他職務</label>
-            <input type="text" id="ipt-other-pos" class="info-input" placeholder="選其他時填寫" oninput="syncState()">
-          </div>
-          <div class="info-field">
-            <label>面試日期</label>
+            <label>面試日期 <span class="required-star">★</span></label>
             <input type="date" id="ipt-date" class="info-input" onchange="syncState()">
           </div>
           <div class="info-field">
             <label>開始時間</label>
             <input type="time" id="ipt-time" class="info-input" onchange="syncState()">
+          </div>
+          <div class="info-field">
+            <label>其他補充說明</label>
+            <input type="text" id="ipt-other-pos" class="info-input" placeholder="選填" oninput="syncState()">
           </div>
         </div>
       </div>
@@ -331,7 +315,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 
     <!-- 一、筆試 -->
     <div class="card">
-      <div class="card-header" style="background:linear-gradient(90deg,#F0FDF8,#FAFFFE);">
+      <div class="card-header" style="background:#F0FDF8;border-bottom-color:#A7F3D0;">
         <span class="card-title" style="color:#065F46;">一、筆試和綜合面談 <span style="font-weight:400;font-size:12px;color:var(--text3);">(30%)</span></span>
         <div class="card-score">得分：<span class="score-num" style="color:#059669;" id="s1-final">0.00</span>/30</div>
       </div>
@@ -340,10 +324,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 
     <!-- 二、職能 -->
     <div class="card">
-      <div class="card-header" style="background:linear-gradient(90deg,#FFF8F0,#FFFCFA);">
+      <div class="card-header" style="background:#FFFBEB;border-bottom-color:#FDE68A;">
         <div style="display:flex;align-items:center;gap:10px;">
           <span class="card-title" style="color:#92400E;">二、職能面試 <span style="font-weight:400;font-size:12px;color:var(--text3);">(60%)</span></span>
-          <select id="job-level-select" class="level-select" onchange="updateLevelLogic()">
+          <select id="job-level-select" class="level-select not-selected" onchange="updateLevelLogic()">
+            <option value="">— 請先選擇職等 —</option>
             <option value="1">職等1 核心90%/管理10%</option>
             <option value="2">職等2 核心85%/管理15%</option>
             <option value="3">職等3 核心70%/管理30%</option>
@@ -355,16 +340,17 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
         </div>
         <div class="card-score">得分：<span class="score-num" style="color:#D97706;" id="s3-final">0.00</span>/60</div>
       </div>
+      <div id="s3-level-tip" class="level-required-tip">⚠ 請先選擇左上角的「職等」，才能開始評分</div>
       <div class="s3-scroll">
         <table class="s3-table">
           <thead>
             <tr>
               <th>維度</th><th>職能項目</th>
-              <th style="min-width:160px;">BEI（問題描述）</th>
-              <th style="min-width:140px;">狀況 C</th>
-              <th style="min-width:140px;">行動 A</th>
-              <th style="min-width:140px;">結果 R</th>
-              <th style="min-width:130px;">給分 ＆ 行為描述</th>
+              <th style="min-width:160px;">BEI（問題描述）<span style="color:var(--red);">★</span></th>
+              <th style="min-width:130px;">狀況 C</th>
+              <th style="min-width:130px;">行動 A</th>
+              <th style="min-width:130px;">結果 R</th>
+              <th style="min-width:120px;">給分 ＆ 行為描述</th>
             </tr>
           </thead>
           <tbody id="s3-tbody"></tbody>
@@ -372,9 +358,9 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
       </div>
     </div>
 
-    <!-- 三、外顯特質 -->
+    <!-- 三、外顯 -->
     <div class="card">
-      <div class="card-header" style="background:linear-gradient(90deg,#F3F0FF,#FAFAFE);">
+      <div class="card-header" style="background:#F3F0FF;border-bottom-color:#C4B5FD;">
         <span class="card-title" style="color:#3730A3;">三、外顯特質 <span style="font-weight:400;font-size:12px;color:var(--text3);">(10%)</span></span>
         <div class="card-score">得分：<span class="score-num" style="color:#4F46E5;" id="s2-final">0.00</span>/10</div>
       </div>
@@ -389,36 +375,23 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
         <div class="report-total-score" id="report-grand-total">0.00</div>
       </div>
       <div class="report-sub-grid">
-        <div class="report-sub-box">
-          <div class="report-sub-label">一、筆試和綜合面談</div>
-          <div class="report-sub-score" style="color:#059669;" id="report-s1">0.00</div>
-        </div>
-        <div class="report-sub-box">
-          <div class="report-sub-label">二、職能面試</div>
-          <div class="report-sub-score" style="color:#D97706;" id="report-s3">0.00</div>
-        </div>
-        <div class="report-sub-box">
-          <div class="report-sub-label">三、外顯特質</div>
-          <div class="report-sub-score" style="color:#4F46E5;" id="report-s2">0.00</div>
-        </div>
+        <div class="report-sub-box"><div class="report-sub-label">一、筆試和綜合面談</div><div class="report-sub-score" style="color:#059669;" id="report-s1">0.00</div></div>
+        <div class="report-sub-box"><div class="report-sub-label">二、職能面試</div><div class="report-sub-score" style="color:#D97706;" id="report-s3">0.00</div></div>
+        <div class="report-sub-box"><div class="report-sub-label">三、外顯特質</div><div class="report-sub-score" style="color:#4F46E5;" id="report-s2">0.00</div></div>
       </div>
       <div class="report-bottom">
-        <!-- 左：建議狀態 + 加分摘要 -->
         <div class="report-box">
           <div class="report-field-label">系統建議理想狀態</div>
           <div class="report-status-text" id="ideal-status-text">等待評分...</div>
           <div class="report-field-label">判定原因</div>
-          <div class="report-exp" id="ideal-status-exp" style="margin-bottom:12px;">-</div>
+          <div class="report-exp" id="ideal-status-exp">-</div>
           <div class="report-field-label">加分項目摘要（自動帶入）</div>
-          <div class="bonus-summary">
-            <div class="bonus-summary-content" id="bonus-summary-display">尚未填寫加分項目</div>
-          </div>
+          <div class="bonus-summary-box"><div class="bonus-summary-content" id="bonus-summary-display" style="color:var(--text3);">尚未填寫加分項目</div></div>
         </div>
-        <!-- 右：備註 + 決策 -->
         <div class="report-box">
           <div class="report-field-label">面試官備註</div>
-          <textarea id="interview-note-input" class="report-textarea" oninput="syncState()" placeholder="面試官可在此填寫補充備註、觀察或特殊說明..."></textarea>
-          <div class="report-field-label" style="margin-bottom:8px;">最終錄取結果</div>
+          <textarea id="interview-note-input" class="report-textarea" oninput="syncState()" placeholder="補充備註、觀察或特殊說明..."></textarea>
+          <div class="report-field-label" style="margin-bottom:8px;">最終錄取結果 <span class="required-star">★</span></div>
           <div class="decision-row">
             <button id="btn-pass" class="decision-btn" onclick="handleDecision('pass')">✓ 確認錄取</button>
             <button id="btn-fail" class="decision-btn" onclick="handleDecision('fail')">✕ 不予錄取</button>
@@ -426,7 +399,6 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -436,7 +408,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="bottom-total">總得分：<span id="footer-total">0.00</span></div>
     <div class="bottom-actions">
       <button class="btn-bottom btn-clear" onclick="handleClear()">清除資料</button>
-      <button class="btn-bottom btn-save" onclick="handleSaveDraft()">暫存資料</button>
+      <button class="btn-bottom" onclick="handleSaveDraft()">暫存資料</button>
       <button class="btn-bottom btn-submit" onclick="handleFinalSubmit()">確認送出</button>
     </div>
   </div>
@@ -447,99 +419,29 @@ const SUPABASE_URL='https://yslzhijwfbhgropbmqab.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzbHpoaWp3ZmJoZ3JvcGJtcWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MTg0NjksImV4cCI6MjA5MTI5NDQ2OX0.UUm9ShB9vd1PSGxLlW5kOwI5rzle1O2WYKmZcjE9Ksc';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-// 分校校徽對照表
-const BRANCH_LOGO={
-  '青埔翱翔校':'翱翔.png',
-  '青埔升大校':'升大.png',
-  '青園展翅校':'展翅.png',
-  '大園晨光校':'晨光.png',
-  '內壢森耀校':'內壢森耀校.png',
-  '竹北知行校':'竹北知行校.png',
-  '文化極光校':'極光.png',
-  '快樂騰雲校':'00逗點教室_各分校校徽_頭貼_總部.png',
-  '大園參天校':'參天.png',
-  '園中方舟校':'方舟.png',
-  '青埔旭日校':'旭日.png',
-  '中壢心夢想校':'心夢想.png',
-};
+const BRANCH_LOGO={'青埔翱翔校':'翱翔.png','青埔升大校':'升大.png','青園展翅校':'展翅.png','大園晨光校':'晨光.png','內壢森耀校':'內壢森耀校.png','竹北知行校':'竹北知行校.png','文化極光校':'極光.png','快樂騰雲校':'00逗點教室_各分校校徽_頭貼_總部.png','大園參天校':'參天.png','園中方舟校':'方舟.png','青埔旭日校':'旭日.png','中壢心夢想校':'心夢想.png'};
 function getBranchLogo(dept){return BRANCH_LOGO[dept]||'00逗點教室_各分校校徽_頭貼_總部.png';}
-function updateLogos(dept){
-  const src=getBranchLogo(dept);
-  const li=document.getElementById('login-logo-img');
-  const hi=document.getElementById('header-logo-img');
-  if(li)li.src=src;
-  if(hi)hi.src=src;
-}
+function updateLogos(dept){const s=getBranchLogo(dept);const a=document.getElementById('login-logo-img');const b=document.getElementById('header-logo-img');if(a)a.src=s;if(b)b.src=s;}
 
-const EMP_DB={
-  "F00001":{name:"徐暘智",dept:"逗點集團",role:"ADMIN"},
-  "F00003":{name:"劉芸諺",dept:"行政溝通處",role:"MGR"},
-  "F00004":{name:"黃乙凡",dept:"國高中營運處",role:"SENIOR_HS"},
-  "F00005":{name:"黃倪睨",dept:"國小營運處",role:"SENIOR_ES"},
-  "F00007":{name:"黃偉婷",dept:"青園展翅校",role:"MGR"},
-  "F00008":{name:"游立銘",dept:"中壢心夢想校",role:"MGR"},
-  "F00009":{name:"林思誼",dept:"園中方舟校",role:"MGR"},
-  "F00010":{name:"李安琇",dept:"青埔翱翔校",role:"MGR"},
-  "F00012":{name:"陳映竹",dept:"青埔旭日校",role:"MGR"},
-  "F00016":{name:"古欣平",dept:"文化極光校",role:"MGR"},
-  "F00022":{name:"鄒瑞紋",dept:"大園參天校",role:"MGR"},
-  "F00029":{name:"王欣俞",dept:"竹北知行校",role:"MGR"},
-  "F00031":{name:"許芳茹",dept:"大園晨光校",role:"MGR"},
-  "F00035":{name:"魏詩珊",dept:"人力資源處",role:"HR"},
-  "F00054":{name:"曾佳敏",dept:"人力資源處",role:"HR"},
-  "F00059":{name:"應羽涵",dept:"國小英文管理科",role:"MGR"},
-  "F00070":{name:"林依屏",dept:"青埔升大校",role:"MGR"},
-  "F00081":{name:"廖依珊",dept:"產品研發處",role:"MGR"},
-  "F00084":{name:"巫珮菱",dept:"內壢森耀校",role:"MGR"},
-  "F00086":{name:"呂鈺嬋",dept:"國高中營運處",role:"MGR"},
-  "F00092":{name:"蔡玉晴",dept:"快樂騰雲校",role:"MGR"}
-};
+const EMP_DB={"F00001":{name:"徐暘智",dept:"逗點集團",role:"ADMIN"},"F00003":{name:"劉芸諺",dept:"行政溝通處",role:"MGR"},"F00004":{name:"黃乙凡",dept:"國高中營運處",role:"SENIOR_HS"},"F00005":{name:"黃倪睨",dept:"國小營運處",role:"SENIOR_ES"},"F00007":{name:"黃偉婷",dept:"青園展翅校",role:"MGR"},"F00008":{name:"游立銘",dept:"中壢心夢想校",role:"MGR"},"F00009":{name:"林思誼",dept:"園中方舟校",role:"MGR"},"F00010":{name:"李安琇",dept:"青埔翱翔校",role:"MGR"},"F00012":{name:"陳映竹",dept:"青埔旭日校",role:"MGR"},"F00016":{name:"古欣平",dept:"文化極光校",role:"MGR"},"F00022":{name:"鄒瑞紋",dept:"大園參天校",role:"MGR"},"F00029":{name:"王欣俞",dept:"竹北知行校",role:"MGR"},"F00031":{name:"許芳茹",dept:"大園晨光校",role:"MGR"},"F00035":{name:"魏詩珊",dept:"人力資源處",role:"HR"},"F00054":{name:"曾佳敏",dept:"人力資源處",role:"HR"},"F00059":{name:"應羽涵",dept:"國小英文管理科",role:"MGR"},"F00070":{name:"林依屏",dept:"青埔升大校",role:"MGR"},"F00081":{name:"廖依珊",dept:"產品研發處",role:"MGR"},"F00084":{name:"巫珮菱",dept:"內壢森耀校",role:"MGR"},"F00086":{name:"呂鈺嬋",dept:"國高中營運處",role:"MGR"},"F00092":{name:"蔡玉晴",dept:"快樂騰雲校",role:"MGR"}};
 
-const S1_DATA=[
-  {id:'exp',title:"工作經歷",weight:0.20,max:5,qs:["最能代表其專業能力及理想的經歷？"]},
-  {id:'mot',title:"動機與價值",weight:0.35,max:10,qs:["與我們最契合的價值觀？","影響個人去留的主因？"]},
-  {id:'sty',title:"工作風格",weight:0.25,max:10,qs:["最滿意或欣賞的工作環境、管理制度？","感到挫敗或壓力最大的案例？當時如何應對？"]},
-  {id:'sal',title:"薪資與期待",weight:0.20,max:15,qs:["期望月薪/年薪及初期最低薪資？","最感興趣的工作任務與職涯關聯？","想了解或擔心的部分？"]},
-  {id:'bon',title:"特別加分題",weight:0.01,max:5,qs:["補充說明"]}
-];
+const S1_DATA=[{id:'exp',title:"工作經歷",weight:0.20,max:5,qs:["最能代表其專業能力及理想的經歷？"]},{id:'mot',title:"動機與價值",weight:0.35,max:10,qs:["與我們最契合的價值觀？","影響個人去留的主因？"]},{id:'sty',title:"工作風格",weight:0.25,max:10,qs:["最滿意或欣賞的工作環境、管理制度？","感到挫敗或壓力最大的案例？當時如何應對？"]},{id:'sal',title:"薪資與期待",weight:0.20,max:15,qs:["期望月薪/年薪及初期最低薪資？","最感興趣的工作任務與職涯關聯？","想了解或擔心的部分？"]},{id:'bon',title:"特別加分題",weight:0.01,max:5,qs:["補充說明"]}];
 const S2_QUESTIONS=["儀容穿著","禮貌應對","表達流暢","自信穩健","誠懇親和","對分校了解","對職務認知","企圖心展現","配合度","邏輯思考","臨場反應","學習意願","情緒穩定","抗壓性","團隊合作","經歷相關","專業知識"];
-const S3_LEVELS={
-  1:{c:[30,20,20,15,10,5],m:[30,30,40],ratio:{c:90,m:10}},
-  4:{c:[20,15,20,15,15,15],m:[30,40,30],ratio:{c:60,m:40}},
-  7:{c:[15,10,20,15,20,20],m:[40,35,25],ratio:{c:30,m:70}}
-};
-const S3_CORE=[
-  {name:"品質成果導向",levels:["逃避責任","被動執行","穩定執行","主動精進","卓越引領"],descs:["經常拖延，需多次提醒；遇問題傾向抱怨，品質不穩。","僅完成明確指示，缺乏自我檢查；需主管持續監督。","理解任務並依計畫執行；遇困難主動回報，品質大致穩定。","清楚拆解目標並優化流程；具高責任感，能協調資源。","高度自我要求，帶領他人檢視改進；建立標準化機制。"]},
-  {name:"顧客導向",levels:["忽視需求","被動回應","穩定服務","主動協助","建立信任"],descs:["對家長反應漠不關心，傾向以規則回應。","僅被詢問時回覆；面對抱怨易緊張防禦。","能友善回覆，在指導下處理簡單抱怨。","察覺家長焦慮並主動關懷，平衡雙方期待。","化解負面情緒並建立信任，帶領團隊形成穩定服務文化。"]},
-  {name:"問題解決",levels:["逃避問題","被動回報","穩定修正","主動分析","系統改善"],descs:["面對問題閃避或推卸責任，缺乏改善行動。","察覺問題但僅通報主管，未嘗試分析或提出方案。","在指導下釐清問題，提出可行修正並完成任務。","獨立找出根源、提出並執行方案，追蹤結果。","整合團隊經驗建立SOP，推動持續改善與風險預警。"]},
-  {name:"團隊合作",levels:["抗拒合作","被動配合","穩定參與","主動支援","領導團隊"],descs:["缺乏團隊意識，只顧自身任務。","願意合作但僅在被要求時行動。","理解目標並完成分配任務，衝突時保持理性。","協調不同意見、推動共識，主動分享經驗。","帶領團隊形成穩定機制，推動跨部門協作。"]},
-  {name:"溝通協調",levels:["表達混亂","被動回應","清楚表達","彈性調整","影響引導"],descs:["溝通缺乏邏輯或情緒化，易造成誤會或衝突。","單向表達未確認對方理解；常需他人重複解釋。","條理說明工作，能傾聽並確認理解。","依對象調整語氣方式，協助建立共識與合作。","跨部門清晰表達觀點，影響他人並維護形象。"]},
-  {name:"創新能力",levels:["抗拒改變","被動接受","穩定嘗試","主動創新","引領創新"],descs:["拒絕新做法，傾向維持現狀或否定他人創意。","願意嘗試但缺乏主動觀察；需指導才能執行。","配合新流程，並在指導下提出小幅優化。","獨立觀察問題、提出新做法並追蹤結果。","發展創新專案或制度，推動團隊建立優化文化。"]}
-];
-const S3_MGMT=[
-  {name:"策略性思考",levels:["僅執行命令","理解指令","基本分析","前瞻規劃","組織引領"],descs:["只關注自身任務，不理解組織方向。","能理解策略但無法轉化行動。","能分析資料、理解願景並與部門任務連結。","能發現趨勢或問題，提出可行策略建議並落實。","能設計策略地圖、影響決策並推動長期發展。"]},
-  {name:"人才發展",levels:["無學習動機","被動學習","穩定學習","主動培育","系統傳承"],descs:["對自身或他人發展無興趣，不參與訓練。","僅完成要求的培訓，缺乏持續追蹤。","能自我成長並主動協助新進同事適應任務。","能計畫學習方向、提供具體回饋，帶領同儕進步。","能設計培訓制度、建立導師文化，推動組織人才成長。"]},
-  {name:"文化落實",levels:["不認同","被動參與","穩定實踐","主動傳遞","文化引領"],descs:["行為與組織價值相悖，對文化活動冷漠或抵制。","表面配合但缺乏實際行動，僅在被要求時參與。","認同價值觀並在工作中展現，能主動參與文化活動。","以行動影響他人、推動文化活動，展現正向力量。","能建立文化制度、引領團隊內化價值並對外傳遞品牌信念。"]}
-];
+const S3_LEVELS={1:{c:[30,20,20,15,10,5],m:[30,30,40],ratio:{c:90,m:10}},4:{c:[20,15,20,15,15,15],m:[30,40,30],ratio:{c:60,m:40}},7:{c:[15,10,20,15,20,20],m:[40,35,25],ratio:{c:30,m:70}}};
+const S3_CORE=[{name:"品質成果導向",levels:["逃避責任","被動執行","穩定執行","主動精進","卓越引領"],descs:["經常拖延，需多次提醒；遇問題傾向抱怨，品質不穩。","僅完成明確指示，缺乏自我檢查；需主管持續監督。","理解任務並依計畫執行；遇困難主動回報，品質大致穩定。","清楚拆解目標並優化流程；具高責任感，能協調資源。","高度自我要求，帶領他人檢視改進；建立標準化機制。"]},{name:"顧客導向",levels:["忽視需求","被動回應","穩定服務","主動協助","建立信任"],descs:["對家長反應漠不關心，傾向以規則回應。","僅被詢問時回覆；面對抱怨易緊張防禦。","能友善回覆，在指導下處理簡單抱怨。","察覺家長焦慮並主動關懷，平衡雙方期待。","化解負面情緒並建立信任，帶領團隊形成穩定服務文化。"]},{name:"問題解決",levels:["逃避問題","被動回報","穩定修正","主動分析","系統改善"],descs:["面對問題閃避或推卸責任，缺乏改善行動。","察覺問題但僅通報主管，未嘗試分析或提出方案。","在指導下釐清問題，提出可行修正並完成任務。","獨立找出根源、提出並執行方案，追蹤結果。","整合團隊經驗建立SOP，推動持續改善與風險預警。"]},{name:"團隊合作",levels:["抗拒合作","被動配合","穩定參與","主動支援","領導團隊"],descs:["缺乏團隊意識，只顧自身任務。","願意合作但僅在被要求時行動。","理解目標並完成分配任務，衝突時保持理性。","協調不同意見、推動共識，主動分享經驗。","帶領團隊形成穩定機制，推動跨部門協作。"]},{name:"溝通協調",levels:["表達混亂","被動回應","清楚表達","彈性調整","影響引導"],descs:["溝通缺乏邏輯或情緒化，易造成誤會或衝突。","單向表達未確認對方理解；常需他人重複解釋。","條理說明工作，能傾聽並確認理解。","依對象調整語氣方式，協助建立共識與合作。","跨部門清晰表達觀點，影響他人並維護形象。"]},{name:"創新能力",levels:["抗拒改變","被動接受","穩定嘗試","主動創新","引領創新"],descs:["拒絕新做法，傾向維持現狀或否定他人創意。","願意嘗試但缺乏主動觀察；需指導才能執行。","配合新流程，並在指導下提出小幅優化。","獨立觀察問題、提出新做法並追蹤結果。","發展創新專案或制度，推動團隊建立優化文化。"]}];
+const S3_MGMT=[{name:"策略性思考",levels:["僅執行命令","理解指令","基本分析","前瞻規劃","組織引領"],descs:["只關注自身任務，不理解組織方向。","能理解策略但無法轉化行動。","能分析資料、理解願景並與部門任務連結。","能發現趨勢或問題，提出可行策略建議並落實。","能設計策略地圖、影響決策並推動長期發展。"]},{name:"人才發展",levels:["無學習動機","被動學習","穩定學習","主動培育","系統傳承"],descs:["對自身或他人發展無興趣，不參與訓練。","僅完成要求的培訓，缺乏持續追蹤。","能自我成長並主動協助新進同事適應任務。","能計畫學習方向、提供具體回饋，帶領同儕進步。","能設計培訓制度、建立導師文化，推動組織人才成長。"]},{name:"文化落實",levels:["不認同","被動參與","穩定實踐","主動傳遞","文化引領"],descs:["行為與組織價值相悖，對文化活動冷漠或抵制。","表面配合但缺乏實際行動，僅在被要求時參與。","認同價值觀並在工作中展現，能主動參與文化活動。","以行動影響他人、推動文化活動，展現正向力量。","能建立文化制度、引領團隊內化價值並對外傳遞品牌信念。"]}];
 
 let currentUser=null,state=null,dbCache=[];
 
 function getEmptyState(){
-  return{
-    name:"",branch:"",position:"",otherPosition:"",date:"",time:"",
-    level:1,finalDecision:null,bonusMethod:"",idealStatus:"",grandTotal:"0.00",
-    s1Final:"0.00",s2Final:"0.00",s3Final:"0.00",docStatus:"new",interviewNote:"",
+  return{name:"",branch:"",position:"",otherPosition:"",date:"",time:"",level:0,finalDecision:null,bonusMethod:"",idealStatus:"",grandTotal:"0.00",s1Final:"0.00",s2Final:"0.00",s3Final:"0.00",docStatus:"new",interviewNote:"",positions:[],
     s1:{exp:[0],mot:[0,0],sty:[0,0],sal:[0,0,0],bon:[0],bonText:""},
     s2:Array(S2_QUESTIONS.length).fill(0),
     s3:{core:Array(6).fill(0),mgmt:Array(3).fill(0)},
-    s3Texts:{
-      core:Array(6).fill(null).map(()=>({bei:'',c:'',a:'',r:''})),
-      mgmt:Array(3).fill(null).map(()=>({bei:'',c:'',a:'',r:''}))
-    }
+    s3Texts:{core:Array(6).fill(null).map(()=>({bei:'',c:'',a:'',r:''})),mgmt:Array(3).fill(null).map(()=>({bei:'',c:'',a:'',r:''}))}
   };
 }
 
-// ===== LOGIN =====
 async function handleLogin(){
   const empId=document.getElementById('login-emp').value.trim().toUpperCase();
   const pwd=document.getElementById('login-pwd').value.trim();
@@ -563,7 +465,6 @@ function initAfterLogin(){
   state=getEmptyState();
   if(!['HR','ADMIN'].includes(currentUser.role))state.branch=currentUser.dept;
   hydrateUI();calculateScores();
-  // 切換畫面：隱藏登入，顯示前台，不使用 page class 避免閃爍
   document.getElementById('page-login').classList.remove('active');
   document.getElementById('page-front').classList.add('active');
   document.getElementById('bottom-bar').style.display='block';
@@ -578,22 +479,17 @@ function handleLogout(){
   document.getElementById('page-front').classList.remove('active');
   document.getElementById('page-login').classList.add('active');
   document.getElementById('login-pwd').value='';
-  // 重置logo為總部
   updateLogos('總部');
 }
 
-// ===== VIEW =====
 function switchView(target){
   if(target==='front'){
     document.getElementById('bottom-bar').style.display='block';
-    document.getElementById('page-front').classList.add('active');
   } else if(target==='backend'){
-    // 直接導向後台，傳遞員工ID
     window.location.href='admin.html?emp='+currentUser.id;
   }
 }
 
-// ===== CLOUD =====
 async function fetchCloudDB(){
   try{
     showToast('同步資料中...');
@@ -607,10 +503,11 @@ async function fetchCloudDB(){
 async function saveToSupabase(){
   syncState();
   const interviewers=Array.from(document.querySelectorAll('.ipt-interviewer')).map(i=>i.value).filter(v=>v).join('、');
+  const positions=Array.from(document.querySelectorAll('.ipt-position')).map(i=>i.value).filter(v=>v).join('、');
   const docId=(state.name+'_'+state.date).replace(/\s/g,'_');
   const payload={
     doc_id:docId,candidate_name:state.name,branch:state.branch,
-    position:state.position,other_position:state.otherPosition||'',
+    position:positions||state.position,other_position:state.otherPosition||'',
     interviewer:interviewers,interview_date:state.date,interview_time:state.time,
     s1_final:parseFloat(state.s1Final)||0,s2_final:parseFloat(state.s2Final)||0,
     s3_final:parseFloat(state.s3Final)||0,grand_total:parseFloat(state.grandTotal)||0,
@@ -626,7 +523,6 @@ async function saveToSupabase(){
   return true;
 }
 
-// ===== ACTIONS =====
 async function handleSaveDraft(){
   if(!state.name.trim())return alert('請先輸入應徵者姓名');
   state.docStatus='draft';
@@ -636,6 +532,7 @@ async function handleSaveDraft(){
 
 async function handleFinalSubmit(){
   syncState();
+  if(!state.name.trim())return alert('請先輸入應徵者姓名');
   if(!state.finalDecision)return alert('請先選擇錄取或不錄取');
   state.docStatus='completed';
   const ok=await saveToSupabase();
@@ -656,6 +553,9 @@ function handleClear(){
   state=getEmptyState();
   if(!['HR','ADMIN'].includes(currentUser.role))state.branch=currentUser.dept;
   else state.branch=branch;
+  // 重置職位列表
+  const pl=document.getElementById('position-list');
+  if(pl)pl.innerHTML='<div class="position-row"><select class="ipt-position info-input" onchange="syncState()"><option value="">請選擇...</option><option>班級導師</option><option>行政導師</option><option>授課師</option><option>主任</option><option>處長</option><option>總部</option><option>其他</option></select></div>';
   hydrateUI();calculateScores();window.scrollTo(0,0);
   showToast('已清除，可填寫下一位');
 }
@@ -666,9 +566,16 @@ function addInterviewer(){
   d.innerHTML=`<input type="text" class="ipt-interviewer info-input" oninput="syncState()" placeholder="面試官姓名"><button class="btn-rm-int" onclick="this.parentElement.remove();syncState()">✕</button>`;
   c.appendChild(d);
 }
+
+function addPosition(){
+  const c=document.getElementById('position-list');
+  const d=document.createElement('div');d.className='position-row';
+  d.innerHTML=`<select class="ipt-position info-input" onchange="syncState()"><option value="">請選擇...</option><option>班級導師</option><option>行政導師</option><option>授課師</option><option>主任</option><option>處長</option><option>總部</option><option>其他</option></select><button class="btn-rm-int" onclick="this.parentElement.remove();syncState()">✕</button>`;
+  c.appendChild(d);
+}
+
 function closeMissingModal(){document.getElementById('missing-modal').classList.remove('show');}
 
-// ===== RENDER =====
 function renderS1(){
   const body=document.getElementById('s1-body');let html='';
   S1_DATA.forEach(g=>{
@@ -680,7 +587,7 @@ function renderS1(){
       html+=`</div></div></div>`;
     }else{
       g.qs.forEach((q,i)=>{
-        html+=`<div class="score-row"><div class="score-q">${q}</div><div class="score-btns">`;
+        html+=`<div class="score-row"><div class="score-q">${q} <span style="color:var(--red);font-size:11px;">★</span></div><div class="score-btns">`;
         [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-${g.id}',${i},${v},this)" class="score-btn${state.s1[g.id][i]==v?' active':''}" data-val="${v}">${v}</button>`;});
         html+=`</div></div>`;
       });
@@ -691,37 +598,32 @@ function renderS1(){
 }
 
 function renderS2(){
-  const body=document.getElementById('s2-body');
   let html='<div class="s2-grid">';
   S2_QUESTIONS.forEach((q,i)=>{
     let btns=[1,2,3,4,5].map(v=>`<button onclick="setScore('s2',${i},${v},this)" class="score-btn${state.s2[i]==v?' active':''}" data-val="${v}" style="width:26px;height:26px;font-size:11px;">${v}</button>`).join('');
-    html+=`<div class="s2-row"><span class="s2-num">${i+1}</span><span class="s2-q">${q}</span><div class="s2-btns">${btns}</div></div>`;
+    html+=`<div class="s2-row"><span class="s2-num">${i+1}</span><span class="s2-q">${q} <span style="color:var(--red);font-size:10px;">★</span></span><div class="s2-btns">${btns}</div></div>`;
   });
   html+='</div>';
-  body.innerHTML=html;
+  document.getElementById('s2-body').innerHTML=html;
 }
 
 function renderS3(){
-  const lv=state.level||1;const d=S3_LEVELS[lv]||S3_LEVELS[1];let html='';
+  const lv=parseInt(state.level)||0;
+  const tipEl=document.getElementById('s3-level-tip');
+  if(!lv){if(tipEl)tipEl.style.display='block';document.getElementById('s3-tbody').innerHTML='';return;}
+  if(tipEl)tipEl.style.display='none';
+  const d=S3_LEVELS[lv]||S3_LEVELS[1];let html='';
   const mkBtns=(sub,i,BARS)=>[1,2,3,4,5].map(v=>`<button onclick="setS3Score('${sub}',${i},${v},this)" class="s3-score-btn${state.s3[sub][i]==v?' active':''}" data-val="${v}">${v}<span class="s3-tooltip">${BARS[i].levels[v-1]}</span></button>`).join('');
   S3_CORE.forEach((item,i)=>{
     const desc=state.s3.core[i]>0?item.descs[state.s3.core[i]-1]:'';
     html+=`<tr>
       <td class="s3-dim" style="color:#1D6FD8;">核心<br><span style="font-size:10px;">(${d.c[i]}%)</span></td>
       <td class="s3-name">${item.name}</td>
-      <td><textarea class="s3-textarea" rows="4" placeholder="BEI 問題描述..." oninput="state.s3Texts.core[${i}].bei=this.value">${state.s3Texts.core[i].bei||''}</textarea></td>
-      <td><textarea class="s3-textarea" rows="4" placeholder="狀況..." oninput="state.s3Texts.core[${i}].c=this.value">${state.s3Texts.core[i].c||''}</textarea></td>
-      <td><textarea class="s3-textarea" rows="4" placeholder="行動..." oninput="state.s3Texts.core[${i}].a=this.value">${state.s3Texts.core[i].a||''}</textarea></td>
-      <td><textarea class="s3-textarea" rows="4" placeholder="結果..." oninput="state.s3Texts.core[${i}].r=this.value">${state.s3Texts.core[i].r||''}</textarea></td>
-      <td class="s3-score-cell">
-        <div class="s3-score-inner">
-          <div class="s3-score-btns">${mkBtns('core',i,S3_CORE)}</div>
-          <div id="desc-core-${i}" class="s3-desc-box${state.s3.core[i]>0?' show':''}">
-            <div class="s3-desc-label">行為描述</div>
-            <span id="desc-text-core-${i}">${desc}</span>
-          </div>
-        </div>
-      </td>
+      <td style="text-align:center;"><textarea class="s3-textarea" rows="3" placeholder="BEI 問題描述..." oninput="state.s3Texts.core[${i}].bei=this.value">${state.s3Texts.core[i].bei||''}</textarea></td>
+      <td style="text-align:center;"><textarea class="s3-textarea" rows="3" placeholder="狀況..." oninput="state.s3Texts.core[${i}].c=this.value">${state.s3Texts.core[i].c||''}</textarea></td>
+      <td style="text-align:center;"><textarea class="s3-textarea" rows="3" placeholder="行動..." oninput="state.s3Texts.core[${i}].a=this.value">${state.s3Texts.core[i].a||''}</textarea></td>
+      <td style="text-align:center;"><textarea class="s3-textarea" rows="3" placeholder="結果..." oninput="state.s3Texts.core[${i}].r=this.value">${state.s3Texts.core[i].r||''}</textarea></td>
+      <td class="s3-score-cell"><div class="s3-score-inner"><div class="s3-score-btns">${mkBtns('core',i,S3_CORE)}</div><div id="desc-core-${i}" class="s3-desc-box${state.s3.core[i]>0?' show':''}"><div class="s3-desc-label">行為描述</div><span id="desc-text-core-${i}">${desc}</span></div></div></td>
     </tr>`;
   });
   S3_MGMT.forEach((item,i)=>{
@@ -729,19 +631,11 @@ function renderS3(){
     html+=`<tr>
       <td class="s3-dim" style="color:#059669;">管理<br><span style="font-size:10px;">(${d.m[i]}%)</span></td>
       <td class="s3-name">${item.name}</td>
-      <td><textarea class="s3-textarea" rows="4" placeholder="BEI 問題描述..." oninput="state.s3Texts.mgmt[${i}].bei=this.value">${state.s3Texts.mgmt[i].bei||''}</textarea></td>
-      <td><textarea class="s3-textarea" rows="4" placeholder="狀況..." oninput="state.s3Texts.mgmt[${i}].c=this.value">${state.s3Texts.mgmt[i].c||''}</textarea></td>
-      <td><textarea class="s3-textarea" rows="4" placeholder="行動..." oninput="state.s3Texts.mgmt[${i}].a=this.value">${state.s3Texts.mgmt[i].a||''}</textarea></td>
-      <td><textarea class="s3-textarea" rows="4" placeholder="結果..." oninput="state.s3Texts.mgmt[${i}].r=this.value">${state.s3Texts.mgmt[i].r||''}</textarea></td>
-      <td class="s3-score-cell">
-        <div class="s3-score-inner">
-          <div class="s3-score-btns">${mkBtns('mgmt',i,S3_MGMT)}</div>
-          <div id="desc-mgmt-${i}" class="s3-desc-box${state.s3.mgmt[i]>0?' show':''}">
-            <div class="s3-desc-label">行為描述</div>
-            <span id="desc-text-mgmt-${i}">${desc}</span>
-          </div>
-        </div>
-      </td>
+      <td style="text-align:center;"><textarea class="s3-textarea" rows="3" placeholder="BEI 問題描述..." oninput="state.s3Texts.mgmt[${i}].bei=this.value">${state.s3Texts.mgmt[i].bei||''}</textarea></td>
+      <td style="text-align:center;"><textarea class="s3-textarea" rows="3" placeholder="狀況..." oninput="state.s3Texts.mgmt[${i}].c=this.value">${state.s3Texts.mgmt[i].c||''}</textarea></td>
+      <td style="text-align:center;"><textarea class="s3-textarea" rows="3" placeholder="行動..." oninput="state.s3Texts.mgmt[${i}].a=this.value">${state.s3Texts.mgmt[i].a||''}</textarea></td>
+      <td style="text-align:center;"><textarea class="s3-textarea" rows="3" placeholder="結果..." oninput="state.s3Texts.mgmt[${i}].r=this.value">${state.s3Texts.mgmt[i].r||''}</textarea></td>
+      <td class="s3-score-cell"><div class="s3-score-inner"><div class="s3-score-btns">${mkBtns('mgmt',i,S3_MGMT)}</div><div id="desc-mgmt-${i}" class="s3-desc-box${state.s3.mgmt[i]>0?' show':''}"><div class="s3-desc-label">行為描述</div><span id="desc-text-mgmt-${i}">${desc}</span></div></div></td>
     </tr>`;
   });
   document.getElementById('s3-tbody').innerHTML=html;
@@ -750,17 +644,35 @@ function renderS3(){
 function hydrateUI(){
   const g=id=>document.getElementById(id);
   if(g('ipt-name'))g('ipt-name').value=state.name||'';
-  if(g('sel-position'))g('sel-position').value=state.position||'';
   if(g('ipt-other-pos'))g('ipt-other-pos').value=state.otherPosition||'';
   if(g('ipt-date'))g('ipt-date').value=state.date||new Date().toISOString().split('T')[0];
   if(g('ipt-time'))g('ipt-time').value=state.time||'';
-  if(g('job-level-select'))g('job-level-select').value=state.level||1;
   if(g('interview-note-input'))g('interview-note-input').value=state.interviewNote||'';
+  // 職等
+  const lvSel=g('job-level-select');
+  if(lvSel){
+    lvSel.value=state.level||'';
+    if(!state.level||state.level===0){lvSel.classList.add('not-selected');}
+    else{lvSel.classList.remove('not-selected');}
+  }
   const sb2=g('sel-branch');
   if(sb2){
     const restricted=!['HR','ADMIN','SENIOR_HS','SENIOR_ES'].includes(currentUser.role);
     if(restricted){sb2.value=currentUser.dept;sb2.disabled=true;}
     else{sb2.disabled=false;sb2.value=state.branch||'';}
+  }
+  // 恢復職位列表
+  if(state.positions&&state.positions.length>0){
+    const pl=g('position-list');
+    if(pl){
+      pl.innerHTML='';
+      state.positions.forEach((pos,idx)=>{
+        const d=document.createElement('div');d.className='position-row';
+        const rmBtn=idx>0?`<button class="btn-rm-int" onclick="this.parentElement.remove();syncState()">✕</button>`:'';
+        d.innerHTML=`<select class="ipt-position info-input" onchange="syncState()"><option value="">請選擇...</option><option${pos==='班級導師'?' selected':''}>班級導師</option><option${pos==='行政導師'?' selected':''}>行政導師</option><option${pos==='授課師'?' selected':''}>授課師</option><option${pos==='主任'?' selected':''}>主任</option><option${pos==='處長'?' selected':''}>處長</option><option${pos==='總部'?' selected':''}>總部</option><option${pos==='其他'?' selected':''}>其他</option></select>${rmBtn}`;
+        pl.appendChild(d);
+      });
+    }
   }
   const fi=document.querySelector('.ipt-interviewer');
   if(fi&&!fi.value&&currentUser)fi.value=currentUser.name;
@@ -776,7 +688,8 @@ function syncState(){
   state.name=v('ipt-name');
   const sb2=document.getElementById('sel-branch');
   if(sb2&&!sb2.disabled)state.branch=sb2.value;
-  state.position=v('sel-position');
+  state.positions=Array.from(document.querySelectorAll('.ipt-position')).map(e=>e.value).filter(v=>v);
+  state.position=state.positions[0]||'';
   state.otherPosition=v('ipt-other-pos');
   state.date=v('ipt-date');state.time=v('ipt-time');
   state.interviewNote=v('interview-note-input');
@@ -784,13 +697,9 @@ function syncState(){
 }
 
 function updateBonusSummary(){
-  // 自動帶入加分摘要：從特別加分題的文字
   const bonText=state.s1?state.s1.bonText||'':'';
   const el=document.getElementById('bonus-summary-display');
-  if(el){
-    el.textContent=bonText.trim()||'尚未填寫加分項目';
-    el.style.color=bonText.trim()?'var(--text)':'var(--text3)';
-  }
+  if(el){el.textContent=bonText.trim()||'尚未填寫加分項目';el.style.color=bonText.trim()?'var(--text)':'var(--text3)';}
 }
 
 function setScore(group,idx,val,btn){
@@ -806,6 +715,8 @@ function setScore(group,idx,val,btn){
 }
 
 function setS3Score(sub,idx,val,btn){
+  // 檢查是否已選職等
+  if(!state.level||state.level===0){alert('請先選擇職等！');return;}
   Array.from(btn.parentElement.children).forEach(b=>b.classList.remove('active'));
   const cur=state.s3[sub][idx];const nv=(cur===val)?0:val;
   if(nv>0)btn.classList.add('active');
@@ -813,46 +724,34 @@ function setS3Score(sub,idx,val,btn){
   const BARS=sub==='core'?S3_CORE:S3_MGMT;
   const db=document.getElementById(`desc-${sub}-${idx}`);
   const dt=document.getElementById(`desc-text-${sub}-${idx}`);
-  if(db&&dt){
-    if(nv>0){dt.textContent=BARS[idx].descs[nv-1];db.classList.add('show');}
-    else db.classList.remove('show');
-  }
+  if(db&&dt){if(nv>0){dt.textContent=BARS[idx].descs[nv-1];db.classList.add('show');}else db.classList.remove('show');}
   calculateScores();
 }
 
 function updateLevelLogic(){
   const sel=document.getElementById('job-level-select');
-  if(sel)state.level=parseInt(sel.value);
+  if(sel){
+    state.level=sel.value?parseInt(sel.value):0;
+    if(!state.level){sel.classList.add('not-selected');}else{sel.classList.remove('not-selected');}
+  }
   renderS3();calculateScores();
 }
 
 function calculateScores(){
   const sum=arr=>arr.reduce((a,b)=>a+b,0);
   let s1p=0,motScore=0,s1Raw=0;
-  S1_DATA.forEach(g=>{
-    const raw=sum(state.s1[g.id]);s1Raw+=raw;
-    if(g.id==='mot')motScore=raw;
-    if(raw>0)s1p+=(raw/g.max)*100*g.weight;
-  });
+  S1_DATA.forEach(g=>{const raw=sum(state.s1[g.id]);s1Raw+=raw;if(g.id==='mot')motScore=raw;if(raw>0)s1p+=(raw/g.max)*100*g.weight;});
   const s1f=(s1p/100)*30;
   const s2r=sum(state.s2),s2f=s2r>0?(s2r/85)*100*0.10:0;
-  const lv=state.level||1;const d=S3_LEVELS[lv]||S3_LEVELS[1];
+  const lv=parseInt(state.level)||1;const d=S3_LEVELS[lv]||S3_LEVELS[1];
   let cs=0,ms=0;
   state.s3.core.forEach((v,i)=>cs+=v*(d.c[i]/100));
   state.s3.mgmt.forEach((v,i)=>ms+=v*(d.m[i]/100));
   const s3r=((cs/5)*100*(d.ratio.c/100))+((ms/5)*100*(d.ratio.m/100));
   const s3f=s3r*0.60;const gt=s1f+s2f+s3f;
-  state.s1Final=s1f.toFixed(2);state.s2Final=s2f.toFixed(2);
-  state.s3Final=s3f.toFixed(2);state.grandTotal=gt.toFixed(2);
-  [['s1-final','s1Final'],['s2-final','s2Final'],['s3-final','s3Final'],
-   ['report-grand-total','grandTotal'],['report-s1','s1Final'],
-   ['report-s2','s2Final'],['report-s3','s3Final'],['footer-total','grandTotal']
-  ].forEach(([id,key])=>{const e=document.getElementById(id);if(e)e.textContent=state[key];});
-  if(gt===0){
-    const ste=document.getElementById('ideal-status-text');if(ste)ste.textContent='等待評分...';
-    const exp=document.getElementById('ideal-status-exp');if(exp)exp.textContent='-';
-    state.idealStatus='';return;
-  }
+  state.s1Final=s1f.toFixed(2);state.s2Final=s2f.toFixed(2);state.s3Final=s3f.toFixed(2);state.grandTotal=gt.toFixed(2);
+  [['s1-final','s1Final'],['s2-final','s2Final'],['s3-final','s3Final'],['report-grand-total','grandTotal'],['report-s1','s1Final'],['report-s2','s2Final'],['report-s3','s3Final'],['footer-total','grandTotal']].forEach(([id,key])=>{const e=document.getElementById(id);if(e)e.textContent=state[key];});
+  if(gt===0){const ste=document.getElementById('ideal-status-text');if(ste)ste.textContent='等待評分...';const exp=document.getElementById('ideal-status-exp');if(exp)exp.textContent='-';state.idealStatus='';return;}
   let si=5,desc='';
   if(gt>=90){si=0;desc='面試與筆試表現皆出色，具高度文化契合度。';}
   else if(gt>=80){si=1;desc='穩定且具培育潛力，文化契合良好。';}
@@ -865,35 +764,43 @@ function calculateScores(){
   if(s2r>0&&s2f<7){veto.push('外顯特質得分率低於70%');si=Math.max(si,4);}
   const STATUS=['優先錄取','建議錄取','可培養/備取','條件式錄取','不建議錄取','不錄取'];
   const COLORS=['#059669','#059669','#D97706','#D97706','#DC2626','#DC2626'];
-  const ste=document.getElementById('ideal-status-text');
-  if(ste){ste.textContent=STATUS[si];ste.style.color=COLORS[si];}
+  const ste=document.getElementById('ideal-status-text');if(ste){ste.textContent=STATUS[si];ste.style.color=COLORS[si];}
   state.idealStatus=STATUS[si];
-  const exp=document.getElementById('ideal-status-exp');
-  if(exp)exp.textContent=veto.length>0?`原因：${veto.join('、')}`:desc;
+  const exp=document.getElementById('ideal-status-exp');if(exp)exp.textContent=veto.length>0?`原因：${veto.join('、')}`:desc;
 }
 
-function showToast(msg){
-  const t=document.getElementById('toast');
-  if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
-}
+function showToast(msg){const t=document.getElementById('toast');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}}
 
 window.onload=()=>{
-  // 檢查 URL 參數（從後台返回前台）
   const params=new URLSearchParams(window.location.search);
   const empId=params.get('emp');
   if(empId&&EMP_DB[empId]){
     currentUser={...EMP_DB[empId],id:empId};
     const editState=sessionStorage.getItem('edit_state');
     if(editState){
-      try{state=JSON.parse(editState);sessionStorage.removeItem('edit_state');}
-      catch(e){state=getEmptyState();}
+      try{
+        const parsed=JSON.parse(editState);
+        // 確保 state_json 正確還原
+        state=parsed.state_json?parsed.state_json:parsed;
+        // 確保必要欄位存在
+        if(!state.s3Texts)state.s3Texts={core:Array(6).fill(null).map(()=>({bei:'',c:'',a:'',r:''})),mgmt:Array(3).fill(null).map(()=>({bei:'',c:'',a:'',r:''}))};
+        if(!state.positions)state.positions=state.position?[state.position]:[];
+        sessionStorage.removeItem('edit_state');
+      }catch(e){state=getEmptyState();}
     }else{
       state=getEmptyState();
       if(!['HR','ADMIN'].includes(currentUser.role))state.branch=currentUser.dept;
     }
     fetchCloudDB().then(()=>{
-      initAfterLogin();
-      // 清除 URL 參數避免重整問題
+      document.getElementById('header-user-info').textContent=`${currentUser.name}（${currentUser.dept}）`;
+      document.getElementById('main-header').style.display='block';
+      document.getElementById('nav-front-btn').style.display='inline-block';
+      document.getElementById('nav-backend-btn').style.display='inline-block';
+      updateLogos(state.branch||currentUser.dept);
+      hydrateUI();calculateScores();
+      document.getElementById('page-login').classList.remove('active');
+      document.getElementById('page-front').classList.add('active');
+      document.getElementById('bottom-bar').style.display='block';
       window.history.replaceState({},'',window.location.pathname);
     });
   } else {
