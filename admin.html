@@ -60,7 +60,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .table-header-title{font-size:13px;font-weight:700;color:var(--text);}
 .table-count{font-size:11px;color:var(--text3);}
 /* 這裡不設 overflow，讓 table 自然撐開頁面 */
-.tbl-wrap{overflow-x:auto;}
+.tbl-wrap{overflow-x:visible;}
 .tbl{width:100%;border-collapse:collapse;min-width:1100px;}
 .tbl th{background:#F0F4FA;padding:9px 12px;font-size:11px;font-weight:700;color:var(--text3);text-align:left;border-bottom:1px solid var(--border);letter-spacing:.03em;text-transform:uppercase;white-space:nowrap;}
 .tbl td{padding:10px 12px;border-bottom:1px solid rgba(221,228,239,.5);font-size:13px;vertical-align:middle;}
@@ -158,26 +158,88 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .decision-pass{color:#059669;font-weight:900;}
 .decision-fail{color:#DC2626;font-weight:900;}
 
-/* 列印時的設定：移除頁首頁尾、確保全部印出 */
+/* 列印設定：全部頁面都印出，移除頁首頁尾 URL */
 @media print{
-  body *{visibility:hidden;}
-  .print-content,.print-content *{visibility:visible;}
-  .print-content{position:fixed;top:0;left:0;width:100%;padding:10mm;}
+  /* 隱藏所有非列印內容 */
+  body>*:not(#print-modal){display:none!important;}
+  #print-modal{
+    display:block!important;position:static!important;
+    background:none!important;
+  }
+  .print-modal{
+    width:100%!important;max-height:none!important;
+    box-shadow:none!important;border:none!important;
+    overflow:visible!important;
+  }
   .print-modal-header{display:none!important;}
+  .print-content{
+    padding:0!important;
+    /* 讓內容自然流動跨多頁 */
+    overflow:visible!important;
+    height:auto!important;
+    max-height:none!important;
+  }
   @page{
     size:A4 portrait;
-    margin:10mm;
-    /* 移除頁首頁尾的 URL */
+    margin:12mm 10mm;
+    /* Chrome/Edge 移除頁首頁尾 */
+    margin-header:0;
+    margin-footer:0;
   }
-  /* 讓所有區塊可以跨頁 */
-  .pc-section{break-inside:avoid;page-break-inside:avoid;}
-  .pc-table{page-break-inside:auto;}
-  .pc-table tr{page-break-inside:avoid;}
+  /* 控制分頁 */
+  .pc-header{break-inside:avoid;}
+  .pc-section{break-inside:avoid;margin-bottom:12px!important;}
+  .pc-section-title{break-after:avoid;}
+  .pc-table{break-inside:auto;}
+  .pc-table tr{break-inside:avoid;}
+  /* 外顯兩欄列印 */
+  .pc-s2-grid{break-inside:auto;}
+  .pc-s2-row{break-inside:avoid;}
+  /* 結果區塊 */
+  .pc-total-box,.pc-sub-grid,.pc-result-grid{break-inside:avoid;}
+  /* 隱藏過渡畫面 */
+  #page-transition{display:none!important;}
+}
+/* ===== 切換過渡畫面 ===== */
+#page-transition{
+  display:none;position:fixed;inset:0;background:white;
+  z-index:99999;align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;
+}
+#page-transition.show{display:flex;}
+#transition-logo{
+  width:72px;height:72px;object-fit:contain;
+  animation:jump-sequence .7s ease-out forwards;
+  transform-origin:bottom center;
+}
+#transition-text{
+  font-size:13px;font-weight:700;color:#8898B4;
+  letter-spacing:.1em;
+  animation:fade-in-text .3s ease .15s both;
+}
+@keyframes jump-sequence{
+  0%  {transform:translateY(60px) scaleY(.8);opacity:0;}
+  20% {transform:translateY(0px) scaleY(1.05);opacity:1;}
+  35% {transform:translateY(0px) scaleY(.92) scaleX(1.05);}
+  50% {transform:translateY(-28px) scaleY(1.08) scaleX(.95);}
+  65% {transform:translateY(-6px) scaleY(.95);}
+  78% {transform:translateY(-40px) scaleY(1.05) scaleX(.93) rotate(-8deg);}
+  100%{transform:translateY(-120px) scaleX(.85) rotate(-15deg);opacity:0;}
+}
+@keyframes fade-in-text{
+  from{opacity:0;transform:translateY(4px);}
+  to{opacity:1;transform:translateY(0);}
 }
 </style>
 </head>
 <body>
 <div id="toast"></div>
+
+<!-- 切換過渡畫面 -->
+<div id="page-transition">
+  <img id="transition-logo" src="逗點人LOGO-黑-去背.png" alt="">
+  <div id="transition-text">切換中</div>
+</div>
 
 <!-- 列印 Modal -->
 <div id="print-modal" class="print-modal-overlay">
@@ -520,7 +582,17 @@ async function deleteRecord(docId,name){
   renderTable();
 }
 
-function goFront(){window.location.href='index.html?emp='+currentUser.id;}
+function goFront(){
+  const overlay=document.getElementById('page-transition');
+  if(overlay){
+    overlay.classList.add('show');
+    setTimeout(()=>{
+      window.location.href='index.html?emp='+currentUser.id;
+    },550);
+  }else{
+    window.location.href='index.html?emp='+currentUser.id;
+  }
+}
 
 function adminLogout(){
   currentUser=null;allData=[];

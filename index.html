@@ -183,6 +183,38 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 #toast{position:fixed;top:62px;right:16px;background:var(--white);border-left:3px solid var(--blue);border:1px solid var(--border);color:var(--blue);padding:10px 16px;font-size:13px;font-weight:700;transform:translateX(150%);transition:transform .3s;z-index:9999;box-shadow:var(--shadow-md);}
 #toast.show{transform:translateX(0);}
 
+/* ===== 切換過渡畫面 ===== */
+#page-transition{
+  display:none;position:fixed;inset:0;background:white;
+  z-index:99999;align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;
+}
+#page-transition.show{display:flex;}
+#transition-logo{
+  width:72px;height:72px;object-fit:contain;
+  /* 跳躍動畫：跳入 → 壓縮 → 起跳飛出 */
+  animation:jump-sequence .7s ease-out forwards;
+  transform-origin:bottom center;
+}
+#transition-text{
+  font-size:13px;font-weight:700;color:var(--text3);
+  letter-spacing:.1em;
+  animation:fade-in-text .3s ease .15s both;
+}
+@keyframes jump-sequence{
+  0%  {transform:translateY(60px) scaleY(.8);opacity:0;}
+  20% {transform:translateY(0px) scaleY(1.05);opacity:1;}
+  35% {transform:translateY(0px) scaleY(.92) scaleX(1.05);}
+  50% {transform:translateY(-28px) scaleY(1.08) scaleX(.95);}
+  65% {transform:translateY(-6px) scaleY(.95);}
+  78% {transform:translateY(-40px) scaleY(1.05) scaleX(.93) rotate(-8deg);}
+  100%{transform:translateY(-120px) scaleX(.85) rotate(-15deg);opacity:0;}
+}
+@keyframes fade-in-text{
+  from{opacity:0;transform:translateY(4px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,35,56,.4);z-index:9999;align-items:center;justify-content:center;}
 .modal-overlay.show{display:flex;}
@@ -197,6 +229,12 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 </head>
 <body>
 <div id="toast"></div>
+
+<!-- 切換過渡畫面 -->
+<div id="page-transition">
+  <img id="transition-logo" src="逗點人LOGO-黑-去背.png" alt="">
+  <div id="transition-text">切換中</div>
+</div>
 <div id="missing-modal" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">⚠ 尚有未評分項目</span><button class="modal-close" onclick="closeMissingModal()">✕</button></div>
@@ -463,7 +501,20 @@ function handleLogout(){
   document.getElementById('login-pwd').value='';
   updateLogos('總部');
 }
-function switchView(t){if(t==='backend')window.location.href='admin.html?emp='+currentUser.id;}
+function switchView(t){
+  if(t==='backend'){
+    // 顯示過渡畫面，動畫跑完後跳轉（動畫 0.7s，跳轉在 0.55s 開始，視覺上無縫）
+    const overlay=document.getElementById('page-transition');
+    if(overlay){
+      overlay.classList.add('show');
+      setTimeout(()=>{
+        window.location.href='admin.html?emp='+currentUser.id;
+      },550);
+    }else{
+      window.location.href='admin.html?emp='+currentUser.id;
+    }
+  }
+}
 async function fetchCloudDB(){
   try{showToast('同步資料中...');const{data,error}=await sb.from('interviews').select('*').order('created_at',{ascending:false});if(error)throw error;dbCache=(data||[]).map(r=>({...r.state_json,_doc_id:r.doc_id,_db_id:r.id}));showToast('✓ 同步完成');}
   catch(e){dbCache=[];showToast('離線模式');}
