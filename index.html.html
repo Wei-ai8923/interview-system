@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>逗點教室｜面試系統</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#1D6FD8;--blue-dark:#1558B0;--blue-light:#EBF3FF;
+  --bg:#F4F7FB;--white:#FFFFFF;
+  --border:#DDE4EF;--border2:#C8D6EE;
+  --text:#1A2338;--text2:#4B5C7A;--text3:#8898B4;
+  --green:#059669;--red:#DC2626;--amber:#D97706;
+  --shadow:0 1px 3px rgba(29,111,216,.07);
+  --shadow-md:0 4px 16px rgba(29,111,216,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.page{display:none!important;}.page.active{display:block!important;}
+#page-login.active{display:flex!important;}
+
+/* LOGIN */
+#page-login{min-height:100vh;background:linear-gradient(135deg,#EBF3FF 0%,#F4F7FB 50%,#E8F0FE 100%);align-items:center;justify-content:center;}
+.login-card{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:44px 40px;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(29,111,216,.12);}
+.login-logo{text-align:center;margin-bottom:24px;}
+.login-logo img{height:80px;width:80px;object-fit:cover;border-radius:50%;display:block;margin:0 auto;}
+.login-title{font-size:22px;font-weight:900;color:var(--text);text-align:center;margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:28px;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;letter-spacing:.05em;}
+.form-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:3px;padding:10px 13px;font-size:14px;font-weight:500;color:var(--text);outline:none;transition:border-color .2s;font-family:'Noto Sans TC',sans-serif;}
+.form-input:focus{border-color:var(--blue);background:var(--white);}
+.form-input::placeholder{color:var(--text3);}
+.btn-login{width:100%;background:var(--blue);color:white;border:none;border-radius:3px;padding:12px;font-size:15px;font-weight:900;cursor:pointer;transition:background .2s;font-family:'Noto Sans TC',sans-serif;}
+.btn-login:hover{background:var(--blue-dark);}
+.login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;}
+
+/* HEADER */
+#main-header{background:var(--white);border-bottom:2px solid var(--blue);position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(29,111,216,.08);}
+.header-inner{max-width:1400px;margin:0 auto;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;}
+.header-left{display:flex;align-items:center;gap:10px;}
+.header-logo-img{height:34px;width:34px;object-fit:cover;border-radius:50%;}
+.header-title{font-size:15px;font-weight:900;color:var(--text);}
+.header-sub{font-size:11px;color:var(--text3);}
+.header-nav{display:flex;align-items:center;gap:8px;}
+.nav-btn{padding:5px 14px;border-radius:2px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Noto Sans TC',sans-serif;border:1.5px solid var(--border2);background:transparent;color:var(--text2);}
+.nav-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
+.nav-btn-blue{background:var(--blue);color:white;border-color:var(--blue);}
+.nav-btn-blue:hover{background:var(--blue-dark);color:white;}
+.nav-btn-ghost{background:transparent;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.nav-btn-ghost:hover{color:var(--text);}
+.nav-btn-danger{background:transparent;border:1.5px solid #FECACA;color:#B91C1C;border-radius:2px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.nav-btn-danger:hover{background:#FEF2F2;}
+/* 設定頁面 */
+#page-settings{min-height:100vh;}
+.settings-tab{padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'Noto Sans TC',sans-serif;transition:all .2s;}
+.settings-tab:hover{color:var(--blue);}
+.settings-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.settings-panel{animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.competency-item{background:var(--white);border:1px solid var(--border);padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:all .15s;}
+.competency-item:hover{border-color:var(--blue);background:var(--blue-light);}
+.competency-item-name{font-size:13px;font-weight:700;color:var(--text);}
+.competency-item-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.level-item{background:var(--white);border:1px solid var(--border);padding:12px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.level-item-name{font-size:13px;font-weight:700;}
+.level-item-ratio{font-size:12px;color:var(--text3);}
+/* 黑名單 */
+.blacklist-header-bar{background:#FEF2F2;border:1px solid #FECACA;padding:10px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.blacklist-header-bar-icon{font-size:18px;}
+.blacklist-header-bar-text{font-size:13px;font-weight:700;color:#B91C1C;}
+.btn-blacklist{background:#FEF2F2;border-color:#FECACA;color:#B91C1C;border:1.5px solid #FECACA;}
+.btn-blacklist:hover{background:#FEE2E2;border-color:#EF4444;}
+.btn-unblacklist{background:#ECFDF5;border-color:#A7F3D0;color:#065F46;border:1.5px solid #A7F3D0;}
+.btn-unblacklist:hover{background:#D1FAE5;}
+
+/* 過渡動畫 */
+#page-transition{display:none;position:fixed;inset:0;background:white;z-index:99999;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+#page-transition.show{display:flex;}
+#transition-logo{width:80px;height:80px;object-fit:contain;transform-origin:bottom center;}
+#transition-logo.anim-switch{animation:jump-switch .65s ease-out forwards;}
+#transition-logo.anim-welcome{animation:jump-welcome 1.0s cubic-bezier(.22,.68,0,1.2) forwards;}
+#transition-text{font-size:14px;font-weight:700;color:var(--text2);letter-spacing:.06em;opacity:0;}
+#transition-text.anim-switch{animation:fade-in-text .3s ease .15s both;}
+#transition-text.anim-welcome{animation:fade-in-text .4s ease .3s both;}
+@keyframes jump-switch{0%{transform:translateY(50px) scaleY(.8);opacity:0;}25%{transform:translateY(0) scaleY(1.05);opacity:1;}40%{transform:translateY(0) scaleY(.9) scaleX(1.08);}60%{transform:translateY(-32px) scaleY(1.1) scaleX(.93);}80%{transform:translateY(-48px) scaleY(1.05) rotate(-10deg);}100%{transform:translateY(-130px) scaleX(.8) rotate(-18deg);opacity:0;}}
+@keyframes jump-welcome{0%{transform:translateY(80px) scaleY(.7);opacity:0;}40%{transform:translateY(0) scaleY(1.1) scaleX(.95);opacity:1;}55%{transform:translateY(-22px) scaleY(.95) scaleX(1.05);}68%{transform:translateY(0) scaleY(1.08) scaleX(.97);}80%{transform:translateY(-10px) scaleY(.98);}90%{transform:translateY(0) scaleY(1.03);}100%{transform:translateY(0) scaleY(1);opacity:1;}}
+@keyframes fade-in-text{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+
+/* ===== FRONT PAGE ===== */
+#page-front{padding:16px 24px 120px;}
+.container{max-width:1400px;margin:0 auto;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:0;overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow);}
+.card-header{padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);}
+.card-title{font-size:14px;font-weight:700;}
+.card-score{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:3px;}
+.score-num{font-size:16px;font-weight:900;}
+.card-body{padding:12px 16px;}
+.req{color:var(--red);font-size:11px;vertical-align:super;margin-left:1px;font-weight:900;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
+@media(max-width:900px){.info-grid{grid-template-columns:1fr 1fr;}}
+.info-field label{display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase;}
+.info-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:3px;padding:7px 10px;font-size:13px;font-weight:600;color:var(--text);outline:none;transition:border-color .2s;font-family:'Noto Sans TC',sans-serif;}
+.info-input:focus{border-color:var(--blue);background:var(--white);}
+.info-input:disabled{background:#EAEFF7;color:var(--text2);cursor:not-allowed;}
+.interviewer-list,.position-list{display:flex;flex-direction:column;gap:5px;}
+.interviewer-row,.position-row{display:flex;gap:5px;align-items:center;}
+.btn-add-int{font-size:11px;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;padding:0;}
+.btn-add-int:hover{text-decoration:underline;}
+.btn-rm-int{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:2px 4px;}
+.other-pos-input{width:100%;background:var(--blue-light);border:1.5px solid var(--blue);border-radius:3px;padding:6px 10px;font-size:13px;font-weight:600;color:var(--text);outline:none;font-family:'Noto Sans TC',sans-serif;margin-top:4px;}
+.other-pos-input::placeholder{color:var(--text3);}
+.time-picker{display:flex;align-items:center;gap:6px;}
+.time-select{background:var(--bg);border:1.5px solid var(--border);border-radius:3px;padding:7px 10px;font-size:13px;font-weight:600;color:var(--text);outline:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;width:68px;}
+.time-select:focus{border-color:var(--blue);background:var(--white);}
+.time-colon{font-size:15px;font-weight:700;color:var(--text2);}
+.s1-group{margin-bottom:8px;}
+.s1-group-title{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.05em;margin-bottom:4px;border-left:2px solid var(--blue);padding-left:6px;display:flex;align-items:baseline;gap:2px;}
+.score-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;margin-bottom:3px;background:var(--bg);border:1px solid var(--border);gap:8px;transition:background .15s;}
+.score-row:hover{background:var(--blue-light);}
+.score-q{font-size:13px;color:var(--text);line-height:1.4;flex:1;min-width:0;}
+.score-btns{display:flex;gap:4px;flex-shrink:0;}
+.score-btn{width:30px;height:30px;border-radius:4px;border:1.5px solid var(--border2);background:var(--white);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans TC',sans-serif;}
+.score-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
+.score-btn.active[data-val="1"]{background:#FEE2E2;border-color:#EF4444;color:#B91C1C;}
+.score-btn.active[data-val="2"]{background:#FFEDD5;border-color:#F97316;color:#C2410C;}
+.score-btn.active[data-val="3"]{background:#FEF9C3;border-color:#EAB308;color:#A16207;}
+.score-btn.active[data-val="4"]{background:#DCFCE7;border-color:#22C55E;color:#15803D;}
+.score-btn.active[data-val="5"]{background:#DCFCE7;border-color:#16A34A;color:#166534;}
+.bon-textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:3px;padding:7px 10px;font-size:13px;color:var(--text);outline:none;resize:vertical;min-height:52px;font-family:'Noto Sans TC',sans-serif;}
+.bon-textarea:focus{border-color:var(--blue);}
+.s2-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;}
+.s2-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border:1px solid var(--border);gap:8px;}
+.s2-row:hover{background:var(--blue-light);}
+.s2-num{font-size:10px;font-weight:700;color:var(--text3);min-width:16px;flex-shrink:0;}
+.s2-q{font-size:12px;color:var(--text);flex:1;}
+.s2-btns{display:flex;gap:3px;flex-shrink:0;}
+.s3-scroll{overflow-x:auto;}
+.s3-table{width:100%;border-collapse:collapse;min-width:860px;}
+.s3-table th{background:#F0F4FA;padding:8px 10px;font-size:11px;font-weight:700;color:var(--text3);text-align:center;border:1px solid var(--border);}
+.s3-table td{border:1px solid var(--border);padding:5px;vertical-align:middle;}
+.s3-dim{background:#EFF6FF;text-align:center;font-size:11px;font-weight:700;width:52px;vertical-align:middle;}
+.s3-name{background:#F8FAFF;text-align:center;font-size:12px;font-weight:700;color:var(--text);width:82px;vertical-align:middle;}
+.s3-textarea{width:100%;background:transparent;border:none;padding:5px;font-size:12px;color:var(--text);outline:none;resize:none;min-height:72px;font-family:'Noto Sans TC',sans-serif;line-height:1.6;}
+.s3-textarea:focus{background:var(--blue-light);}
+.s3-score-cell{text-align:center;width:120px;background:#F8FAFF;vertical-align:top;}
+.s3-score-inner{padding:8px 4px;}
+.s3-score-btns{display:flex;gap:3px;justify-content:center;margin-bottom:6px;}
+.s3-score-btn{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--border2);background:var(--white);color:var(--text2);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;position:relative;font-family:'Noto Sans TC',sans-serif;}
+.s3-score-btn:hover{border-color:var(--blue);color:var(--blue);}
+.s3-score-btn.active[data-val="1"]{background:#FEE2E2;border-color:#EF4444;color:#B91C1C;}
+.s3-score-btn.active[data-val="2"]{background:#FFEDD5;border-color:#F97316;color:#C2410C;}
+.s3-score-btn.active[data-val="3"]{background:#FEF9C3;border-color:#EAB308;color:#A16207;}
+.s3-score-btn.active[data-val="4"]{background:#DCFCE7;border-color:#22C55E;color:#15803D;}
+.s3-score-btn.active[data-val="5"]{background:#DCFCE7;border-color:#16A34A;color:#166534;}
+.s3-tooltip{visibility:hidden;opacity:0;position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:3px 7px;border-radius:3px;font-size:10px;white-space:nowrap;z-index:20;pointer-events:none;}
+.s3-score-btn:hover .s3-tooltip{visibility:visible;opacity:1;}
+.s3-desc-box{background:#DBEAFE;padding:5px 7px;font-size:11px;color:#1e40af;line-height:1.5;display:none;text-align:left;border-top:1px solid #BFDBFE;}
+.s3-desc-box.show{display:block;}
+.s3-desc-label{font-weight:700;font-size:10px;margin-bottom:2px;color:#1D6FD8;}
+.level-required-tip{background:#FEF9C3;border:1px solid #FDE68A;padding:8px 12px;font-size:12px;color:#92400E;font-weight:700;text-align:center;}
+.level-select{background:var(--white);border:1.5px solid var(--border2);border-radius:3px;padding:4px 8px;font-size:11px;font-weight:700;color:var(--text2);outline:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.level-select.not-selected{border-color:#F59E0B;background:#FFFBEB;color:#B45309;}
+.report-card{background:var(--white);border:1px solid var(--border);border-radius:0;padding:20px;margin-bottom:12px;box-shadow:var(--shadow);}
+.report-card-title{font-size:15px;font-weight:900;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.report-card-title::before{content:'';width:3px;height:18px;background:var(--blue);display:block;}
+.report-total-row{background:var(--blue);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.report-total-label{font-size:13px;font-weight:700;color:rgba(255,255,255,.85);}
+.report-total-score{font-size:40px;font-weight:900;color:white;}
+.report-sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.report-sub-box{background:var(--bg);border:1px solid var(--border);padding:10px;text-align:center;}
+.report-sub-label{font-size:10px;color:var(--text3);font-weight:700;margin-bottom:3px;}
+.report-sub-score{font-size:22px;font-weight:900;}
+.report-bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.report-box{background:var(--bg);border:1px solid var(--border);padding:14px;}
+.report-field-label{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+.report-status-text{font-size:18px;font-weight:900;margin-bottom:8px;}
+.report-exp{font-size:12px;color:var(--text2);background:var(--white);padding:8px 10px;line-height:1.6;border:1px solid var(--border);margin-bottom:10px;}
+.bonus-summary-box{background:var(--white);border:1px solid var(--border);padding:9px 11px;}
+.bonus-summary-content{font-size:12px;color:var(--text2);line-height:1.6;}
+.report-textarea{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:2px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;resize:vertical;min-height:64px;font-family:'Noto Sans TC',sans-serif;}
+.report-textarea:focus{border-color:var(--blue);}
+.decision-row{display:flex;gap:8px;margin-top:10px;}
+.decision-btn{flex:1;padding:10px;border-radius:2px;font-size:13px;font-weight:900;cursor:pointer;transition:all .2s;background:var(--white);color:var(--text2);font-family:'Noto Sans TC',sans-serif;border:1.5px solid var(--border2);}
+.decision-btn:hover{border-color:var(--blue);color:var(--blue);}
+.decision-btn.active-pass{background:#ECFDF5;border-color:#10B981;color:#065F46;}
+.decision-btn.active-fail{background:#FEF2F2;border-color:#EF4444;color:#7F1D1D;}
+#bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:2px solid var(--blue);padding:10px 24px;z-index:50;box-shadow:0 -2px 12px rgba(29,111,216,.1);}
+.bottom-bar-inner{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+.bottom-total{font-size:14px;font-weight:700;color:var(--text2);}
+.bottom-total span{font-size:22px;font-weight:900;color:var(--blue);margin-left:6px;}
+.bottom-actions{display:flex;gap:8px;}
+.btn-bottom{padding:8px 18px;border-radius:2px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Noto Sans TC',sans-serif;border:1.5px solid var(--border2);background:var(--white);color:var(--text2);}
+.btn-bottom:hover{border-color:var(--blue);color:var(--blue);}
+.btn-submit{background:var(--blue);color:white;border-color:var(--blue);}
+.btn-submit:hover{background:var(--blue-dark);color:white;}
+.btn-clear:hover{border-color:var(--red);color:var(--red);}
+
+/* ===== ADMIN PAGE ===== */
+#page-admin{min-height:100vh;}
+.admin-header{background:var(--white);border-bottom:2px solid var(--blue);position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(29,111,216,.08);}
+.admin-main{max-width:1600px;margin:0 auto;padding:16px 24px 40px;}
+.stats-row{display:flex;gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--blue);flex:1;padding:10px 16px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;}
+.stat-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
+.stat-value{font-size:24px;font-weight:900;}
+.filter-bar{background:var(--white);border:1px solid var(--border);padding:10px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;box-shadow:var(--shadow);}
+.filter-group label{display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;}
+.filter-input{background:var(--bg);border:1.5px solid var(--border);border-radius:2px;padding:5px 9px;font-size:12px;color:var(--text);outline:none;font-family:'Noto Sans TC',sans-serif;}
+.filter-input:focus{border-color:var(--blue);}
+.table-wrap{background:var(--white);border:1px solid var(--border);box-shadow:var(--shadow);}
+.table-header{background:#F0F4FA;padding:9px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);}
+.table-header-title{font-size:13px;font-weight:700;color:var(--text);}
+.table-count{font-size:11px;color:var(--text3);}
+.tbl-wrap{overflow-x:auto;}
+.tbl{width:100%;border-collapse:collapse;min-width:1100px;}
+.tbl th{background:#F0F4FA;padding:9px 12px;font-size:11px;font-weight:700;color:var(--text3);text-align:left;border-bottom:1px solid var(--border);letter-spacing:.03em;text-transform:uppercase;white-space:nowrap;}
+.tbl td{padding:10px 12px;border-bottom:1px solid rgba(221,228,239,.5);font-size:13px;vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--blue-light);}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:2px;font-size:11px;font-weight:700;white-space:nowrap;}
+.badge-draft{background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;}
+.badge-complete{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.badge-pass{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.badge-fail{background:#FEF2F2;color:#7F1D1D;border:1px solid #FECACA;}
+.badge-pending{background:#FFFBEB;color:#78350F;border:1px solid #FDE68A;}
+.prog-none{background:#F1F5F9;color:#64748B;border:1px solid #CBD5E1;}
+.prog-pre{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;}
+.prog-scored{background:#EFF6FF;color:#1558B0;border:1px solid #BFDBFE;}
+.prog-done{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.candidate-name{font-weight:900;color:var(--blue);}
+.total-score-cell{position:relative;}
+.total-score-val{font-weight:900;font-size:15px;color:var(--blue);border-bottom:1px dashed var(--blue);cursor:pointer;white-space:nowrap;}
+.score-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--white);border:1px solid var(--border2);padding:10px 14px;z-index:200;box-shadow:var(--shadow-md);min-width:170px;font-size:12px;border-top:2px solid var(--blue);}
+.total-score-cell:hover .score-popup{display:block;}
+.score-popup-row{display:flex;justify-content:space-between;gap:16px;margin-bottom:5px;}
+.score-popup-row:last-child{margin-bottom:0;border-top:1px solid var(--border);padding-top:5px;font-weight:700;}
+.action-btns{display:flex;gap:5px;flex-wrap:nowrap;}
+.btn-action{padding:4px 10px;border-radius:2px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all .2s;border:1.5px solid transparent;white-space:nowrap;}
+.btn-edit{background:var(--bg);border-color:var(--border2);color:var(--text2);}
+.btn-edit:hover{border-color:var(--blue);color:var(--blue);}
+.btn-print{background:#F0FDF4;border-color:#A7F3D0;color:#065F46;}
+.btn-print:hover{background:#DCFCE7;}
+.btn-delete{background:#FEF2F2;border-color:#FECACA;color:#B91C1C;}
+.btn-delete:hover{background:#FEE2E2;}
+
+/* TOAST */
+#toast{position:fixed;top:62px;right:16px;background:var(--white);border-left:3px solid var(--blue);border:1px solid var(--border);color:var(--blue);padding:10px 16px;font-size:13px;font-weight:700;transform:translateX(150%);transition:transform .3s;z-index:9999;box-shadow:var(--shadow-md);}
+#toast.show{transform:translateX(0);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,35,56,.4);z-index:9999;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--white);border:1px solid var(--border);border-radius:0;width:90%;max-width:440px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(29,111,216,.2);}
+.modal-header{background:var(--bg);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);}
+.modal-title{font-size:14px;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;}
+.modal-body{padding:16px;overflow-y:auto;flex:1;}
+.modal-footer{padding:12px 16px;border-top:1px solid var(--border);text-align:right;}
+.btn-modal-ok{padding:8px 20px;background:var(--blue);border:none;border-radius:2px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+
+/* PRINT */
+.print-modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,35,56,.5);z-index:9999;align-items:center;justify-content:center;}
+.print-modal-overlay.show{display:flex;}
+.print-modal{background:var(--white);border:1px solid var(--border);width:95%;max-width:900px;max-height:94vh;overflow-y:auto;box-shadow:0 20px 60px rgba(29,111,216,.2);}
+.print-modal-header{background:#F0F4FA;padding:11px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);position:sticky;top:0;z-index:10;}
+.print-modal-title{font-size:14px;font-weight:700;color:var(--text);}
+.print-modal-actions{display:flex;gap:8px;align-items:center;}
+.btn-do-print{padding:6px 16px;background:var(--blue);color:white;border:none;border-radius:2px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.btn-close-print{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;}
+.print-content{padding:24px 28px;}
+.pc-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--blue);}
+.pc-logo{width:52px;height:52px;border-radius:50%;object-fit:cover;}
+.pc-org{font-size:12px;color:var(--text3);text-align:center;}
+.pc-title{font-size:20px;font-weight:900;color:var(--text);text-align:center;}
+.pc-section{margin-bottom:18px;}
+.pc-section-title{font-size:12px;font-weight:700;color:var(--white);background:var(--blue);padding:5px 10px;letter-spacing:.05em;}
+.pc-info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-top:none;}
+.pc-info-cell{padding:7px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.pc-info-cell:nth-child(4n){border-right:none;}
+.pc-info-label{font-size:10px;color:var(--text3);font-weight:700;margin-bottom:2px;text-transform:uppercase;}
+.pc-info-val{font-size:13px;font-weight:700;color:var(--text);}
+.pc-table{width:100%;border-collapse:collapse;border:1px solid var(--border);border-top:none;}
+.pc-table th{background:#F0F4FA;padding:6px 10px;font-size:11px;font-weight:700;color:var(--text2);border:1px solid var(--border);text-align:left;}
+.pc-table td{padding:7px 10px;border:1px solid var(--border);font-size:12px;vertical-align:top;}
+.pc-s2-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-top:none;}
+.pc-s2-row{display:flex;justify-content:space-between;padding:6px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);font-size:12px;}
+.pc-s2-row:nth-child(2n){border-right:none;}
+.pc-s2-score{font-weight:700;color:var(--blue);flex-shrink:0;margin-left:8px;}
+.pc-total-box{background:var(--blue);color:white;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.pc-total-label{font-size:13px;font-weight:700;}
+.pc-total-score{font-size:32px;font-weight:900;}
+.pc-sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);margin-bottom:6px;}
+.pc-sub-cell{padding:8px;text-align:center;border-right:1px solid var(--border);}
+.pc-sub-cell:last-child{border-right:none;}
+.pc-sub-label{font-size:10px;color:var(--text3);font-weight:700;margin-bottom:2px;}
+.pc-sub-score{font-size:18px;font-weight:900;}
+.pc-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);}
+.pc-result-box{padding:10px 12px;border-right:1px solid var(--border);}
+.pc-result-box:last-child{border-right:none;}
+.pc-result-box-full{padding:10px 12px;border-top:1px solid var(--border);grid-column:span 2;}
+.pc-result-label{font-size:10px;color:var(--text3);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;}
+.pc-result-val{font-size:13px;font-weight:700;color:var(--text);}
+.decision-pass{color:#059669;font-weight:900;}
+.decision-fail{color:#DC2626;font-weight:900;}
+@media print{
+  body>*:not(#print-modal){display:none!important;}
+  #print-modal{display:block!important;position:static!important;background:none!important;}
+  .print-modal{width:100%!important;max-height:none!important;box-shadow:none!important;border:none!important;overflow:visible!important;}
+  .print-modal-header{display:none!important;}
+  .print-content{padding:0!important;overflow:visible!important;height:auto!important;max-height:none!important;}
+  @page{
+    size:A4 portrait;
+    margin:12mm 10mm;
+    /* 移除頁首頁尾（Chrome/Edge 支援） */
+    margin-top:12mm;
+    margin-bottom:12mm;
+  }
+  /* 隱藏瀏覽器自動產生的頁首頁尾（URL、時間） */
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  head,title{display:none!important;}
+  .pc-section{break-inside:avoid;margin-bottom:12px!important;}
+  .pc-table{break-inside:auto;}.pc-table tr{break-inside:avoid;}
+  .pc-s2-grid{break-inside:auto;}.pc-s2-row{break-inside:avoid;}
+  .pc-total-box,.pc-sub-grid,.pc-result-grid{break-inside:avoid;}
+  #page-transition{display:none!important;}
+  /* 標題置中 */
+  .pc-table th{text-align:center!important;}
+}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div id="page-transition">
+  <img id="transition-logo" src="逗點人LOGO-黑-去背.png" alt="">
+  <div id="transition-text"></div>
+</div>
+
+<!-- 列印 Modal -->
+<div id="print-modal" class="print-modal-overlay">
+  <div class="print-modal">
+    <div class="print-modal-header">
+      <span class="print-modal-title">逗點教室｜面試評分表預覽</span>
+      <div class="print-modal-actions">
+        <button class="btn-do-print" onclick="window.print()">🖨 列印 / 下載 PDF</button>
+        <button class="btn-close-print" onclick="closePrintModal()">✕</button>
+      </div>
+    </div>
+    <div class="print-content" id="print-content"></div>
+  </div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div id="page-login" class="page active">
+  <div class="login-card">
+    <div class="login-logo"><img id="login-logo-img" src="00逗點教室_各分校校徽_頭貼_總部.png" alt="逗點教室"></div>
+    <div class="login-title">面試前台評分</div>
+    <div class="login-sub">逗點教室人才招募平台</div>
+    <div class="form-group">
+      <label class="form-label">員工編號</label>
+      <input type="text" id="login-emp" class="form-input" placeholder="例：F00035" style="text-transform:uppercase;" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('login-pwd').focus()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">登入密碼</label>
+      <input type="password" id="login-pwd" class="form-input" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')handleLogin()">
+    </div>
+    <button class="btn-login" id="btn-login-main" onclick="handleLogin()">登 入 系 統</button>
+    <div class="login-hint">測試密碼：0000</div>
+  </div>
+</div>
+
+<!-- ===== HEADER（前後台共用）===== -->
+<header id="main-header" style="display:none;">
+  <div class="header-inner">
+    <div class="header-left">
+      <img id="header-logo-img" src="00逗點教室_各分校校徽_頭貼_總部.png" class="header-logo-img" alt="">
+      <div><div class="header-title" id="header-title-text">面試前台評分</div><div class="header-sub" id="header-user-info"></div></div>
+    </div>
+    <div class="header-nav">
+      <button class="nav-btn" id="nav-front-btn" onclick="switchView('front')" style="display:none;">前台評分</button>
+      <button class="nav-btn nav-btn-blue" id="nav-backend-btn" onclick="switchView('backend')" style="display:none;">進入後台</button>
+      <button class="nav-btn nav-btn-danger" id="nav-blacklist-btn" onclick="switchView('blacklist')" style="display:none;">⛔ 黑名單</button>
+      <button class="nav-btn" id="nav-settings-btn" onclick="switchView('settings')" style="display:none;">⚙ 系統設定</button>
+      <button class="nav-btn-ghost" onclick="handleLogout()">登出</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== FRONT PAGE ===== -->
+<div id="page-front" class="page">
+  <div class="container">
+    <div class="card" style="margin-top:14px;">
+      <div class="card-header" style="background:#F0F4FA;"><span class="card-title">面試基本資訊</span></div>
+      <div class="card-body">
+        <div class="info-grid">
+          <div class="info-field">
+            <label>應徵者姓名<span class="req">*</span></label>
+            <input type="text" id="ipt-name" class="info-input" placeholder="輸入姓名" oninput="syncState()">
+          </div>
+          <div class="info-field" style="grid-row:span 2;">
+            <label style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span>面試官<span class="req">*</span></span>
+              <button class="btn-add-int" onclick="addInterviewer()">+ 新增</button>
+            </label>
+            <div id="interviewer-list" class="interviewer-list">
+              <div class="interviewer-row"><input type="text" class="ipt-interviewer info-input" oninput="syncState()" placeholder="面試官姓名"></div>
+            </div>
+          </div>
+          <div class="info-field">
+            <label>應徵分校/單位<span class="req">*</span></label>
+            <select id="sel-branch" class="info-input" onchange="syncState()">
+              <option value="">請選擇...</option>
+              <optgroup label="各分校">
+                <option>青埔升大校</option><option>青埔翱翔校</option><option>青園展翅校</option>
+                <option>大園晨光校</option><option>內壢森耀校</option><option>竹北知行校</option>
+                <option>文化極光校</option><option>快樂騰雲校</option><option>大園參天校</option>
+                <option>園中方舟校</option><option>青埔旭日校</option><option>中壢心夢想校</option>
+              </optgroup>
+              <optgroup label="總部處室">
+                <option>行政溝通處</option><option>人力資源處</option><option>財務會計處</option>
+                <option>國小營運處</option><option>國高中營運處</option><option>產品研發處</option>
+                <option>品牌行銷處</option><option>行銷辦公室</option><option>國小英文管理科</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="info-field">
+            <label style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span>應徵職位<span class="req">*</span></span>
+              <button class="btn-add-int" onclick="addPosition()">+ 新增</button>
+            </label>
+            <div id="position-list" class="position-list">
+              <div class="position-row">
+                <div style="display:flex;gap:5px;align-items:center;width:100%;">
+                  <select class="ipt-position info-input" onchange="onPositionChange(this)" style="flex:1;">
+                    <option value="">請選擇...</option>
+                    <option>班級導師</option><option>行政導師</option><option>授課師</option>
+                    <option>主任</option><option>處長</option><option>總部</option><option>其他</option>
+                  </select>
+                </div>
+                <input type="text" class="other-pos-input" placeholder="請輸入職務名稱" oninput="syncState()" style="display:none;">
+              </div>
+            </div>
+          </div>
+          <div class="info-field">
+            <label>面試日期<span class="req">*</span></label>
+            <input type="date" id="ipt-date" class="info-input" onchange="syncState()">
+          </div>
+          <div class="info-field">
+            <label>開始時間</label>
+            <div class="time-picker">
+              <select id="ipt-hour" class="time-select" onchange="syncState()"><option value="">時</option></select>
+              <span class="time-colon">:</span>
+              <select id="ipt-minute" class="time-select" onchange="syncState()"><option value="">分</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header" style="background:#F0FDF8;border-bottom-color:#A7F3D0;">
+        <span class="card-title" style="color:#065F46;">一、筆試和綜合面談<span class="req">*</span> <span style="font-weight:400;font-size:12px;color:var(--text3);">(30%)</span></span>
+        <div class="card-score">得分：<span class="score-num" style="color:#059669;" id="s1-final">0.00</span>/30</div>
+      </div>
+      <div class="card-body" id="s1-body"></div>
+    </div>
+    <div class="card">
+      <div class="card-header" style="background:#FFFBEB;border-bottom-color:#FDE68A;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="card-title" style="color:#92400E;">二、職能面試<span class="req">*</span> <span style="font-weight:400;font-size:12px;color:var(--text3);">(60%)</span></span>
+          <select id="job-level-select" class="level-select not-selected" onchange="updateLevelLogic()">
+            <option value="">— 請先選擇職等 —</option>
+            <option value="1">職等1 核心90%/管理10%</option><option value="2">職等2 核心85%/管理15%</option>
+            <option value="3">職等3 核心70%/管理30%</option><option value="4">職等4 核心60%/管理40%</option>
+            <option value="5">職等5 核心50%/管理50%</option><option value="6">職等6 核心40%/管理60%</option>
+            <option value="7">職等7 核心30%/管理70%</option>
+          </select>
+        </div>
+        <div class="card-score">得分：<span class="score-num" style="color:#D97706;" id="s3-final">0.00</span>/60</div>
+      </div>
+      <div id="s3-level-tip" class="level-required-tip">⚠ 請先選擇左上角的「職等」，才能開始評分</div>
+      <div class="s3-scroll">
+        <table class="s3-table">
+          <thead><tr><th>維度</th><th>職能項目</th><th style="min-width:160px;">BEI（問題描述）<span class="req">*</span></th><th style="min-width:130px;">狀況 C</th><th style="min-width:130px;">行動 A</th><th style="min-width:130px;">結果 R</th><th style="min-width:120px;">給分 ＆ 行為描述</th></tr></thead>
+          <tbody id="s3-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header" style="background:#F3F0FF;border-bottom-color:#C4B5FD;">
+        <span class="card-title" style="color:#3730A3;">三、外顯特質<span class="req">*</span> <span style="font-weight:400;font-size:12px;color:var(--text3);">(10%)</span></span>
+        <div class="card-score">得分：<span class="score-num" style="color:#4F46E5;" id="s2-final">0.00</span>/10</div>
+      </div>
+      <div class="card-body" id="s2-body"></div>
+    </div>
+    <div class="report-card">
+      <div class="report-card-title">面試成績總結算</div>
+      <div class="report-total-row"><div class="report-total-label">系統最終總得分</div><div class="report-total-score" id="report-grand-total">0.00</div></div>
+      <div class="report-sub-grid">
+        <div class="report-sub-box"><div class="report-sub-label">一、筆試和綜合面談</div><div class="report-sub-score" style="color:#059669;" id="report-s1">0.00</div></div>
+        <div class="report-sub-box"><div class="report-sub-label">二、職能面試</div><div class="report-sub-score" style="color:#D97706;" id="report-s3">0.00</div></div>
+        <div class="report-sub-box"><div class="report-sub-label">三、外顯特質</div><div class="report-sub-score" style="color:#4F46E5;" id="report-s2">0.00</div></div>
+      </div>
+      <div class="report-bottom">
+        <div class="report-box">
+          <div class="report-field-label">系統建議理想狀態</div>
+          <div class="report-status-text" id="ideal-status-text">等待評分...</div>
+          <div class="report-field-label">判定原因</div>
+          <div class="report-exp" id="ideal-status-exp">-</div>
+          <div class="report-field-label">加分項目摘要（自動帶入）</div>
+          <div class="bonus-summary-box"><div class="bonus-summary-content" id="bonus-summary-display" style="color:var(--text3);">尚未填寫加分項目</div></div>
+        </div>
+        <div class="report-box">
+          <div class="report-field-label">面試官備註</div>
+          <textarea id="interview-note-input" class="report-textarea" oninput="syncState()" placeholder="補充備註..."></textarea>
+          <div class="report-field-label" style="margin-bottom:8px;">最終錄取結果<span class="req">*</span></div>
+          <div class="decision-row">
+            <button id="btn-pass" class="decision-btn" onclick="handleDecision('pass')">✓ 確認錄取</button>
+            <button id="btn-fail" class="decision-btn" onclick="handleDecision('fail')">✕ 不予錄取</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div id="bottom-bar" style="display:none;">
+  <div class="bottom-bar-inner">
+    <div class="bottom-total">總得分：<span id="footer-total">0.00</span></div>
+    <div class="bottom-actions">
+      <button class="btn-bottom btn-clear" onclick="handleClear()">清除資料</button>
+      <button class="btn-bottom" onclick="handleSaveDraft()">暫存資料</button>
+      <button class="btn-bottom btn-submit" onclick="handleFinalSubmit()">確認送出</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADMIN PAGE ===== -->
+<div id="page-admin" class="page">
+  <div class="admin-main">
+    <div class="stats-row">
+      <div class="stat-card"><div><div class="stat-label">總面試筆數</div><div class="stat-value" id="stat-total" style="color:var(--blue);">0</div></div></div>
+      <div class="stat-card" style="border-top-color:#059669;"><div><div class="stat-label">錄取人數</div><div class="stat-value" id="stat-pass" style="color:#059669;">0</div></div></div>
+      <div class="stat-card" style="border-top-color:#DC2626;"><div><div class="stat-label">不錄取人數</div><div class="stat-value" id="stat-fail" style="color:#DC2626;">0</div></div></div>
+      <div class="stat-card" style="border-top-color:#D97706;"><div><div class="stat-label">平均總分</div><div class="stat-value" id="stat-avg" style="color:#D97706;">-</div></div></div>
+    </div>
+    <div class="filter-bar">
+      <div class="filter-group"><label>搜尋姓名</label><input type="text" id="filter-name" class="filter-input" placeholder="應徵者姓名" oninput="renderTable()" style="width:120px;"></div>
+      <div class="filter-group" id="branch-filter-wrap"><label>篩選單位</label><select id="filter-branch" class="filter-input" onchange="renderTable()"><option value="">全部單位</option></select></div>
+      <div class="filter-group"><label>篩選結果</label><select id="filter-decision" class="filter-input" onchange="renderTable()"><option value="">全部結果</option><option value="pass">錄取</option><option value="fail">不錄取</option></select></div>
+      <div class="filter-group"><label>填寫進度</label><select id="filter-progress" class="filter-input" onchange="renderTable()"><option value="">全部進度</option><option value="none">未完成</option><option value="pre">面試前準備完成</option><option value="scored">面試評分完成</option><option value="done">已送出結果</option></select></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header"><span class="table-header-title">面試紀錄</span><span class="table-count" id="table-count"></span></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>面試日期</th><th>應徵者</th><th>分校/單位</th><th>職位</th><th>面試官</th><th>總分</th><th>填寫進度</th><th>結果</th><th>操作</th></tr></thead>
+          <tbody id="admin-tbody"><tr><td colspan="9" style="text-align:center;padding:48px;color:var(--text3);font-size:13px;font-weight:700;">載入中...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BLACKLIST PAGE ===== -->
+<div id="page-blacklist" class="page">
+  <div class="admin-main">
+    <div class="blacklist-header-bar">
+      <span class="blacklist-header-bar-icon">⛔</span>
+      <span class="blacklist-header-bar-text">黑名單 — 以下應徵者已被列入黑名單，如需恢復請點「從黑名單移除」</span>
+    </div>
+    <div class="filter-bar">
+      <div class="filter-group"><label>搜尋姓名</label><input type="text" id="bl-filter-name" class="filter-input" placeholder="應徵者姓名" oninput="renderBlacklist()" style="width:120px;"></div>
+      <div class="filter-group" id="bl-branch-filter-wrap"><label>篩選單位</label><select id="bl-filter-branch" class="filter-input" onchange="renderBlacklist()"><option value="">全部單位</option></select></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header"><span class="table-header-title">黑名單紀錄</span><span class="table-count" id="bl-table-count"></span></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>面試日期</th><th>應徵者</th><th>分校/單位</th><th>職位</th><th>面試官</th><th>總分</th><th>結果</th><th>操作</th></tr></thead>
+          <tbody id="bl-tbody"><tr><td colspan="8" style="text-align:center;padding:48px;color:var(--text3);font-size:13px;font-weight:700;">載入中...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS PAGE ===== -->
+<div id="page-settings" class="page">
+  <div class="admin-main">
+    <!-- Tab 切換 -->
+    <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--border);">
+      <button class="settings-tab active" onclick="switchSettingsTab('employees')" id="tab-employees">👥 員工帳號</button>
+      <button class="settings-tab" onclick="switchSettingsTab('weights')" id="tab-weights">⚖ 比重設定</button>
+      <button class="settings-tab" onclick="switchSettingsTab('levels')" id="tab-levels">📊 職等設定</button>
+      <button class="settings-tab" onclick="switchSettingsTab('competency')" id="tab-competency">🎯 職能項目</button>
+    </div>
+
+    <!-- 員工帳號 -->
+    <div id="settings-employees" class="settings-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="font-size:14px;font-weight:700;">員工帳號管理</span>
+        <button class="btn-bottom btn-submit" onclick="openEmpModal()">+ 新增員工</button>
+      </div>
+      <div class="table-wrap">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>員工編號</th><th>姓名</th><th>部門</th><th>角色</th><th>密碼</th><th>狀態</th><th>操作</th></tr></thead>
+            <tbody id="settings-emp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 比重設定 -->
+    <div id="settings-weights" class="settings-panel" style="display:none;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:16px;">三大部分比重設定</div>
+      <div style="background:var(--white);border:1px solid var(--border);padding:20px;max-width:500px;">
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--text3);margin-bottom:5px;">一、筆試和綜合面談（%）</label>
+          <input type="number" id="w-s1" class="info-input" min="0" max="100" step="1" style="width:120px;">
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--text3);margin-bottom:5px;">二、職能面試（%）</label>
+          <input type="number" id="w-s3" class="info-input" min="0" max="100" step="1" style="width:120px;">
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--text3);margin-bottom:5px;">三、外顯特質（%）</label>
+          <input type="number" id="w-s2" class="info-input" min="0" max="100" step="1" style="width:120px;">
+        </div>
+        <div id="weight-sum-hint" style="font-size:12px;margin-bottom:12px;"></div>
+        <button class="btn-bottom btn-submit" onclick="saveWeights()">儲存比重</button>
+      </div>
+    </div>
+
+    <!-- 職等設定 -->
+    <div id="settings-levels" class="settings-panel" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="font-size:14px;font-weight:700;">職等設定</span>
+        <button class="btn-bottom btn-submit" onclick="openLevelModal()">+ 新增職等</button>
+      </div>
+      <div id="settings-levels-list"></div>
+    </div>
+
+    <!-- 職能項目 -->
+    <div id="settings-competency" class="settings-panel" style="display:none;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px;">職能項目管理</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-light);">核心職能</div>
+          <div id="settings-core-list"></div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#059669;margin-bottom:8px;padding:6px 10px;background:#F0FDF4;">管理職能</div>
+          <div id="settings-mgmt-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 員工編輯 Modal -->
+<div id="emp-modal" class="modal-overlay">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header"><span class="modal-title" id="emp-modal-title">新增員工</span><button class="modal-close" onclick="closeEmpModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">員工編號</label><input type="text" id="emp-f-id" class="form-input" placeholder="F00000"></div>
+      <div class="form-group"><label class="form-label">姓名</label><input type="text" id="emp-f-name" class="form-input"></div>
+      <div class="form-group"><label class="form-label">部門</label><input type="text" id="emp-f-dept" class="form-input"></div>
+      <div class="form-group">
+        <label class="form-label">角色</label>
+        <select id="emp-f-role" class="form-input">
+          <option value="MGR">主任（MGR）</option>
+          <option value="SENIOR_HS">國高中處長（SENIOR_HS）</option>
+          <option value="SENIOR_ES">國小處長（SENIOR_ES）</option>
+          <option value="HR">人資（HR）</option>
+          <option value="ADMIN">管理員（ADMIN）</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">密碼</label><input type="text" id="emp-f-pwd" class="form-input" placeholder="登入密碼"></div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:space-between;">
+      <button id="emp-deactivate-btn" style="display:none;" class="btn-bottom btn-clear" onclick="deactivateEmp()">停用帳號</button>
+      <button class="btn-modal-ok" onclick="saveEmp()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 職等編輯 Modal -->
+<div id="level-modal" class="modal-overlay">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header"><span class="modal-title" id="level-modal-title">新增職等</span><button class="modal-close" onclick="closeLevelModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">職等名稱</label><input type="text" id="lv-f-name" class="form-input" placeholder="例：職等1、主任級"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div class="form-group"><label class="form-label">核心比例（%）</label><input type="number" id="lv-f-core" class="form-input" min="0" max="100" step="5" oninput="syncLvRatio('core')"></div>
+        <div class="form-group"><label class="form-label">管理比例（%）</label><input type="number" id="lv-f-mgmt" class="form-input" min="0" max="100" step="5" oninput="syncLvRatio('mgmt')"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">核心＋管理必須等於100%</div>
+      <div id="lv-core-weights-wrap"></div>
+      <div id="lv-mgmt-weights-wrap"></div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:space-between;">
+      <button id="lv-delete-btn" style="display:none;" class="btn-bottom btn-clear" onclick="deleteLevel()">刪除此職等</button>
+      <button class="btn-modal-ok" onclick="saveLevel()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://yslzhijwfbhgropbmqab.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzbHpoaWp3ZmJoZ3JvcGJtcWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MTg0NjksImV4cCI6MjA5MTI5NDQ2OX0.UUm9ShB9vd1PSGxLlW5kOwI5rzle1O2WYKmZcjE9Ksc';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const BRANCH_LOGO={'青埔翱翔校':'翱翔.png','青埔升大校':'升大.png','青園展翅校':'展翅.png','大園晨光校':'晨光.png','內壢森耀校':'內壢森耀校.png','竹北知行校':'竹北知行校.png','文化極光校':'極光.png','快樂騰雲校':'00逗點教室_各分校校徽_頭貼_總部.png','大園參天校':'參天.png','園中方舟校':'方舟.png','青埔旭日校':'旭日.png','中壢心夢想校':'心夢想.png'};
+function getBranchLogo(d){return BRANCH_LOGO[d]||'00逗點教室_各分校校徽_頭貼_總部.png';}
+function updateLogos(d){const s=getBranchLogo(d);['login-logo-img','header-logo-img'].forEach(id=>{const e=document.getElementById(id);if(e)e.src=s;});}
+
+// ===== 動態設定（從資料庫載入）=====
+let EMP_DB={};
+let S3_CORE=[];
+let S3_MGMT=[];
+let S3_LEVELS={};
+let S3_CORE_NAMES=[];
+let S3_MGMT_NAMES=[];
+let SCORE_WEIGHTS={s1:0.30,s2:0.10,s3:0.60};
+
+const HS_BRANCHES=["中壢心夢想校","園中方舟校","青埔旭日校","大園參天校","青埔升大校","國高中營運處"];
+const ES_BRANCHES=["青園展翅校","青埔翱翔校","大園晨光校","內壢森耀校","竹北知行校","文化極光校","快樂騰雲校","國小營運處"];
+const S1_DATA=[{id:'exp',title:"工作經歷",weight:0.20,max:5,qs:["最能代表其專業能力及理想的經歷？"]},{id:'mot',title:"動機與價值",weight:0.35,max:10,qs:["與我們最契合的價值觀？","影響個人去留的主因？"]},{id:'sty',title:"工作風格",weight:0.25,max:10,qs:["最滿意或欣賞的工作環境、管理制度？","感到挫敗或壓力最大的案例？當時如何應對？"]},{id:'sal',title:"薪資與期待",weight:0.20,max:15,qs:["期望月薪/年薪及初期最低薪資？","最感興趣的工作任務與職涯關聯？","想了解或擔心的部分？"]},{id:'bon',title:"特別加分題",weight:0.01,max:5,qs:["補充說明"]}];
+const S2_QUESTIONS=["儀容穿著","禮貌應對","表達流暢","自信穩健","誠懇親和","對分校了解","對職務認知","企圖心展現","配合度","邏輯思考","臨場反應","學習意願","情緒穩定","抗壓性","團隊合作","經歷相關","專業知識"];
+
+// ===== 載入所有設定 =====
+async function loadAllConfig(){
+  try{
+    // 1. 員工
+    const{data:emps}=await sb.from('employees').select('*').eq('is_active',true);
+    EMP_DB={};
+    (emps||[]).forEach(e=>{EMP_DB[e.emp_id]={name:e.name,dept:e.dept,role:e.role,password:e.password};});
+    // 2. 比重
+    const{data:sw}=await sb.from('score_weights').select('*').eq('id',1).single();
+    if(sw)SCORE_WEIGHTS={s1:sw.s1_weight,s2:sw.s2_weight,s3:sw.s3_weight};
+    // 3. 職等
+    const{data:jls}=await sb.from('job_levels').select('*').order('sort_order');
+    S3_LEVELS={};
+    (jls||[]).forEach(j=>{
+      S3_LEVELS[j.id]={
+        c:Array.isArray(j.core_weights)?j.core_weights:JSON.parse(j.core_weights||'[]'),
+        m:Array.isArray(j.mgmt_weights)?j.mgmt_weights:JSON.parse(j.mgmt_weights||'[]'),
+        ratio:{c:Math.round(j.core_ratio*100),m:Math.round(j.mgmt_ratio*100)},
+        name:j.level_name
+      };
+    });
+    // 4. 職能項目
+    const{data:ci}=await sb.from('competency_items').select('*').order('sort_order');
+    S3_CORE=(ci||[]).filter(x=>x.category==='core').map(x=>({
+      name:x.name,
+      levels:Array.isArray(x.levels)?x.levels:JSON.parse(x.levels||'[]'),
+      descs:Array.isArray(x.descs)?x.descs:JSON.parse(x.descs||'[]')
+    }));
+    S3_MGMT=(ci||[]).filter(x=>x.category==='mgmt').map(x=>({
+      name:x.name,
+      levels:Array.isArray(x.levels)?x.levels:JSON.parse(x.levels||'[]'),
+      descs:Array.isArray(x.descs)?x.descs:JSON.parse(x.descs||'[]')
+    }));
+    S3_CORE_NAMES=S3_CORE.map(x=>x.name);
+    S3_MGMT_NAMES=S3_MGMT.map(x=>x.name);
+    // 更新職等下拉選單
+    updateLevelSelectOptions();
+  }catch(e){console.error('loadAllConfig error',e);}
+}
+
+function updateLevelSelectOptions(){
+  const sel=document.getElementById('job-level-select');
+  if(!sel)return;
+  // 保留第一個空白選項
+  while(sel.options.length>1)sel.remove(1);
+  Object.entries(S3_LEVELS).forEach(([id,lv])=>{
+    const o=document.createElement('option');
+    o.value=id;
+    o.textContent=`${lv.name} 核心${lv.ratio.c}%/管理${lv.ratio.m}%`;
+    sel.appendChild(o);
+  });
+}
+
+let currentUser=null,state=null,allData=[];
+
+function getEmptyState(){
+  return{name:"",branch:"",position:"",otherPosition:"",otherNote:"",date:"",time:"",level:0,finalDecision:null,idealStatus:"",grandTotal:"0.00",s1Final:"0.00",s2Final:"0.00",s3Final:"0.00",docStatus:"new",interviewNote:"",positions:[],otherPositions:[],
+    s1:{exp:[0],mot:[0,0],sty:[0,0],sal:[0,0,0],bon:[0],bonText:""},
+    s2:Array(S2_QUESTIONS.length).fill(0),
+    s3:{core:Array(6).fill(0),mgmt:Array(3).fill(0)},
+    s3Texts:{core:Array(6).fill(null).map(()=>({bei:'',c:'',a:'',r:''})),mgmt:Array(3).fill(null).map(()=>({bei:'',c:'',a:'',r:''}))}};}
+
+// ===== 切換畫面（不跳頁）=====
+function showPage(page){
+  ['page-login','page-front','page-admin','page-blacklist','page-settings'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.remove('active');
+  });
+  const target=document.getElementById('page-'+page);
+  if(target)target.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function switchView(target){
+  const overlay=document.getElementById('page-transition');
+  const logo=document.getElementById('transition-logo');
+  const txt=document.getElementById('transition-text');
+  logo.className='anim-switch';txt.textContent='切換中';txt.className='anim-switch';
+  overlay.classList.add('show');
+  setTimeout(()=>{
+    overlay.classList.remove('show');
+    logo.className='';txt.className='';txt.style.opacity='0';
+    // 重置所有 nav 按鈕
+    ['nav-front-btn','nav-backend-btn','nav-blacklist-btn','nav-settings-btn'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.style.display='none';
+    });
+    document.getElementById('bottom-bar').style.display='none';
+    const isHR=['HR','ADMIN'].includes(currentUser.role);
+    if(target==='backend'){
+      document.getElementById('header-title-text').textContent='面試後台管理';
+      document.getElementById('nav-front-btn').style.display='inline-block';
+      document.getElementById('nav-blacklist-btn').style.display='inline-block';
+      if(isHR)document.getElementById('nav-settings-btn').style.display='inline-block';
+      loadAdminData().then(()=>renderTable());
+      showPage('admin');
+    }else if(target==='blacklist'){
+      document.getElementById('header-title-text').textContent='⛔ 黑名單管理';
+      document.getElementById('nav-front-btn').style.display='inline-block';
+      document.getElementById('nav-backend-btn').style.display='inline-block';
+      if(isHR)document.getElementById('nav-settings-btn').style.display='inline-block';
+      loadBlacklistData().then(()=>renderBlacklist());
+      showPage('blacklist');
+    }else if(target==='settings'){
+      document.getElementById('header-title-text').textContent='⚙ 系統設定';
+      document.getElementById('nav-front-btn').style.display='inline-block';
+      document.getElementById('nav-backend-btn').style.display='inline-block';
+      document.getElementById('nav-blacklist-btn').style.display='inline-block';
+      loadSettingsPage();
+      showPage('settings');
+    }else{
+      document.getElementById('header-title-text').textContent='面試前台評分';
+      document.getElementById('nav-backend-btn').style.display='inline-block';
+      document.getElementById('nav-blacklist-btn').style.display='inline-block';
+      if(isHR)document.getElementById('nav-settings-btn').style.display='inline-block';
+      document.getElementById('bottom-bar').style.display='block';
+      showPage('front');
+    }
+  },550);
+}
+
+// ===== AUTH =====
+async function handleLogin(){
+  const empId=document.getElementById('login-emp').value.trim().toUpperCase();
+  const pwd=document.getElementById('login-pwd').value.trim();
+  if(!empId)return alert('請輸入員工編號');
+  if(!pwd)return alert('請輸入密碼');
+  const btn=document.getElementById('btn-login-main');btn.textContent='驗證中...';btn.disabled=true;
+  try{
+    // Step 1：只做驗證，速度最快
+    const{data,error}=await sb.from('employees').select('*').eq('emp_id',empId).eq('is_active',true).single();
+    if(error||!data){btn.textContent='登 入 系 統';btn.disabled=false;return alert('查無此員工編號，請確認後再試');}
+    if(data.password!==pwd){btn.textContent='登 入 系 統';btn.disabled=false;return alert('密碼錯誤');}
+    currentUser={name:data.name,dept:data.dept,role:data.role,id:empId};
+  }catch(e){btn.textContent='登 入 系 統';btn.disabled=false;return alert('登入失敗，請稍後再試');}
+
+  // Step 2：驗證成功，立刻初始化畫面
+  btn.textContent='登 入 系 統';btn.disabled=false;
+  initTimePicker();
+  state=getEmptyState();
+  if(!['HR','ADMIN'].includes(currentUser.role))state.branch=currentUser.dept;
+  hydrateUI();calculateScores();
+
+  // Step 3：播放歡迎動畫，同時在背景載入資料
+  const overlay=document.getElementById('page-transition');
+  const logo=document.getElementById('transition-logo');
+  const txt=document.getElementById('transition-text');
+  txt.textContent=`歡迎 ${currentUser.name} 登入！`;
+  logo.className='anim-welcome';txt.className='anim-welcome';
+  overlay.classList.add('show');
+
+  // 背景載入面試資料（不阻塞畫面切換）
+  fetchCloudDB();
+
+  setTimeout(()=>{
+    overlay.classList.remove('show');
+    logo.className='';txt.className='';txt.style.opacity='0';
+    document.getElementById('header-user-info').textContent=`${currentUser.name}（${currentUser.dept}）`;
+    document.getElementById('main-header').style.display='block';
+    document.getElementById('nav-front-btn').style.display='none';
+    document.getElementById('nav-backend-btn').style.display='inline-block';
+    document.getElementById('nav-blacklist-btn').style.display='inline-block';
+    const settingsBtn=document.getElementById('nav-settings-btn');
+    if(settingsBtn)settingsBtn.style.display=['HR','ADMIN'].includes(currentUser.role)?'inline-block':'none';
+    updateLogos(currentUser.dept);
+    document.getElementById('header-title-text').textContent='面試前台評分';
+    showPage('front');
+    document.getElementById('bottom-bar').style.display='block';
+  },1300);
+}
+
+// ===== 設定頁面 =====
+let editingEmpId=null,editingLevelId=null,editingCompetencyInfo=null;
+
+function switchSettingsTab(tab){
+  ['employees','weights','levels','competency'].forEach(t=>{
+    const panel=document.getElementById('settings-'+t);
+    const tabBtn=document.getElementById('tab-'+t);
+    if(panel)panel.style.display=t===tab?'block':'none';
+    if(tabBtn)tabBtn.classList.toggle('active',t===tab);
+  });
+}
+
+function loadSettingsPage(){
+  switchSettingsTab('employees');
+  loadSettingsEmployees();
+  loadSettingsWeights();
+  loadSettingsLevels();
+  loadSettingsCompetency();
+}
+
+async function loadSettingsEmployees(){
+  // 用快取直接渲染，不查 DB
+  const data=cachedEmployees;
+  const tbody=document.getElementById('settings-emp-tbody');if(!tbody)return;
+  tbody.innerHTML=(data||[]).map(e=>`<tr>
+    <td style="font-weight:700;">${e.emp_id}</td>
+    <td>${e.name}</td>
+    <td style="color:var(--text3);">${e.dept}</td>
+    <td><span class="badge badge-draft">${e.role}</span></td>
+    <td style="color:var(--text3);">${e.password}</td>
+    <td>${e.is_active?'<span class="badge badge-complete">啟用</span>':'<span class="badge badge-fail">停用</span>'}</td>
+    <td><button class="btn-action btn-edit" onclick="openEmpModal('${e.emp_id}')">編輯</button></td>
+  </tr>`).join('');
+}
+
+function openEmpModal(empId){
+  editingEmpId=empId||null;
+  document.getElementById('emp-modal-title').textContent=empId?'編輯員工':'新增員工';
+  document.getElementById('emp-f-id').value=empId||'';
+  document.getElementById('emp-f-id').disabled=!!empId;
+  if(empId){
+    // 從快取讀取，瞬間顯示
+    const emp=cachedEmployees.find(e=>e.emp_id===empId);
+    if(emp){
+      document.getElementById('emp-f-name').value=emp.name;
+      document.getElementById('emp-f-dept').value=emp.dept;
+      document.getElementById('emp-f-role').value=emp.role;
+      document.getElementById('emp-f-pwd').value=emp.password;
+    }
+    document.getElementById('emp-deactivate-btn').style.display='inline-block';
+  }else{
+    document.getElementById('emp-f-name').value='';
+    document.getElementById('emp-f-dept').value='';
+    document.getElementById('emp-f-role').value='MGR';
+    document.getElementById('emp-f-pwd').value='';
+    document.getElementById('emp-deactivate-btn').style.display='none';
+  }
+  document.getElementById('emp-modal').querySelector('.btn-modal-ok').onclick=saveEmp;
+  document.getElementById('emp-modal').classList.add('show');
+}
+function closeEmpModal(){document.getElementById('emp-modal').classList.remove('show');editingCompetencyInfo=null;}
+
+async function saveEmp(){
+  const empId=document.getElementById('emp-f-id').value.trim().toUpperCase();
+  const name=document.getElementById('emp-f-name').value.trim();
+  const dept=document.getElementById('emp-f-dept').value.trim();
+  const role=document.getElementById('emp-f-role').value;
+  const pwd=document.getElementById('emp-f-pwd').value.trim();
+  if(!empId||!name||!dept||!pwd)return alert('請填寫所有欄位');
+  const{error}=editingEmpId
+    ?await sb.from('employees').update({name,dept,role,password:pwd}).eq('emp_id',empId)
+    :await sb.from('employees').insert({emp_id:empId,name,dept,role,password:pwd,is_active:true});
+  if(error)return alert('儲存失敗：'+error.message);
+  // 更新快取
+  const newEmp={emp_id:empId,name,dept,role,password:pwd,is_active:true};
+  const idx=cachedEmployees.findIndex(e=>e.emp_id===empId);
+  if(idx>=0)cachedEmployees[idx]=newEmp;else cachedEmployees.push(newEmp);
+  cachedEmployees.sort((a,b)=>a.emp_id.localeCompare(b.emp_id));
+  showToast('✓ 員工資料已儲存');closeEmpModal();
+  await loadAllConfig();
+  loadSettingsEmployees();
+}
+
+async function deactivateEmp(){
+  if(!confirm(`確定要停用 ${editingEmpId} 的帳號嗎？`))return;
+  await sb.from('employees').update({is_active:false}).eq('emp_id',editingEmpId);
+  // 更新快取
+  const idx=cachedEmployees.findIndex(e=>e.emp_id===editingEmpId);
+  if(idx>=0)cachedEmployees[idx].is_active=false;
+  showToast('已停用帳號');closeEmpModal();
+  await loadAllConfig();
+  loadSettingsEmployees();
+}
+
+async function loadSettingsWeights(){
+  const s1El=document.getElementById('w-s1');const s2El=document.getElementById('w-s2');const s3El=document.getElementById('w-s3');
+  if(s1El)s1El.value=Math.round(SCORE_WEIGHTS.s1*100);
+  if(s3El)s3El.value=Math.round(SCORE_WEIGHTS.s3*100);
+  if(s2El)s2El.value=Math.round(SCORE_WEIGHTS.s2*100);
+  updateWeightHint();
+}
+function updateWeightHint(){
+  const s1=parseInt((document.getElementById('w-s1')||{}).value)||0;
+  const s3=parseInt((document.getElementById('w-s3')||{}).value)||0;
+  const s2=parseInt((document.getElementById('w-s2')||{}).value)||0;
+  const total=s1+s3+s2;const hint=document.getElementById('weight-sum-hint');
+  if(hint){hint.textContent=`目前總和：${total}%（必須等於 100%）`;hint.style.color=total===100?'#059669':'#DC2626';}
+}
+async function saveWeights(){
+  const s1=parseInt(document.getElementById('w-s1').value)||0;
+  const s3=parseInt(document.getElementById('w-s3').value)||0;
+  const s2=parseInt(document.getElementById('w-s2').value)||0;
+  if(s1+s2+s3!==100)return alert('三項比重總和必須等於 100%');
+  const{error}=await sb.from('score_weights').update({s1_weight:s1/100,s2_weight:s2/100,s3_weight:s3/100}).eq('id',1);
+  if(error)return alert('儲存失敗：'+error.message);
+  await loadAllConfig();showToast('✓ 比重已更新，立即生效');
+}
+
+function loadSettingsLevels(){
+  const container=document.getElementById('settings-levels-list');if(!container)return;
+  const entries=Object.entries(S3_LEVELS);
+  if(!entries.length){container.innerHTML='<div style="padding:20px;color:var(--text3);">尚無職等設定</div>';return;}
+  container.innerHTML=entries.map(([id,lv])=>`
+    <div class="level-item">
+      <div><div class="level-item-name">${lv.name}</div><div class="level-item-ratio">核心 ${lv.ratio.c}% ／ 管理 ${lv.ratio.m}%</div></div>
+      <button class="btn-action btn-edit" onclick="openLevelModal(${id})">編輯</button>
+    </div>`).join('');
+}
+
+function openLevelModal(lvId){
+  editingLevelId=lvId||null;
+  document.getElementById('level-modal-title').textContent=lvId?'編輯職等':'新增職等';
+  document.getElementById('lv-delete-btn').style.display=lvId?'inline-block':'none';
+  if(lvId){
+    sb.from('job_levels').select('*').eq('id',lvId).single().then(({data:j})=>{
+      if(!j)return;
+      document.getElementById('lv-f-name').value=j.level_name;
+      document.getElementById('lv-f-core').value=Math.round(j.core_ratio*100);
+      document.getElementById('lv-f-mgmt').value=Math.round(j.mgmt_ratio*100);
+      renderLevelWeightInputs(
+        Array.isArray(j.core_weights)?j.core_weights:JSON.parse(j.core_weights||'[]'),
+        Array.isArray(j.mgmt_weights)?j.mgmt_weights:JSON.parse(j.mgmt_weights||'[]')
+      );
+    });
+  }else{
+    document.getElementById('lv-f-name').value='';
+    document.getElementById('lv-f-core').value=50;document.getElementById('lv-f-mgmt').value=50;
+    renderLevelWeightInputs(S3_CORE.map(()=>Math.round(100/S3_CORE.length)),S3_MGMT.map(()=>Math.round(100/S3_MGMT.length)));
+  }
+  document.getElementById('level-modal').classList.add('show');
+}
+function closeLevelModal(){document.getElementById('level-modal').classList.remove('show');}
+function syncLvRatio(changed){
+  const cEl=document.getElementById('lv-f-core'),mEl=document.getElementById('lv-f-mgmt');
+  if(changed==='core')mEl.value=Math.max(0,100-(parseInt(cEl.value)||0));
+  else cEl.value=Math.max(0,100-(parseInt(mEl.value)||0));
+}
+function renderLevelWeightInputs(coreW,mgmtW){
+  const cWrap=document.getElementById('lv-core-weights-wrap');const mWrap=document.getElementById('lv-mgmt-weights-wrap');
+  if(!cWrap||!mWrap)return;
+  cWrap.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;">核心職能各項權重（%，合計需100）</div>`+
+    S3_CORE.map((item,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="font-size:12px;flex:1;">${item.name}</span><input type="number" id="cw-${i}" class="info-input" style="width:70px;" value="${coreW[i]||0}" min="0" max="100"></div>`).join('');
+  mWrap.innerHTML=`<div style="font-size:11px;font-weight:700;color:#059669;margin-bottom:6px;margin-top:10px;">管理職能各項權重（%，合計需100）</div>`+
+    S3_MGMT.map((item,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="font-size:12px;flex:1;">${item.name}</span><input type="number" id="mw-${i}" class="info-input" style="width:70px;" value="${mgmtW[i]||0}" min="0" max="100"></div>`).join('');
+}
+async function saveLevel(){
+  const name=document.getElementById('lv-f-name').value.trim();
+  const core=parseInt(document.getElementById('lv-f-core').value)||0;
+  const mgmt=parseInt(document.getElementById('lv-f-mgmt').value)||0;
+  if(!name)return alert('請輸入職等名稱');
+  if(core+mgmt!==100)return alert('核心＋管理必須等於100%');
+  const coreW=S3_CORE.map((_,i)=>parseInt(document.getElementById('cw-'+i).value)||0);
+  const mgmtW=S3_MGMT.map((_,i)=>parseInt(document.getElementById('mw-'+i).value)||0);
+  if(coreW.reduce((a,b)=>a+b,0)!==100)return alert('核心職能各項權重總和必須等於100%');
+  if(mgmtW.reduce((a,b)=>a+b,0)!==100)return alert('管理職能各項權重總和必須等於100%');
+  const payload={level_name:name,core_ratio:core/100,mgmt_ratio:mgmt/100,core_weights:JSON.stringify(coreW),mgmt_weights:JSON.stringify(mgmtW)};
+  const{error}=editingLevelId
+    ?await sb.from('job_levels').update(payload).eq('id',editingLevelId)
+    :await sb.from('job_levels').insert({...payload,sort_order:999});
+  if(error)return alert('儲存失敗：'+error.message);
+  await loadAllConfig();showToast('✓ 職等已儲存，立即生效');
+  closeLevelModal();await loadSettingsLevels();
+}
+async function deleteLevel(){
+  if(!confirm('確定要刪除此職等嗎？'))return;
+  await sb.from('job_levels').delete().eq('id',editingLevelId);
+  await loadAllConfig();showToast('已刪除職等');closeLevelModal();await loadSettingsLevels();
+}
+
+function loadSettingsCompetency(){
+  const cList=document.getElementById('settings-core-list');const mList=document.getElementById('settings-mgmt-list');
+  if(!cList||!mList)return;
+  cList.innerHTML=S3_CORE.map((item,i)=>`<div class="competency-item" onclick="openCompetencyModal('core',${i})"><div class="competency-item-name">${item.name}</div><div class="competency-item-sub">${item.levels.join(' → ')}</div></div>`).join('');
+  mList.innerHTML=S3_MGMT.map((item,i)=>`<div class="competency-item" onclick="openCompetencyModal('mgmt',${i})"><div class="competency-item-name">${item.name}</div><div class="competency-item-sub">${item.levels.join(' → ')}</div></div>`).join('');
+}
+
+function openCompetencyModal(cat,idx){
+  editingCompetencyInfo={cat,idx};
+  const item=cat==='core'?S3_CORE[idx]:S3_MGMT[idx];
+  document.getElementById('emp-modal-title').textContent=`編輯職能：${item.name}`;
+  document.getElementById('emp-deactivate-btn').style.display='none';
+  const body=document.getElementById('emp-modal').querySelector('.modal-body');
+  body.innerHTML=`<div class="form-group"><label class="form-label">職能名稱</label><input type="text" id="comp-name" class="form-input" value="${item.name}"></div>`+
+    item.levels.map((lv,i)=>`<div style="border:1px solid var(--border);padding:10px;margin-bottom:8px;"><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px;">等級 ${i+1}</div><input type="text" id="comp-lv-${i}" class="form-input" value="${lv}" style="margin-bottom:6px;"><textarea id="comp-desc-${i}" class="bon-textarea" rows="2">${item.descs[i]||''}</textarea></div>`).join('');
+  document.getElementById('emp-modal').querySelector('.btn-modal-ok').onclick=saveCompetency;
+  document.getElementById('emp-modal').classList.add('show');
+}
+
+async function saveCompetency(){
+  if(!editingCompetencyInfo)return;
+  const{cat,idx}=editingCompetencyInfo;
+  const item=cat==='core'?S3_CORE[idx]:S3_MGMT[idx];
+  const name=document.getElementById('comp-name').value.trim();
+  const levels=item.levels.map((_,i)=>document.getElementById('comp-lv-'+i).value.trim());
+  const descs=item.levels.map((_,i)=>document.getElementById('comp-desc-'+i).value.trim());
+  if(!name||levels.some(l=>!l))return alert('請填寫所有欄位');
+  const{data}=await sb.from('competency_items').select('id').eq('category',cat).eq('name',item.name).single();
+  if(!data)return alert('找不到對應資料');
+  const{error}=await sb.from('competency_items').update({name,levels:JSON.stringify(levels),descs:JSON.stringify(descs)}).eq('id',data.id);
+  if(error)return alert('儲存失敗：'+error.message);
+  await loadAllConfig();showToast('✓ 職能項目已更新，立即生效');
+  closeEmpModal();loadSettingsCompetency();
+}
+
+function handleLogout(){
+  currentUser=null;state=null;allData=[];
+  document.getElementById('main-header').style.display='none';
+  document.getElementById('bottom-bar').style.display='none';
+  ['nav-front-btn','nav-backend-btn','nav-blacklist-btn','nav-settings-btn'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='none';
+  });
+  document.getElementById('login-pwd').value='';
+  updateLogos('總部');showPage('login');
+}
+
+// ===== 全域快取 =====
+// 登入時一次全部載入，之後從記憶體讀，不再重複查 DB
+let cachedEmployees=[]; // 員工清單快取
+
+async function fetchCloudDB(){
+  // 一次同時載入正常資料 + 黑名單（平行請求）
+  try{
+    const role=currentUser.role;
+    let baseQ=sb.from('interviews').select('*').order('created_at',{ascending:false});
+    if(role==='SENIOR_HS')baseQ=baseQ.in('branch',HS_BRANCHES);
+    else if(role==='SENIOR_ES')baseQ=baseQ.in('branch',ES_BRANCHES);
+    else if(!['HR','ADMIN'].includes(role))baseQ=baseQ.eq('branch',currentUser.dept);
+    // 平行載入正常資料＋黑名單＋員工清單
+    const[normalRes,blackRes,empRes]=await Promise.all([
+      baseQ.eq('is_blacklisted',false),
+      baseQ.eq('is_blacklisted',true),
+      sb.from('employees').select('*').order('emp_id')
+    ]);
+    allData=normalRes.data||[];
+    blacklistData=blackRes.data||[];
+    cachedEmployees=empRes.data||[];
+    showToast('✓ 資料同步完成');
+  }catch(e){showToast('離線模式');}
+}
+
+// 後台切換直接用快取，不再重查 DB
+async function loadAdminData(){
+  // 已有快取就直接用，否則重新載
+  if(allData.length===0)await fetchCloudDB();
+  populateBranchFilter();
+}
+
+// 黑名單切換直接用快取
+async function loadBlacklistData(){
+  if(blacklistData.length===0)await fetchCloudDB();
+  populateBlacklistBranchFilter();
+}
+function populateBranchFilter(){
+  const sel=document.getElementById('filter-branch');if(!sel)return;
+  while(sel.options.length>1)sel.remove(1);
+  [...new Set(allData.map(r=>r.branch).filter(Boolean))].sort().forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;sel.appendChild(o);});
+  if(['HR','ADMIN','SENIOR_HS','SENIOR_ES'].includes(currentUser.role))document.getElementById('branch-filter-wrap').style.display='';
+  else document.getElementById('branch-filter-wrap').style.display='none';
+}
+
+// ===== SAVE =====
+async function saveToSupabase(){
+  syncState();
+  const interviewers=Array.from(document.querySelectorAll('.ipt-interviewer')).map(i=>i.value).filter(v=>v).join('、');
+  const positions=Array.from(document.querySelectorAll('.ipt-position')).map(i=>i.value).filter(v=>v).join('、');
+  const docId=(state.name+'_'+state.date).replace(/\s/g,'_');
+  const payload={doc_id:docId,candidate_name:state.name,branch:state.branch,position:positions||state.position,other_position:state.otherPosition||'',interviewer:interviewers,interview_date:state.date,interview_time:state.time,s1_final:parseFloat(state.s1Final)||0,s2_final:parseFloat(state.s2Final)||0,s3_final:parseFloat(state.s3Final)||0,grand_total:parseFloat(state.grandTotal)||0,doc_status:state.docStatus,final_decision:state.finalDecision||'',ideal_status:state.idealStatus||'',interview_note:state.interviewNote||'',state_json:state};
+  const{error}=await sb.from('interviews').upsert(payload,{onConflict:'doc_id'});
+  if(error){showToast('儲存失敗：'+error.message);return false;}
+  // 更新本地 allData
+  const idx=allData.findIndex(r=>r.doc_id===docId);
+  const entry={...payload,state_json:state};
+  if(idx>=0)allData[idx]=entry;else allData.push(entry);
+  return true;
+}
+async function handleSaveDraft(){
+  syncState();
+  if(!state.name.trim())return alert('請先輸入應徵者姓名');
+  state.docStatus='draft';
+  const ok=await saveToSupabase();
+  if(ok)showToast('✓ 暫存成功');
+}
+async function handleFinalSubmit(){
+  syncState();
+  const missing=[];
+  if(!state.name.trim())missing.push('應徵者姓名');
+  if(!state.branch)missing.push('應徵分校/單位');
+  if(!state.positions||state.positions.length===0)missing.push('應徵職位');
+  if(!state.date)missing.push('面試日期');
+  if(!state.finalDecision)missing.push('最終錄取結果');
+  if(missing.length>0)return alert(`請填寫以下必填欄位：\n\n• ${missing.join('\n• ')}`);
+  state.docStatus='completed';
+  const ok=await saveToSupabase();
+  if(ok){showToast('✓ 已送出並建檔');alert('面試資料已成功送出！');}
+}
+function handleDecision(t){
+  document.getElementById('btn-pass').classList.remove('active-pass');
+  document.getElementById('btn-fail').classList.remove('active-fail');
+  if(t==='pass'){document.getElementById('btn-pass').classList.add('active-pass');state.finalDecision='pass';}
+  else{document.getElementById('btn-fail').classList.add('active-fail');state.finalDecision='fail';}
+  syncState();
+}
+function handleClear(){
+  if(!confirm('確定要清除所有資料？'))return;
+  const branch=state.branch;state=getEmptyState();
+  if(!['HR','ADMIN'].includes(currentUser.role))state.branch=currentUser.dept;else state.branch=branch;
+  resetPositionList();hydrateUI();calculateScores();window.scrollTo(0,0);showToast('已清除');
+}
+function resetPositionList(){
+  const pl=document.getElementById('position-list');
+  if(pl)pl.innerHTML='<div class="position-row"><div style="display:flex;gap:5px;align-items:center;width:100%;"><select class="ipt-position info-input" onchange="onPositionChange(this)" style="flex:1;"><option value="">請選擇...</option><option>班級導師</option><option>行政導師</option><option>授課師</option><option>主任</option><option>處長</option><option>總部</option><option>其他</option></select></div><input type="text" class="other-pos-input" placeholder="請輸入職務名稱" oninput="syncState()" style="display:none;"></div>';
+}
+function addInterviewer(){const c=document.getElementById('interviewer-list');const d=document.createElement('div');d.className='interviewer-row';d.innerHTML=`<input type="text" class="ipt-interviewer info-input" oninput="syncState()" placeholder="面試官姓名"><button class="btn-rm-int" onclick="this.closest('.interviewer-row').remove();syncState()">✕</button>`;c.appendChild(d);}
+function addPosition(){const c=document.getElementById('position-list');const d=document.createElement('div');d.className='position-row';d.innerHTML=`<div style="display:flex;gap:5px;align-items:center;width:100%;"><select class="ipt-position info-input" onchange="onPositionChange(this)" style="flex:1;"><option value="">請選擇...</option><option>班級導師</option><option>行政導師</option><option>授課師</option><option>主任</option><option>處長</option><option>總部</option><option>其他</option></select><button class="btn-rm-int" onclick="this.closest('.position-row').remove();syncState()">✕</button></div><input type="text" class="other-pos-input" placeholder="請輸入職務名稱" oninput="syncState()" style="display:none;">`;c.appendChild(d);}
+function onPositionChange(sel){const row=sel.closest('.position-row');const inp=row?row.querySelector('.other-pos-input'):null;if(inp)inp.style.display=sel.value==='其他'?'block':'none';syncState();}
+function initTimePicker(){
+  const h=document.getElementById('ipt-hour'),m=document.getElementById('ipt-minute');
+  if(h&&h.options.length<=1)for(let i=0;i<24;i++){const o=document.createElement('option');o.value=String(i).padStart(2,'0');o.textContent=String(i).padStart(2,'0');h.appendChild(o);}
+  if(m&&m.options.length<=1)for(let i=0;i<60;i+=5){const o=document.createElement('option');o.value=String(i).padStart(2,'0');o.textContent=String(i).padStart(2,'0');m.appendChild(o);}
+}
+
+// ===== RENDER FRONT =====
+function renderS1(){
+  let html='';
+  S1_DATA.forEach(g=>{
+    const isBonus=g.id==='bon';
+    html+=`<div class="s1-group"><div class="s1-group-title">${g.title}</div>`;
+    if(isBonus){
+      html+=`<div class="bon-wrap"><div style="font-size:11px;color:var(--blue);font-weight:700;margin-bottom:4px;">💡 只要有填寫都可以依照內容做加分唷！</div><textarea id="s1-bon-text" class="bon-textarea" rows="2" placeholder="補充說明（選填）..." oninput="state.s1.bonText=this.value;updateBonusSummary()">${state.s1.bonText||''}</textarea>`;
+      html+=`<div class="score-row"><div class="score-q">特別加分評分</div><div class="score-btns">`;
+      [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-bon',0,${v},this)" class="score-btn${state.s1.bon[0]==v?' active':''}" data-val="${v}">${v}</button>`;});
+      html+=`</div></div></div>`;
+    }else{
+      g.qs.forEach((q,i)=>{
+        html+=`<div class="score-row"><div class="score-q">${q}</div><div class="score-btns">`;
+        [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-${g.id}',${i},${v},this)" class="score-btn${state.s1[g.id][i]==v?' active':''}" data-val="${v}">${v}</button>`;});
+        html+=`</div></div>`;
+      });
+    }
+    html+=`</div>`;
+  });
+  document.getElementById('s1-body').innerHTML=html;
+}
+function renderS2(){
+  let html='<div class="s2-grid">';
+  S2_QUESTIONS.forEach((q,i)=>{
+    let btns=[1,2,3,4,5].map(v=>`<button onclick="setScore('s2',${i},${v},this)" class="score-btn${state.s2[i]==v?' active':''}" data-val="${v}" style="width:26px;height:26px;font-size:11px;">${v}</button>`).join('');
+    html+=`<div class="s2-row"><span class="s2-num">${i+1}</span><span class="s2-q">${q}</span><div class="s2-btns">${btns}</div></div>`;
+  });
+  document.getElementById('s2-body').innerHTML=html+'</div>';
+}
+function renderS3(){
+  const lv=parseInt(state.level)||0;
+  const tipEl=document.getElementById('s3-level-tip');
+  if(!lv){if(tipEl)tipEl.style.display='block';document.getElementById('s3-tbody').innerHTML='';return;}
+  if(tipEl)tipEl.style.display='none';
+  const d=S3_LEVELS[lv]||S3_LEVELS[1];let html='';
+  const mkBtns=(sub,i,BARS)=>[1,2,3,4,5].map(v=>`<button onclick="setS3Score('${sub}',${i},${v},this)" class="s3-score-btn${state.s3[sub][i]==v?' active':''}" data-val="${v}">${v}<span class="s3-tooltip">${BARS[i].levels[v-1]}</span></button>`).join('');
+  S3_CORE.forEach((item,i)=>{
+    const desc=state.s3.core[i]>0?item.descs[state.s3.core[i]-1]:'';
+    html+=`<tr><td class="s3-dim" style="color:#1D6FD8;">核心<br><span style="font-size:10px;">(${d.c[i]}%)</span></td><td class="s3-name">${item.name}</td><td><textarea class="s3-textarea" rows="3" placeholder="BEI 問題描述..." oninput="state.s3Texts.core[${i}].bei=this.value">${state.s3Texts.core[i].bei||''}</textarea></td><td><textarea class="s3-textarea" rows="3" placeholder="狀況..." oninput="state.s3Texts.core[${i}].c=this.value">${state.s3Texts.core[i].c||''}</textarea></td><td><textarea class="s3-textarea" rows="3" placeholder="行動..." oninput="state.s3Texts.core[${i}].a=this.value">${state.s3Texts.core[i].a||''}</textarea></td><td><textarea class="s3-textarea" rows="3" placeholder="結果..." oninput="state.s3Texts.core[${i}].r=this.value">${state.s3Texts.core[i].r||''}</textarea></td><td class="s3-score-cell"><div class="s3-score-inner"><div class="s3-score-btns">${mkBtns('core',i,S3_CORE)}</div><div id="desc-core-${i}" class="s3-desc-box${state.s3.core[i]>0?' show':''}"><div class="s3-desc-label">行為描述</div><span>${desc}</span></div></div></td></tr>`;
+  });
+  S3_MGMT.forEach((item,i)=>{
+    const desc=state.s3.mgmt[i]>0?item.descs[state.s3.mgmt[i]-1]:'';
+    html+=`<tr><td class="s3-dim" style="color:#059669;">管理<br><span style="font-size:10px;">(${d.m[i]}%)</span></td><td class="s3-name">${item.name}</td><td><textarea class="s3-textarea" rows="3" placeholder="BEI 問題描述..." oninput="state.s3Texts.mgmt[${i}].bei=this.value">${state.s3Texts.mgmt[i].bei||''}</textarea></td><td><textarea class="s3-textarea" rows="3" placeholder="狀況..." oninput="state.s3Texts.mgmt[${i}].c=this.value">${state.s3Texts.mgmt[i].c||''}</textarea></td><td><textarea class="s3-textarea" rows="3" placeholder="行動..." oninput="state.s3Texts.mgmt[${i}].a=this.value">${state.s3Texts.mgmt[i].a||''}</textarea></td><td><textarea class="s3-textarea" rows="3" placeholder="結果..." oninput="state.s3Texts.mgmt[${i}].r=this.value">${state.s3Texts.mgmt[i].r||''}</textarea></td><td class="s3-score-cell"><div class="s3-score-inner"><div class="s3-score-btns">${mkBtns('mgmt',i,S3_MGMT)}</div><div id="desc-mgmt-${i}" class="s3-desc-box${state.s3.mgmt[i]>0?' show':''}"><div class="s3-desc-label">行為描述</div><span>${desc}</span></div></div></td></tr>`;
+  });
+  document.getElementById('s3-tbody').innerHTML=html;
+}
+function hydrateUI(){
+  const g=id=>document.getElementById(id);
+  if(g('ipt-name'))g('ipt-name').value=state.name||'';
+  if(g('ipt-other-note'))g('ipt-other-note').value=state.otherNote||'';
+  if(g('ipt-date'))g('ipt-date').value=state.date||new Date().toISOString().split('T')[0];
+  if(state.time&&state.time.includes(':')){const[h,m]=state.time.split(':');if(g('ipt-hour'))g('ipt-hour').value=h;if(g('ipt-minute'))g('ipt-minute').value=m;}
+  if(g('interview-note-input'))g('interview-note-input').value=state.interviewNote||'';
+  const lvSel=g('job-level-select');
+  if(lvSel){lvSel.value=state.level||'';lvSel.className=(!state.level||state.level===0)?'level-select not-selected':'level-select';}
+  const sb2=g('sel-branch');
+  if(sb2){const restricted=!['HR','ADMIN','SENIOR_HS','SENIOR_ES'].includes(currentUser.role);if(restricted){sb2.value=currentUser.dept;sb2.disabled=true;}else{sb2.disabled=false;sb2.value=state.branch||'';}}
+  if(state.positions&&state.positions.length>0){
+    const pl=g('position-list');
+    if(pl){
+      pl.innerHTML='';
+      const otherArr=state.otherPositions||[];let otherIdx=0;
+      state.positions.forEach((pos,idx)=>{
+        const d=document.createElement('div');d.className='position-row';
+        const hasOther=pos==='其他';const otherVal=hasOther?(otherArr[otherIdx++]||''):'';
+        const rmBtn=idx>0?`<button class="btn-rm-int" onclick="this.closest('.position-row').remove();syncState()">✕</button>`:'';
+        const opts=['班級導師','行政導師','授課師','主任','處長','總部','其他'].map(o=>`<option${o===pos?' selected':''}>${o}</option>`).join('');
+        d.innerHTML=`<div style="display:flex;gap:5px;align-items:center;width:100%;"><select class="ipt-position info-input" onchange="onPositionChange(this)" style="flex:1;"><option value="">請選擇...</option>${opts}</select>${rmBtn}</div><input type="text" class="other-pos-input" placeholder="請輸入職務名稱" oninput="syncState()" style="display:${hasOther?'block':'none'};" value="${otherVal}">`;
+        pl.appendChild(d);
+      });
+    }
+  }
+  const fi=document.querySelector('.ipt-interviewer');if(fi&&!fi.value&&currentUser)fi.value=currentUser.name;
+  const bp=g('btn-pass'),bf=g('btn-fail');
+  if(bp){bp.classList.remove('active-pass');if(state.finalDecision==='pass')bp.classList.add('active-pass');}
+  if(bf){bf.classList.remove('active-fail');if(state.finalDecision==='fail')bf.classList.add('active-fail');}
+  renderS1();renderS2();renderS3();updateBonusSummary();
+}
+function syncState(){
+  const v=id=>{const e=document.getElementById(id);return e?e.value:'';};
+  state.name=v('ipt-name');
+  const sb2=document.getElementById('sel-branch');if(sb2&&!sb2.disabled)state.branch=sb2.value;
+  state.positions=Array.from(document.querySelectorAll('.ipt-position')).map(e=>e.value).filter(v=>v);
+  state.position=state.positions[0]||'';
+  state.otherPositions=[];
+  document.querySelectorAll('.position-row').forEach(row=>{const sel=row.querySelector('.ipt-position');const inp=row.querySelector('.other-pos-input');if(sel&&sel.value==='其他'&&inp)state.otherPositions.push(inp.value.trim());});
+  state.otherPosition=state.otherPositions.join('、');
+  state.date=v('ipt-date');
+  const h=v('ipt-hour'),m=v('ipt-minute');state.time=(h&&m)?`${h}:${m}`:'';
+  state.interviewNote=v('interview-note-input');
+  const bt=document.getElementById('s1-bon-text');if(bt)state.s1.bonText=bt.value;
+}
+function updateBonusSummary(){const bonText=state.s1?state.s1.bonText||'':'';const el=document.getElementById('bonus-summary-display');if(el){el.textContent=bonText.trim()||'尚未填寫加分項目';el.style.color=bonText.trim()?'var(--text)':'var(--text3)';}}
+function setScore(group,idx,val,btn){
+  Array.from(btn.parentElement.children).forEach(b=>b.classList.remove('active'));
+  let cur=0;if(group==='s2')cur=state.s2[idx];else if(group.startsWith('s1-'))cur=state.s1[group.split('-')[1]][idx];
+  const nv=(cur===val)?0:val;if(nv>0)btn.classList.add('active');
+  if(group==='s2')state.s2[idx]=nv;else if(group.startsWith('s1-'))state.s1[group.split('-')[1]][idx]=nv;
+  calculateScores();
+}
+function setS3Score(sub,idx,val,btn){
+  if(!state.level||state.level===0){alert('請先選擇職等！');return;}
+  Array.from(btn.parentElement.children).forEach(b=>b.classList.remove('active'));
+  const cur=state.s3[sub][idx];const nv=(cur===val)?0:val;if(nv>0)btn.classList.add('active');
+  state.s3[sub][idx]=nv;
+  const BARS=sub==='core'?S3_CORE:S3_MGMT;
+  const db=document.getElementById(`desc-${sub}-${idx}`);const dt=db?db.querySelector('span'):null;
+  if(db&&dt){if(nv>0){dt.textContent=BARS[idx].descs[nv-1];db.classList.add('show');}else db.classList.remove('show');}
+  calculateScores();
+}
+function updateLevelLogic(){
+  const sel=document.getElementById('job-level-select');
+  if(sel){state.level=sel.value?parseInt(sel.value):0;sel.className=(!state.level)?'level-select not-selected':'level-select';}
+  renderS3();calculateScores();
+}
+function calculateScores(){
+  const sum=arr=>arr.reduce((a,b)=>a+b,0);
+  let s1p=0,motScore=0,s1Raw=0;
+  S1_DATA.forEach(g=>{const raw=sum(state.s1[g.id]);s1Raw+=raw;if(g.id==='mot')motScore=raw;if(raw>0)s1p+=(raw/g.max)*100*g.weight;});
+  const s1Max=100*SCORE_WEIGHTS.s1;
+  const s1f=(s1p/100)*s1Max;
+  const s2Max=100*SCORE_WEIGHTS.s2;
+  const s2r=sum(state.s2),s2f=s2r>0?(s2r/85)*s2Max:0;
+  const lv=state.level?String(state.level):null;
+  const d=lv&&S3_LEVELS[lv]?S3_LEVELS[lv]:(Object.values(S3_LEVELS)[0]||{c:[],m:[],ratio:{c:50,m:50}});
+  const s3Max=100*SCORE_WEIGHTS.s3;
+  let cs=0,ms=0;
+  state.s3.core.forEach((v,i)=>cs+=v*((d.c[i]||0)/100));
+  state.s3.mgmt.forEach((v,i)=>ms+=v*((d.m[i]||0)/100));
+  const s3r=((cs/5)*100*(d.ratio.c/100))+((ms/5)*100*(d.ratio.m/100));
+  const s3f=s3r*(s3Max/100);
+  const gt=s1f+s2f+s3f;
+  state.s1Final=s1f.toFixed(2);state.s2Final=s2f.toFixed(2);state.s3Final=s3f.toFixed(2);state.grandTotal=gt.toFixed(2);
+  // 更新分數顯示上限
+  const s1El=document.getElementById('s1-final');if(s1El)s1El.parentElement.lastChild.textContent='/'+Math.round(s1Max);
+  [['s1-final','s1Final'],['s2-final','s2Final'],['s3-final','s3Final'],['report-grand-total','grandTotal'],['report-s1','s1Final'],['report-s2','s2Final'],['report-s3','s3Final'],['footer-total','grandTotal']].forEach(([id,key])=>{const e=document.getElementById(id);if(e)e.textContent=state[key];});
+  if(gt===0){const ste=document.getElementById('ideal-status-text');if(ste)ste.textContent='等待評分...';const exp=document.getElementById('ideal-status-exp');if(exp)exp.textContent='-';state.idealStatus='';return;}
+  let si=5,desc='';
+  if(gt>=90){si=0;desc='面試與筆試表現皆出色，具高度文化契合度。';}else if(gt>=80){si=1;desc='穩定且具培育潛力，文化契合良好。';}else if(gt>=70){si=2;desc='職能或筆試略有不足，但態度正向。';}else if(gt>=60){si=3;desc='能力或穩定度不足，需進一步觀察。';}else{si=5;desc='未達職能與文化基準。';}
+  let veto=[];
+  if(s1Raw>0&&s1Raw<30){veto.push('筆試總分低於30分');si=Math.max(si,2);}
+  if(motScore>0&&motScore<7){veto.push('動機與價值觀低於7分');si=Math.max(si,4);}
+  if(s2r>0&&s2f<7){veto.push('外顯特質得分率低於70%');si=Math.max(si,4);}
+  const STATUS=['優先錄取','建議錄取','可培養/備取','條件式錄取','不建議錄取','不錄取'];
+  const COLORS=['#059669','#059669','#D97706','#D97706','#DC2626','#DC2626'];
+  const ste=document.getElementById('ideal-status-text');if(ste){ste.textContent=STATUS[si];ste.style.color=COLORS[si];}
+  state.idealStatus=STATUS[si];
+  const exp=document.getElementById('ideal-status-exp');if(exp)exp.textContent=veto.length>0?`原因：${veto.join('、')}`:desc;
+}
+
+// ===== ADMIN =====
+function detectProgress(r){
+  const s=r.state_json||r;
+  if((r.doc_status==='completed'||s.docStatus==='completed')&&(r.final_decision||s.finalDecision))return 'done';
+  if(s.s1&&s.s2&&s.s3){
+    const sum=arr=>arr.reduce((a,b)=>a+b,0);
+    const s1Filled=Object.keys(s.s1).filter(k=>k!=='bonText').every(k=>{if(k==='bon')return true;return Array.isArray(s.s1[k])&&sum(s.s1[k])>0;});
+    const s2Filled=Array.isArray(s.s2)&&sum(s.s2)>0;
+    const s3CoreFilled=Array.isArray(s.s3.core)&&s.s3.core.every(v=>v>0);
+    const s3MgmtFilled=Array.isArray(s.s3.mgmt)&&s.s3.mgmt.every(v=>v>0);
+    if(s1Filled&&s2Filled&&s3CoreFilled&&s3MgmtFilled)return 'scored';
+  }
+  if(s.s1&&s.s3Texts){
+    const sum=arr=>arr.reduce((a,b)=>a+b,0);
+    const s1AllFilled=Object.keys(s.s1).filter(k=>k!=='bonText').every(k=>{if(k==='bon')return true;return Array.isArray(s.s1[k])&&sum(s.s1[k])>0;});
+    const beiFilled=s.s3Texts.core&&s.s3Texts.mgmt&&s.s3Texts.core.every(t=>t&&t.bei&&t.bei.trim()!=='')&&s.s3Texts.mgmt.every(t=>t&&t.bei&&t.bei.trim()!=='');
+    if(s1AllFilled&&beiFilled)return 'pre';
+  }
+  return 'none';
+}
+function progressBadge(p){return{none:'<span class="badge prog-none">未完成</span>',pre:'<span class="badge prog-pre">面試前準備完成</span>',scored:'<span class="badge prog-scored">面試評分完成</span>',done:'<span class="badge prog-done">已送出結果</span>'}[p]||'<span class="badge prog-none">未完成</span>';}
+function renderTable(){
+  const nameQ=document.getElementById('filter-name').value.trim();
+  const branchQ=document.getElementById('filter-branch').value;
+  const decQ=document.getElementById('filter-decision').value;
+  const progQ=document.getElementById('filter-progress').value;
+  let filtered=allData.filter(r=>{
+    if(nameQ&&!(r.candidate_name||'').includes(nameQ))return false;
+    if(branchQ&&r.branch!==branchQ)return false;
+    if(decQ&&r.final_decision!==decQ)return false;
+    if(progQ&&detectProgress(r)!==progQ)return false;
+    return true;
+  });
+  document.getElementById('stat-total').textContent=filtered.length;
+  document.getElementById('stat-pass').textContent=filtered.filter(r=>r.final_decision==='pass').length;
+  document.getElementById('stat-fail').textContent=filtered.filter(r=>r.final_decision==='fail').length;
+  const scores=filtered.map(r=>parseFloat(r.grand_total)).filter(n=>!isNaN(n));
+  document.getElementById('stat-avg').textContent=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):'-';
+  document.getElementById('table-count').textContent=`共 ${filtered.length} 筆`;
+  const tbody=document.getElementById('admin-tbody');
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:48px;color:var(--text3);font-size:13px;font-weight:700;">目前無符合條件的資料</td></tr>`;return;}
+  const db=d=>d==='pass'?'<span class="badge badge-pass">錄取</span>':d==='fail'?'<span class="badge badge-fail">不錄取</span>':'-';
+  tbody.innerHTML=filtered.map(r=>{
+    const logoSrc=getBranchLogo(r.branch);
+    const prog=detectProgress(r);
+    const docId=(r.doc_id||'').replace(/'/g,"\\'");
+    const name=(r.candidate_name||'').replace(/'/g,"\\'");
+    return`<tr>
+      <td style="color:var(--text3);font-size:12px;white-space:nowrap;">${r.interview_date||'-'}</td>
+      <td class="candidate-name">${r.candidate_name||'-'}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;"><img src="${logoSrc}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'"><span style="color:var(--text2);font-weight:500;">${r.branch||'-'}</span></div></td>
+      <td style="color:var(--text3);font-size:12px;">${r.position||'-'}</td>
+      <td style="color:var(--text3);font-size:12px;">${r.interviewer||'-'}</td>
+      <td class="total-score-cell">
+        <span class="total-score-val">${r.grand_total??'-'}</span>
+        <div class="score-popup">
+          <div class="score-popup-row"><span style="color:#059669;">一、筆試</span><span style="font-weight:700;">${r.s1_final??'-'}</span></div>
+          <div class="score-popup-row"><span style="color:#D97706;">二、職能</span><span style="font-weight:700;">${r.s3_final??'-'}</span></div>
+          <div class="score-popup-row"><span style="color:#4F46E5;">三、外顯</span><span style="font-weight:700;">${r.s2_final??'-'}</span></div>
+          <div class="score-popup-row"><span>總分</span><span style="color:var(--blue);">${r.grand_total??'-'}</span></div>
+        </div>
+      </td>
+      <td>${progressBadge(prog)}</td>
+      <td>${db(r.final_decision)}</td>
+      <td><div class="action-btns">
+        <button class="btn-action btn-edit" onclick="editRecord('${docId}')">編輯</button>
+        <button class="btn-action btn-print" onclick="printRecord('${docId}')">列印</button>
+        <button class="btn-action btn-blacklist" onclick="addToBlacklist('${docId}','${name}')">加入黑名單</button>
+        <button class="btn-action btn-delete" onclick="deleteRecord('${docId}','${name}')">刪除</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function editRecord(docId){
+  const r=allData.find(x=>x.doc_id===docId);
+  if(!r)return;
+  const s=r.state_json?{...r.state_json}:{...r};
+  if(!s.s3Texts)s.s3Texts={core:Array(6).fill(null).map(()=>({bei:'',c:'',a:'',r:''})),mgmt:Array(3).fill(null).map(()=>({bei:'',c:'',a:'',r:''}))};
+  if(!s.s3)s.s3={core:Array(6).fill(0),mgmt:Array(3).fill(0)};
+  if(!s.s2)s.s2=Array(17).fill(0);
+  if(!s.s1)s.s1={exp:[0],mot:[0,0],sty:[0,0],sal:[0,0,0],bon:[0],bonText:''};
+  if(!s.positions||s.positions.length===0)s.positions=s.position?s.position.split('、').map(p=>p.trim()).filter(Boolean):[];
+  if(!s.otherPositions||s.otherPositions.length===0)s.otherPositions=s.otherPosition?s.otherPosition.split('、').map(p=>p.trim()).filter(Boolean):[];
+  state={...s};
+  // 切換到前台並還原資料
+  switchView('front');
+  setTimeout(()=>{hydrateUI();calculateScores();},600);
+}
+function printRecord(docId, recordOverride){
+  const r=recordOverride||allData.find(x=>x.doc_id===docId);
+  if(!r)return;
+  const s=r.state_json||r;
+  const logoSrc=getBranchLogo(r.branch);
+  const decText=r.final_decision==='pass'?'<span class="decision-pass">✓ 錄取</span>':r.final_decision==='fail'?'<span class="decision-fail">✕ 不予錄取</span>':'尚未決定';
+  let posDisplay='-';
+  if(s.positions&&s.positions.length>0){
+    const otherArr=s.otherPositions||[];let otherCount=0;
+    posDisplay=s.positions.map(p=>{if(p==='其他'){const ov=otherArr[otherCount++]||'';return ov?`其他（${ov}）`:'其他';}return p;}).filter(Boolean).join('、');
+  }else if(r.position){posDisplay=r.position+(r.other_position?`（${r.other_position}）`:'');}
+  let s1Rows='';
+  if(s.s1){S1_DATA.forEach(g=>{if(g.id==='bon'){s1Rows+=`<tr><td style="font-weight:700;background:#F8FAFF;white-space:nowrap;">${g.title}</td><td colspan="2">${s.s1.bonText||'-'}</td><td style="text-align:center;font-weight:700;">${s.s1.bon?s.s1.bon[0]||'-':'-'}</td></tr>`;}else{g.qs.forEach((q,i)=>{s1Rows+=`<tr><td style="font-weight:700;background:#F8FAFF;white-space:nowrap;">${g.title}</td><td colspan="2">${q}</td><td style="text-align:center;font-weight:700;">${s.s1[g.id]?s.s1[g.id][i]||'-':'-'}</td></tr>`;});}});}
+  let s2Rows='';
+  if(s.s2){const li=S2_QUESTIONS.slice(0,9),ri=S2_QUESTIONS.slice(9);const ml=Math.max(li.length,ri.length);for(let i=0;i<ml;i++){const lq=li[i]?`<div class="pc-s2-row" style="border-right:1px solid var(--border);"><span>${i+1}. ${li[i]}</span><span class="pc-s2-score">${s.s2[i]||'-'}</span></div>`:'<div class="pc-s2-row" style="border-right:1px solid var(--border);background:#fafafa;"></div>';const ri2=i+9;const rq=ri[i]?`<div class="pc-s2-row"><span>${ri2+1}. ${ri[i]}</span><span class="pc-s2-score">${s.s2[ri2]||'-'}</span></div>`:'<div class="pc-s2-row"></div>';s2Rows+=lq+rq;}}
+  let s3Rows='';
+  if(s.s3&&s.s3Texts){S3_CORE_NAMES.forEach((name,i)=>{const t=s.s3Texts.core&&s.s3Texts.core[i]||{bei:'',c:'',a:'',r:''};s3Rows+=`<tr><td style="background:#EFF6FF;text-align:center;font-weight:700;font-size:11px;color:#1D6FD8;width:44px;">核心</td><td style="font-weight:700;text-align:center;width:76px;font-size:12px;">${name}</td><td style="font-size:11px;">${t.bei||'-'}</td><td style="font-size:11px;">${t.c||'-'}</td><td style="font-size:11px;">${t.a||'-'}</td><td style="font-size:11px;">${t.r||'-'}</td><td style="text-align:center;font-weight:700;">${s.s3.core[i]||'-'}</td></tr>`;});S3_MGMT_NAMES.forEach((name,i)=>{const t=s.s3Texts.mgmt&&s.s3Texts.mgmt[i]||{bei:'',c:'',a:'',r:''};s3Rows+=`<tr><td style="background:#F0FDF4;text-align:center;font-weight:700;font-size:11px;color:#059669;width:44px;">管理</td><td style="font-weight:700;text-align:center;width:76px;font-size:12px;">${name}</td><td style="font-size:11px;">${t.bei||'-'}</td><td style="font-size:11px;">${t.c||'-'}</td><td style="font-size:11px;">${t.a||'-'}</td><td style="font-size:11px;">${t.r||'-'}</td><td style="text-align:center;font-weight:700;">${s.s3.mgmt[i]||'-'}</td></tr>`;});}
+  const html=`
+    <div class="pc-header"><img src="${logoSrc}" class="pc-logo" onerror="this.style.display='none'"><div><div class="pc-org">逗點教室</div><div class="pc-title" style="text-align:center;">面試評分表</div></div></div>
+    <div class="pc-section"><div class="pc-section-title">基本資訊</div><div class="pc-info-grid">
+      <div class="pc-info-cell"><div class="pc-info-label">應徵者</div><div class="pc-info-val">${r.candidate_name||'-'}</div></div>
+      <div class="pc-info-cell"><div class="pc-info-label">分校/單位</div><div class="pc-info-val">${r.branch||'-'}</div></div>
+      <div class="pc-info-cell"><div class="pc-info-label">應徵職位</div><div class="pc-info-val">${posDisplay}</div></div>
+      <div class="pc-info-cell"><div class="pc-info-label">面試官</div><div class="pc-info-val">${r.interviewer||'-'}</div></div>
+      <div class="pc-info-cell"><div class="pc-info-label">面試日期</div><div class="pc-info-val">${r.interview_date||'-'}</div></div>
+      <div class="pc-info-cell"><div class="pc-info-label">開始時間</div><div class="pc-info-val">${r.interview_time||'-'}</div></div>
+      <div class="pc-info-cell"><div class="pc-info-label">系統建議</div><div class="pc-info-val" style="color:var(--blue);">${r.ideal_status||'-'}</div></div>
+    </div></div>
+    <div class="pc-section">
+      <div class="pc-total-box"><div class="pc-total-label">系統最終總得分</div><div class="pc-total-score">${r.grand_total||'-'}</div></div>
+      <div class="pc-sub-grid"><div class="pc-sub-cell"><div class="pc-sub-label">一、筆試</div><div class="pc-sub-score" style="color:#059669;">${r.s1_final||'-'}</div></div><div class="pc-sub-cell"><div class="pc-sub-label">二、職能</div><div class="pc-sub-score" style="color:#D97706;">${r.s3_final||'-'}</div></div><div class="pc-sub-cell"><div class="pc-sub-label">三、外顯</div><div class="pc-sub-score" style="color:#4F46E5;">${r.s2_final||'-'}</div></div></div>
+      <div class="pc-result-grid" style="margin-top:4px;"><div class="pc-result-box"><div class="pc-result-label">加分項目</div><div class="pc-result-val">${(s.s1&&s.s1.bonText)||'-'}</div></div><div class="pc-result-box"><div class="pc-result-label">最終錄取結果</div><div class="pc-result-val">${decText}</div></div><div class="pc-result-box-full"><div class="pc-result-label">面試官備註</div><div class="pc-result-val">${r.interview_note||'-'}</div></div></div>
+    </div>
+    <div class="pc-section"><div class="pc-section-title">一、筆試和綜合面談（30%）</div><table class="pc-table"><thead><tr><th style="width:80px;">類別</th><th colspan="2">題目</th><th style="width:50px;text-align:center;">分數</th></tr></thead><tbody>${s1Rows}</tbody></table></div>
+    <div class="pc-section"><div class="pc-section-title">二、職能面試（60%）</div><table class="pc-table"><thead><tr><th>維度</th><th>職能項目</th><th>BEI 問題描述</th><th>狀況 C</th><th>行動 A</th><th>結果 R</th><th style="width:44px;text-align:center;">分數</th></tr></thead><tbody>${s3Rows}</tbody></table></div>
+    <div class="pc-section"><div class="pc-section-title">三、外顯特質（10%）</div><div class="pc-s2-grid">${s2Rows}</div></div>`;
+  document.getElementById('print-content').innerHTML=html;
+  document.getElementById('print-modal').classList.add('show');
+}
+function closePrintModal(){document.getElementById('print-modal').classList.remove('show');}
+// ===== 黑名單功能 =====
+let blacklistData=[];
+
+function populateBlacklistBranchFilter(){
+  const sel=document.getElementById('bl-filter-branch');if(!sel)return;
+  while(sel.options.length>1)sel.remove(1);
+  [...new Set(blacklistData.map(r=>r.branch).filter(Boolean))].sort().forEach(b=>{
+    const o=document.createElement('option');o.value=b;o.textContent=b;sel.appendChild(o);
+  });
+  const wrap=document.getElementById('bl-branch-filter-wrap');
+  if(wrap)wrap.style.display=['HR','ADMIN','SENIOR_HS','SENIOR_ES'].includes(currentUser.role)?'':'none';
+}
+
+function renderBlacklist(){
+  const nameQ=(document.getElementById('bl-filter-name')||{}).value||'';
+  const branchQ=(document.getElementById('bl-filter-branch')||{}).value||'';
+  let filtered=blacklistData.filter(r=>{
+    if(nameQ&&!(r.candidate_name||'').includes(nameQ))return false;
+    if(branchQ&&r.branch!==branchQ)return false;
+    return true;
+  });
+  const tc=document.getElementById('bl-table-count');
+  if(tc)tc.textContent=`共 ${filtered.length} 筆`;
+  const tbody=document.getElementById('bl-tbody');if(!tbody)return;
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:48px;color:var(--text3);font-size:13px;font-weight:700;">目前無黑名單資料</td></tr>`;return;}
+  const db=d=>d==='pass'?'<span class="badge badge-pass">錄取</span>':d==='fail'?'<span class="badge badge-fail">不錄取</span>':'-';
+  tbody.innerHTML=filtered.map(r=>{
+    const logoSrc=getBranchLogo(r.branch);
+    const docId=(r.doc_id||'').replace(/'/g,"\\'");
+    const name=(r.candidate_name||'').replace(/'/g,"\\'");
+    return`<tr>
+      <td style="color:var(--text3);font-size:12px;white-space:nowrap;">${r.interview_date||'-'}</td>
+      <td class="candidate-name" style="color:#B91C1C;">${r.candidate_name||'-'}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;"><img src="${logoSrc}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'"><span style="color:var(--text2);font-weight:500;">${r.branch||'-'}</span></div></td>
+      <td style="color:var(--text3);font-size:12px;">${r.position||'-'}</td>
+      <td style="color:var(--text3);font-size:12px;">${r.interviewer||'-'}</td>
+      <td style="font-weight:900;color:var(--blue);">${r.grand_total??'-'}</td>
+      <td>${db(r.final_decision)}</td>
+      <td><div class="action-btns">
+        <button class="btn-action btn-print" onclick="viewBlacklistRecord('${docId}')">查看</button>
+        <button class="btn-action btn-unblacklist" onclick="removeFromBlacklist('${docId}','${name}')">從黑名單移除</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+async function addToBlacklist(docId,name){
+  if(!confirm(`確定要將「${name}」加入黑名單嗎？\n\n加入後此筆資料將移至黑名單，可隨時恢復。`))return;
+  const{error}=await sb.from('interviews').update({is_blacklisted:true}).eq('doc_id',docId);
+  if(error){showToast('操作失敗：'+error.message);return;}
+  allData=allData.filter(r=>r.doc_id!==docId);
+  showToast(`已將 ${name} 加入黑名單`);
+  renderTable();
+}
+
+async function removeFromBlacklist(docId,name){
+  if(!confirm(`確定要將「${name}」從黑名單移除嗎？\n\n移除後此筆資料將回到正常後台。`))return;
+  const{error}=await sb.from('interviews').update({is_blacklisted:false}).eq('doc_id',docId);
+  if(error){showToast('操作失敗：'+error.message);return;}
+  blacklistData=blacklistData.filter(r=>r.doc_id!==docId);
+  showToast(`已將 ${name} 從黑名單移除`);
+  renderBlacklist();
+}
+
+function viewBlacklistRecord(docId){
+  // 查看功能：與後台列印預覽相同，但只讀
+  const r=blacklistData.find(x=>x.doc_id===docId);
+  if(r)printRecord(docId,r);
+}
+
+async function deleteRecord(docId,name){
+  if(!confirm(`確定要刪除「${name}」的面試資料嗎？\n\n此操作無法復原。`))return;
+  const{error}=await sb.from('interviews').delete().eq('doc_id',docId);
+  if(error){alert('刪除失敗：'+error.message);return;}
+  allData=allData.filter(r=>r.doc_id!==docId);showToast(`已刪除 ${name} 的資料`);renderTable();
+}
+function showToast(msg){const t=document.getElementById('toast');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}}
+
+window.onload=async()=>{
+  // 先載入所有設定
+  await loadAllConfig();
+  initTimePicker();
+};
+</script>
+</body>
+</html>
