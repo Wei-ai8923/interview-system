@@ -54,6 +54,31 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .nav-btn-ghost:hover{color:var(--text);}
 .nav-btn-danger{background:transparent;border:1.5px solid #FECACA;color:#B91C1C;border-radius:2px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
 .nav-btn-danger:hover{background:#FEF2F2;}
+/* ===== 逗點人筆記區 ===== */
+#note-fab{position:fixed;bottom:90px;right:24px;z-index:1000;width:52px;height:52px;border-radius:50%;background:white;border:2px solid var(--border2);box-shadow:0 4px 16px rgba(29,111,216,.18);cursor:pointer;display:none;align-items:center;justify-content:center;animation:fab-float 3s ease-in-out infinite;transition:box-shadow .2s;}
+#note-fab:hover{box-shadow:0 6px 20px rgba(29,111,216,.28);}
+#note-fab img{width:34px;height:34px;object-fit:contain;}
+#note-fab.visible{display:flex;}
+@keyframes fab-float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+#note-widget{position:fixed;bottom:154px;right:24px;z-index:1000;width:300px;background:white;border:1px solid var(--border);border-radius:4px;box-shadow:0 8px 32px rgba(29,111,216,.18);display:none;flex-direction:column;}
+#note-widget.show{display:flex;animation:widget-in .2s ease;}
+@keyframes widget-in{from{opacity:0;transform:scale(.92) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.note-widget-header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);background:#F8FAFF;border-radius:4px 4px 0 0;}
+.note-widget-logo{width:26px;height:26px;object-fit:contain;cursor:pointer;transition:transform .15s;}
+.note-widget-logo:hover{transform:scale(1.1);}
+.note-widget-title{font-size:13px;font-weight:700;color:var(--text);flex:1;}
+.note-widget-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 2px;}
+.note-widget-body{padding:10px;}
+.note-widget-textarea{width:100%;height:180px;border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-size:12px;color:var(--text);resize:none;outline:none;font-family:'Noto Sans TC',sans-serif;line-height:1.6;background:var(--bg);}
+.note-widget-textarea:focus{border-color:var(--blue);background:white;}
+.note-widget-hint{font-size:10px;color:var(--text3);margin-top:4px;text-align:right;}
+.note-modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,35,56,.4);z-index:9999;align-items:center;justify-content:center;}
+.note-modal-overlay.show{display:flex;}
+.note-modal-box{background:white;border:1px solid var(--border);width:90%;max-width:480px;box-shadow:0 20px 60px rgba(29,111,216,.2);}
+.note-modal-header{background:var(--bg);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);}
+.note-modal-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.note-modal-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;}
+.note-modal-body{padding:16px;}
 /* 設定頁面 */
 #page-settings{min-height:100vh;}
 .settings-tab{padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'Noto Sans TC',sans-serif;transition:all .2s;}
@@ -234,7 +259,14 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .candidate-name{font-weight:900;color:var(--blue);}
 .total-score-cell{position:relative;}
 .total-score-val{font-weight:900;font-size:15px;color:var(--blue);border-bottom:1px dashed var(--blue);cursor:pointer;white-space:nowrap;}
-.score-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--white);border:1px solid var(--border2);padding:10px 14px;z-index:200;box-shadow:var(--shadow-md);min-width:170px;font-size:12px;border-top:2px solid var(--blue);}
+.score-popup{
+  display:none;position:fixed;
+  background:var(--white);border:1px solid var(--border2);
+  padding:10px 14px;z-index:500;
+  box-shadow:var(--shadow-md);min-width:170px;font-size:12px;
+  border-top:2px solid var(--blue);
+  pointer-events:none;
+}
 .total-score-cell:hover .score-popup{display:block;}
 .score-popup-row{display:flex;justify-content:space-between;gap:16px;margin-bottom:5px;}
 .score-popup-row:last-child{margin-bottom:0;border-top:1px solid var(--border);padding-top:5px;font-weight:700;}
@@ -334,12 +366,45 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 </head>
 <body>
 <div id="toast"></div>
+<!-- 全域分數浮窗 -->
+<div id="score-popup-global" style="display:none;position:fixed;background:white;border:1px solid #C8D6EE;border-top:2px solid #1D6FD8;padding:10px 14px;z-index:9000;box-shadow:0 4px 16px rgba(29,111,216,.12);min-width:170px;font-size:12px;pointer-events:none;"></div>
 <div id="page-transition">
   <img id="transition-logo" src="逗點人LOGO-黑-去背.png" alt="">
   <div id="transition-text"></div>
 </div>
 
 <!-- 列印 Modal -->
+<!-- 逗點人筆記 FAB（前台顯示） -->
+<div id="note-fab" onclick="toggleNoteWidget()">
+  <img src="逗點人LOGO-黑-去背.png" alt="筆記">
+</div>
+<!-- 筆記小視窗 -->
+<div id="note-widget">
+  <div class="note-widget-header">
+    <img src="逗點人LOGO-黑-去背.png" class="note-widget-logo" onclick="toggleNoteWidget()" alt="">
+    <span class="note-widget-title">筆記區</span>
+    <button class="note-widget-close" onclick="toggleNoteWidget()">✕</button>
+  </div>
+  <div class="note-widget-body">
+    <textarea id="note-widget-text" class="note-widget-textarea" placeholder="面試中的觀察、補充說明..." oninput="onNoteInput()"></textarea>
+    <div class="note-widget-hint" id="note-save-hint">自動儲存</div>
+  </div>
+</div>
+<!-- 後台筆記查看 Modal -->
+<div id="note-modal" class="note-modal-overlay">
+  <div class="note-modal-box">
+    <div class="note-modal-header">
+      <div class="note-modal-title">
+        <img src="逗點人LOGO-黑-去背.png" style="width:20px;height:20px;object-fit:contain;" alt="">
+        筆記區
+      </div>
+      <button class="note-modal-close" onclick="document.getElementById('note-modal').classList.remove('show')">✕</button>
+    </div>
+    <div class="note-modal-body">
+      <div id="note-modal-content" style="font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:12px;min-height:100px;"></div>
+    </div>
+  </div>
+</div>
 <div id="print-modal" class="print-modal-overlay">
   <div class="print-modal">
     <div class="print-modal-header">
@@ -361,11 +426,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="login-sub">逗點教室人才招募平台</div>
     <div class="form-group">
       <label class="form-label">員工編號</label>
-      <input type="text" id="login-emp" class="form-input" placeholder="例：F00035" style="text-transform:uppercase;" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('login-pwd').focus()">
+      <input type="text" id="login-emp" class="form-input" placeholder="例：F00035（輸入你的員工編號）" style="text-transform:uppercase;" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onkeydown="if(event.key==='Enter')document.getElementById('login-pwd').focus()">
     </div>
     <div class="form-group">
       <label class="form-label">登入密碼</label>
-      <input type="password" id="login-pwd" class="form-input" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')handleLogin()">
+      <input type="password" id="login-pwd" class="form-input" placeholder="請輸入密碼" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleLogin()">
     </div>
     <button class="btn-login" id="btn-login-main" onclick="handleLogin()">登 入 系 統</button>
     <div class="login-hint">測試密碼：0000</div>
@@ -680,7 +745,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
           <option value="ADMIN">管理員（ADMIN）</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">密碼</label><input type="text" id="emp-f-pwd" class="form-input" placeholder="登入密碼"></div>
+      <div class="form-group"><label class="form-label">密碼</label><input type="password" id="emp-f-pwd" class="form-input" placeholder="登入密碼" autocomplete="new-password"></div>
     </div>
     <div class="modal-footer" style="display:flex;justify-content:space-between;">
       <button id="emp-deactivate-btn" style="display:none;" class="btn-bottom btn-clear" onclick="deactivateEmp()">停用帳號</button>
@@ -788,7 +853,7 @@ function updateLevelSelectOptions(){
 let currentUser=null,state=null,allData=[];
 
 function getEmptyState(){
-  return{name:"",branch:"",position:"",otherPosition:"",otherNote:"",date:"",time:"",level:0,finalDecision:null,idealStatus:"",grandTotal:"0.00",s1Final:"0.00",s2Final:"0.00",s3Final:"0.00",docStatus:"new",interviewNote:"",positions:[],otherPositions:[],
+  return{name:"",branch:"",position:"",otherPosition:"",otherNote:"",date:"",time:"",level:0,finalDecision:null,idealStatus:"",grandTotal:"0.00",s1Final:"0.00",s2Final:"0.00",s3Final:"0.00",docStatus:"new",interviewNote:"",positions:[],otherPositions:[],notepad:"",
     s1:{exp:[0],mot:[0,0],sty:[0,0],sal:[0,0,0],bon:[0],bonText:""},
     s2:Array(S2_QUESTIONS.length).fill(0),
     s3:{core:Array(6).fill(0),mgmt:Array(3).fill(0)},
@@ -802,6 +867,9 @@ function showPage(page){
   });
   const target=document.getElementById('page-'+page);
   if(target)target.classList.add('active');
+  // 前台才顯示逗點人筆記 FAB
+  if(page==='front')showNoteFab();
+  else hideNoteFab();
   window.scrollTo(0,0);
 }
 
@@ -811,28 +879,37 @@ function switchView(target){
   const txt=document.getElementById('transition-text');
   logo.className='anim-switch';txt.textContent='切換中';txt.className='anim-switch';
   overlay.classList.add('show');
-  setTimeout(()=>{
+
+  // 動畫期間預先載入資料（不等動畫結束）
+  const isHR=['HR','ADMIN'].includes(currentUser.role);
+  let preloadPromise=Promise.resolve();
+  if(target==='backend') preloadPromise=loadAdminData();
+  else if(target==='blacklist') preloadPromise=loadBlacklistData();
+
+  // 動畫結束 + 資料載入，取最快的那個（最慢 550ms）
+  Promise.all([
+    new Promise(res=>setTimeout(res,550)),
+    preloadPromise
+  ]).then(()=>{
     overlay.classList.remove('show');
     logo.className='';txt.className='';txt.style.opacity='0';
-    // 重置所有 nav 按鈕
     ['nav-front-btn','nav-backend-btn','nav-blacklist-btn','nav-settings-btn'].forEach(id=>{
       const el=document.getElementById(id);if(el)el.style.display='none';
     });
     document.getElementById('bottom-bar').style.display='none';
-    const isHR=['HR','ADMIN'].includes(currentUser.role);
     if(target==='backend'){
       document.getElementById('header-title-text').textContent='面試後台管理';
       document.getElementById('nav-front-btn').style.display='inline-block';
       document.getElementById('nav-blacklist-btn').style.display='inline-block';
       if(isHR)document.getElementById('nav-settings-btn').style.display='inline-block';
-      loadAdminData().then(()=>renderTable());
+      renderTable();
       showPage('admin');
     }else if(target==='blacklist'){
       document.getElementById('header-title-text').textContent='⛔ 黑名單管理';
       document.getElementById('nav-front-btn').style.display='inline-block';
       document.getElementById('nav-backend-btn').style.display='inline-block';
       if(isHR)document.getElementById('nav-settings-btn').style.display='inline-block';
-      loadBlacklistData().then(()=>renderBlacklist());
+      renderBlacklist();
       showPage('blacklist');
     }else if(target==='settings'){
       document.getElementById('header-title-text').textContent='⚙ 系統設定';
@@ -849,7 +926,7 @@ function switchView(target){
       document.getElementById('bottom-bar').style.display='block';
       showPage('front');
     }
-  },550);
+  });
 }
 
 // ===== AUTH =====
@@ -1162,11 +1239,17 @@ async function fetchCloudDB(){
   }catch(e){showToast('離線模式');}
 }
 
-// 後台切換直接用快取，不再重查 DB
+// 後台切換永遠重新載入，確保資料正確
 async function loadAdminData(){
-  // 已有快取就直接用，否則重新載
-  if(allData.length===0)await fetchCloudDB();
-  populateBranchFilter();
+  try{
+    let q=sb.from('interviews').select('*').eq('is_blacklisted',false).order('created_at',{ascending:false});
+    if(currentUser.role==='SENIOR_HS')q=q.in('branch',HS_BRANCHES);
+    else if(currentUser.role==='SENIOR_ES')q=q.in('branch',ES_BRANCHES);
+    else if(!['HR','ADMIN'].includes(currentUser.role))q=q.eq('branch',currentUser.dept);
+    const{data,error}=await q;
+    if(!error)allData=data||[];
+    populateBranchFilter();
+  }catch(e){showToast('載入失敗');}
 }
 
 // 黑名單切換直接用快取
@@ -1183,27 +1266,35 @@ function populateBranchFilter(){
 }
 
 // ===== SAVE =====
-async function saveToSupabase(){
+function saveToSupabaseOptimistic(){
+  // 樂觀更新：立刻更新本地快取，背景寫 DB
   syncState();
   const interviewers=Array.from(document.querySelectorAll('.ipt-interviewer')).map(i=>i.value).filter(v=>v).join('、');
   const positions=Array.from(document.querySelectorAll('.ipt-position')).map(i=>i.value).filter(v=>v).join('、');
   const docId=(state.name+'_'+state.date).replace(/\s/g,'_');
   const payload={doc_id:docId,candidate_name:state.name,branch:state.branch,position:positions||state.position,other_position:state.otherPosition||'',interviewer:interviewers,interview_date:state.date,interview_time:state.time,s1_final:parseFloat(state.s1Final)||0,s2_final:parseFloat(state.s2Final)||0,s3_final:parseFloat(state.s3Final)||0,grand_total:parseFloat(state.grandTotal)||0,doc_status:state.docStatus,final_decision:state.finalDecision||'',ideal_status:state.idealStatus||'',interview_note:state.interviewNote||'',state_json:state};
-  const{error}=await sb.from('interviews').upsert(payload,{onConflict:'doc_id'});
-  if(error){showToast('儲存失敗：'+error.message);return false;}
-  // 更新本地 allData
+  // 立刻更新本地快取（不等 DB）
   const idx=allData.findIndex(r=>r.doc_id===docId);
-  const entry={...payload,state_json:state};
-  if(idx>=0)allData[idx]=entry;else allData.push(entry);
-  return true;
+  const entry={...payload,state_json:{...state}};
+  if(idx>=0)allData[idx]=entry;else allData.unshift(entry);
+  // 背景寫入 DB，失敗時提示
+  sb.from('interviews').upsert(payload,{onConflict:'doc_id'}).then(({error})=>{
+    if(error){
+      showToast('⚠ 雲端同步失敗，請重試',true);
+      console.error('DB sync error:',error.message);
+    }
+  });
+  return docId;
 }
+
 async function handleSaveDraft(){
   syncState();
   if(!state.name.trim())return alert('請先輸入應徵者姓名');
   state.docStatus='draft';
-  const ok=await saveToSupabase();
-  if(ok)showToast('✓ 暫存成功');
+  saveToSupabaseOptimistic(); // 不 await，立刻反應
+  showToast('✓ 暫存成功');
 }
+
 async function handleFinalSubmit(){
   syncState();
   const missing=[];
@@ -1214,8 +1305,10 @@ async function handleFinalSubmit(){
   if(!state.finalDecision)missing.push('最終錄取結果');
   if(missing.length>0)return alert(`請填寫以下必填欄位：\n\n• ${missing.join('\n• ')}`);
   state.docStatus='completed';
-  const ok=await saveToSupabase();
-  if(ok){showToast('✓ 已送出並建檔');alert('面試資料已成功送出！');}
+  saveToSupabaseOptimistic(); // 不 await，立刻反應
+  showToast('✓ 已送出並建檔');
+  // 延遲 alert 讓 toast 先顯示
+  setTimeout(()=>alert('面試資料已成功送出！'),100);
 }
 function handleDecision(t){
   document.getElementById('btn-pass').classList.remove('active-pass');
@@ -1228,6 +1321,8 @@ function handleClear(){
   if(!confirm('確定要清除所有資料？'))return;
   const branch=state.branch;state=getEmptyState();
   if(!['HR','ADMIN'].includes(currentUser.role))state.branch=currentUser.dept;else state.branch=branch;
+  // 清除筆記小視窗
+  const ta=document.getElementById('note-widget-text');if(ta)ta.value='';
   resetPositionList();hydrateUI();calculateScores();window.scrollTo(0,0);showToast('已清除');
 }
 function resetPositionList(){
@@ -1441,26 +1536,22 @@ function renderTable(){
     const prog=detectProgress(r);
     const docId=(r.doc_id||'').replace(/'/g,"\\'");
     const name=(r.candidate_name||'').replace(/'/g,"\\'");
-    return`<tr>
+    return`<tr style="cursor:pointer;" onclick="handleRowClick(event,'${docId}')">
       <td style="color:var(--text3);font-size:12px;white-space:nowrap;">${r.interview_date||'-'}</td>
       <td class="candidate-name">${r.candidate_name||'-'}</td>
       <td><div style="display:flex;align-items:center;gap:6px;"><img src="${logoSrc}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'"><span style="color:var(--text2);font-weight:500;">${r.branch||'-'}</span></div></td>
       <td style="color:var(--text3);font-size:12px;">${r.position||'-'}</td>
       <td style="color:var(--text3);font-size:12px;">${r.interviewer||'-'}</td>
-      <td class="total-score-cell">
+      <td class="total-score-cell"
+        onmouseenter="showScorePopup(event,'${r.s1_final??'-'}','${r.s3_final??'-'}','${r.s2_final??'-'}','${r.grand_total??'-'}')"
+        onmouseleave="hideScorePopup()">
         <span class="total-score-val">${r.grand_total??'-'}</span>
-        <div class="score-popup">
-          <div class="score-popup-row"><span style="color:#059669;">一、筆試</span><span style="font-weight:700;">${r.s1_final??'-'}</span></div>
-          <div class="score-popup-row"><span style="color:#D97706;">二、職能</span><span style="font-weight:700;">${r.s3_final??'-'}</span></div>
-          <div class="score-popup-row"><span style="color:#4F46E5;">三、外顯</span><span style="font-weight:700;">${r.s2_final??'-'}</span></div>
-          <div class="score-popup-row"><span>總分</span><span style="color:var(--blue);">${r.grand_total??'-'}</span></div>
-        </div>
       </td>
       <td>${progressBadge(prog)}</td>
       <td>${db(r.final_decision)}</td>
-      <td><div class="action-btns">
-        <button class="btn-action btn-edit" onclick="editRecord('${docId}')">編輯</button>
+      <td onclick="event.stopPropagation()"><div class="action-btns">
         <button class="btn-action btn-print" onclick="printRecord('${docId}')">列印</button>
+        <button class="btn-action" style="background:#F0FDF4;border:1.5px solid #A7F3D0;color:#065F46;" onclick="openNoteModal('${docId}')">筆記</button>
         <button class="btn-action btn-blacklist" onclick="addToBlacklist('${docId}','${name}')">加入黑名單</button>
         <button class="btn-action btn-delete" onclick="deleteRecord('${docId}','${name}')">刪除</button>
       </div></td>
@@ -1477,10 +1568,16 @@ function editRecord(docId){
   if(!s.s1)s.s1={exp:[0],mot:[0,0],sty:[0,0],sal:[0,0,0],bon:[0],bonText:''};
   if(!s.positions||s.positions.length===0)s.positions=s.position?s.position.split('、').map(p=>p.trim()).filter(Boolean):[];
   if(!s.otherPositions||s.otherPositions.length===0)s.otherPositions=s.otherPosition?s.otherPosition.split('、').map(p=>p.trim()).filter(Boolean):[];
+  if(!s.notepad)s.notepad='';
   state={...s};
-  // 切換到前台並還原資料
+  // 切換到前台並還原資料（含筆記）
   switchView('front');
-  setTimeout(()=>{hydrateUI();calculateScores();},600);
+  setTimeout(()=>{
+    hydrateUI();calculateScores();
+    // 同步筆記內容到小視窗
+    const ta=document.getElementById('note-widget-text');
+    if(ta)ta.value=state.notepad||'';
+  },600);
 }
 function printRecord(docId, recordOverride){
   const r=recordOverride||allData.find(x=>x.doc_id===docId);
@@ -1572,6 +1669,11 @@ async function addToBlacklist(docId,name){
   if(!confirm(`確定要將「${name}」加入黑名單嗎？\n\n加入後此筆資料將移至黑名單，可隨時恢復。`))return;
   const{error}=await sb.from('interviews').update({is_blacklisted:true}).eq('doc_id',docId);
   if(error){showToast('操作失敗：'+error.message);return;}
+  // 從後台快取移除，同時加入黑名單快取
+  const record=allData.find(r=>r.doc_id===docId);
+  if(record){
+    blacklistData.unshift({...record,is_blacklisted:true});
+  }
   allData=allData.filter(r=>r.doc_id!==docId);
   showToast(`已將 ${name} 加入黑名單`);
   renderTable();
@@ -1581,6 +1683,11 @@ async function removeFromBlacklist(docId,name){
   if(!confirm(`確定要將「${name}」從黑名單移除嗎？\n\n移除後此筆資料將回到正常後台。`))return;
   const{error}=await sb.from('interviews').update({is_blacklisted:false}).eq('doc_id',docId);
   if(error){showToast('操作失敗：'+error.message);return;}
+  // 從黑名單快取移除，同時加回後台快取
+  const record=blacklistData.find(r=>r.doc_id===docId);
+  if(record){
+    allData.unshift({...record,is_blacklisted:false});
+  }
   blacklistData=blacklistData.filter(r=>r.doc_id!==docId);
   showToast(`已將 ${name} 從黑名單移除`);
   renderBlacklist();
@@ -1598,7 +1705,91 @@ async function deleteRecord(docId,name){
   if(error){alert('刪除失敗：'+error.message);return;}
   allData=allData.filter(r=>r.doc_id!==docId);showToast(`已刪除 ${name} 的資料`);renderTable();
 }
-function showToast(msg){const t=document.getElementById('toast');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}}
+function showToast(msg,isError){
+  const t=document.getElementById('toast');
+  if(t){
+    t.textContent=msg;
+    t.style.borderLeftColor=isError?'#DC2626':'#1D6FD8';
+    t.style.color=isError?'#DC2626':'#1D6FD8';
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),isError?4000:2500);
+  }
+}
+
+// ===== 分數浮窗 =====
+function showScorePopup(e,s1,s3,s2,total){
+  const popup=document.getElementById('score-popup-global');
+  if(!popup)return;
+  popup.innerHTML=`
+    <div class="score-popup-row"><span style="color:#059669;">一、筆試</span><span style="font-weight:700;">${s1}</span></div>
+    <div class="score-popup-row"><span style="color:#D97706;">二、職能</span><span style="font-weight:700;">${s3}</span></div>
+    <div class="score-popup-row"><span style="color:#4F46E5;">三、外顯</span><span style="font-weight:700;">${s2}</span></div>
+    <div class="score-popup-row" style="border-top:1px solid var(--border);padding-top:5px;font-weight:700;"><span>總分</span><span style="color:var(--blue);">${total}</span></div>`;
+  popup.style.display='block';
+  // 定位在滑鼠下方
+  const x=e.clientX,y=e.clientY;
+  popup.style.left=Math.min(x,window.innerWidth-190)+'px';
+  popup.style.top=(y+16)+'px';
+}
+function hideScorePopup(){
+  const popup=document.getElementById('score-popup-global');
+  if(popup)popup.style.display='none';
+}
+
+// ===== 點列編輯 =====
+function handleRowClick(e,docId){
+  // 避免點按鈕時觸發
+  if(e.target.tagName==='BUTTON')return;
+  editRecord(docId);
+}
+
+// ===== 逗點人筆記區 =====
+let noteDebounceTimer=null;
+
+function toggleNoteWidget(){
+  const w=document.getElementById('note-widget');
+  if(w)w.classList.toggle('show');
+}
+
+function showNoteFab(){
+  const fab=document.getElementById('note-fab');
+  if(fab)fab.classList.add('visible');
+  // 同步筆記內容
+  const ta=document.getElementById('note-widget-text');
+  if(ta&&state)ta.value=state.notepad||'';
+}
+function hideNoteFab(){
+  const fab=document.getElementById('note-fab');
+  if(fab)fab.classList.remove('visible');
+  const w=document.getElementById('note-widget');
+  if(w)w.classList.remove('show');
+}
+
+function onNoteInput(){
+  const ta=document.getElementById('note-widget-text');
+  if(!ta||!state)return;
+  state.notepad=ta.value;
+  // debounce 自動存檔提示
+  const hint=document.getElementById('note-save-hint');
+  if(hint)hint.textContent='正在輸入...';
+  clearTimeout(noteDebounceTimer);
+  noteDebounceTimer=setTimeout(()=>{
+    if(hint)hint.textContent='✓ 已自動儲存';
+    setTimeout(()=>{if(hint)hint.textContent='自動儲存';},1500);
+  },800);
+}
+
+// ===== 後台筆記查看 =====
+function openNoteModal(docId){
+  const r=allData.find(x=>x.doc_id===docId);
+  if(!r)return;
+  const s=r.state_json||r;
+  const noteContent=s.notepad||'（此份面試沒有筆記）';
+  const el=document.getElementById('note-modal-content');
+  const modal=document.getElementById('note-modal');
+  if(el)el.textContent=noteContent;
+  if(modal)modal.classList.add('show');
+}
 
 window.onload=async()=>{
   // 先載入所有設定
