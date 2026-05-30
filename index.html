@@ -72,6 +72,13 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .note-widget-textarea{width:100%;height:180px;border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-size:12px;color:var(--text);resize:none;outline:none;font-family:'Noto Sans TC',sans-serif;line-height:1.6;background:var(--bg);}
 .note-widget-textarea:focus{border-color:var(--blue);background:white;}
 .note-widget-hint{font-size:10px;color:var(--text3);margin-top:4px;text-align:right;}
+.note-q-label{display:block;font-size:11px;font-weight:700;color:var(--text);margin:8px 0 4px;letter-spacing:.3px;}
+.note-q-label:first-child{margin-top:0;}
+.note-q-textarea{height:75px;}
+/* 筆試評分描述框(同職能面試 s3-desc-box 機制,點擊後在下方顯示) */
+.s1-desc-box{background:#DBEAFE;padding:6px 9px;font-size:11px;color:#1e40af;line-height:1.5;display:none;text-align:left;border-radius:4px;margin:6px 0 3px auto;width:166px;box-sizing:border-box;}
+.s1-desc-box.show{display:block;}
+.s1-desc-label{font-weight:700;font-size:10px;margin-bottom:2px;color:#1D6FD8;}
 .note-modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,35,56,.4);z-index:9999;align-items:center;justify-content:center;}
 .note-modal-overlay.show{display:flex;}
 .note-modal-box{background:white;border:1px solid var(--border);width:90%;max-width:480px;box-shadow:0 20px 60px rgba(29,111,216,.2);}
@@ -386,6 +393,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <button class="note-widget-close" onclick="toggleNoteWidget()">✕</button>
   </div>
   <div class="note-widget-body">
+    <label class="note-q-label">1. 為什麼選擇逗點？<span style="color:#DC2626;">*</span></label>
+    <textarea id="note-q-comma" class="note-widget-textarea note-q-textarea" placeholder="應徵者對逗點的認識、為什麼想加入..." oninput="onNoteInput()"></textarea>
+    <label class="note-q-label">2. 為什麼選擇教育業？<span style="color:#DC2626;">*</span></label>
+    <textarea id="note-q-edu" class="note-widget-textarea note-q-textarea" placeholder="應徵者的教育熱情、職涯動機..." oninput="onNoteInput()"></textarea>
+    <label class="note-q-label">其他補充</label>
     <textarea id="note-widget-text" class="note-widget-textarea" placeholder="面試中的觀察、補充說明..." oninput="onNoteInput()"></textarea>
     <div class="note-widget-hint" id="note-save-hint">自動儲存</div>
   </div>
@@ -401,7 +413,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
       <button class="note-modal-close" onclick="document.getElementById('note-modal').classList.remove('show')">✕</button>
     </div>
     <div class="note-modal-body">
-      <div id="note-modal-content" style="font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);padding:12px;min-height:100px;"></div>
+      <div id="note-modal-content" style="font-size:13px;color:var(--text);line-height:1.8;background:var(--bg);border:1px solid var(--border);padding:12px;min-height:100px;max-height:60vh;overflow-y:auto;"></div>
     </div>
   </div>
 </div>
@@ -1321,8 +1333,8 @@ function handleClear(){
   if(!confirm('確定要清除所有資料？'))return;
   const branch=state.branch;state=getEmptyState();
   if(!['HR','ADMIN'].includes(currentUser.role))state.branch=currentUser.dept;else state.branch=branch;
-  // 清除筆記小視窗
-  const ta=document.getElementById('note-widget-text');if(ta)ta.value='';
+  // 清除筆記小視窗（三段都清空）
+  ['note-q-comma','note-q-edu','note-widget-text'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   resetPositionList();hydrateUI();calculateScores();window.scrollTo(0,0);showToast('已清除');
 }
 function resetPositionList(){
@@ -1339,6 +1351,14 @@ function initTimePicker(){
 }
 
 // ===== RENDER FRONT =====
+// 筆試 1~5 分通用判斷基準(點擊後在按鈕下方顯示)
+const S1_TIPS={
+  5:'內容真誠具體，展現主動思考與對教育文化的認同。文字清晰流暢，能自我反省與規劃。',
+  4:'動機明確且具邏輯，對逗點文化有基本理解，表達穩定。',
+  3:'回答中規中矩但略顯空泛，動機模糊或對逗點理解不足。',
+  2:'回答表面、缺乏反思，文字敘述不完整或出現矛盾。',
+  1:'敷衍或缺乏誠意，內容明顯與逗點文化不符。'
+};
 function renderS1(){
   let html='';
   S1_DATA.forEach(g=>{
@@ -1348,12 +1368,14 @@ function renderS1(){
       html+=`<div class="bon-wrap"><div style="font-size:11px;color:var(--blue);font-weight:700;margin-bottom:4px;">💡 只要有填寫都可以依照內容做加分唷！</div><textarea id="s1-bon-text" class="bon-textarea" rows="2" placeholder="補充說明（選填）..." oninput="state.s1.bonText=this.value;updateBonusSummary()">${state.s1.bonText||''}</textarea>`;
       html+=`<div class="score-row"><div class="score-q">特別加分評分</div><div class="score-btns">`;
       [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-bon',0,${v},this)" class="score-btn${state.s1.bon[0]==v?' active':''}" data-val="${v}">${v}</button>`;});
-      html+=`</div></div></div>`;
+      const bv=state.s1.bon[0];
+      html+=`</div></div><div id="s1desc-bon-0" class="s1-desc-box${bv>0?' show':''}"><div class="s1-desc-label">分數定義</div><span>${bv>0?S1_TIPS[bv]:''}</span></div></div>`;
     }else{
       g.qs.forEach((q,i)=>{
         html+=`<div class="score-row"><div class="score-q">${q}</div><div class="score-btns">`;
         [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-${g.id}',${i},${v},this)" class="score-btn${state.s1[g.id][i]==v?' active':''}" data-val="${v}">${v}</button>`;});
-        html+=`</div></div>`;
+        const cv=state.s1[g.id][i];
+        html+=`</div></div><div id="s1desc-${g.id}-${i}" class="s1-desc-box${cv>0?' show':''}"><div class="s1-desc-label">分數定義</div><span>${cv>0?S1_TIPS[cv]:''}</span></div>`;
       });
     }
     html+=`</div>`;
@@ -1430,6 +1452,13 @@ function syncState(){
   const h=v('ipt-hour'),m=v('ipt-minute');state.time=(h&&m)?`${h}:${m}`:'';
   state.interviewNote=v('interview-note-input');
   const bt=document.getElementById('s1-bon-text');if(bt)state.s1.bonText=bt.value;
+  // 同步筆記區三段內容（修正：避免送出時筆記沒寫到 state）
+  const nC=document.getElementById('note-q-comma');
+  const nE=document.getElementById('note-q-edu');
+  const nO=document.getElementById('note-widget-text');
+  if(nC||nE||nO){
+    state.notepad=buildNoteString(nC?nC.value:'',nE?nE.value:'',nO?nO.value:'');
+  }
 }
 function updateBonusSummary(){const bonText=state.s1?state.s1.bonText||'':'';const el=document.getElementById('bonus-summary-display');if(el){el.textContent=bonText.trim()||'尚未填寫加分項目';el.style.color=bonText.trim()?'var(--text)':'var(--text3)';}}
 function setScore(group,idx,val,btn){
@@ -1437,6 +1466,16 @@ function setScore(group,idx,val,btn){
   let cur=0;if(group==='s2')cur=state.s2[idx];else if(group.startsWith('s1-'))cur=state.s1[group.split('-')[1]][idx];
   const nv=(cur===val)?0:val;if(nv>0)btn.classList.add('active');
   if(group==='s2')state.s2[idx]=nv;else if(group.startsWith('s1-'))state.s1[group.split('-')[1]][idx]=nv;
+  // 筆試:更新分數定義描述框(同職能面試機制)
+  if(group.startsWith('s1-')){
+    const sub=group.split('-')[1];
+    const db=document.getElementById(`s1desc-${sub}-${idx}`);
+    const dt=db?db.querySelector('span'):null;
+    if(db&&dt){
+      if(nv>0){dt.textContent=S1_TIPS[nv];db.classList.add('show');}
+      else{db.classList.remove('show');dt.textContent='';}
+    }
+  }
   calculateScores();
 }
 function setS3Score(sub,idx,val,btn){
@@ -1574,9 +1613,8 @@ function editRecord(docId){
   switchView('front');
   setTimeout(()=>{
     hydrateUI();calculateScores();
-    // 同步筆記內容到小視窗
-    const ta=document.getElementById('note-widget-text');
-    if(ta)ta.value=state.notepad||'';
+    // 同步筆記內容到三段式 textarea
+    hydrateNoteWidget();
   },600);
 }
 function printRecord(docId, recordOverride){
@@ -1745,6 +1783,54 @@ function handleRowClick(e,docId){
 
 // ===== 逗點人筆記區 =====
 let noteDebounceTimer=null;
+const NOTE_SEP_COMMA='【為什麼選擇逗點】';
+const NOTE_SEP_EDU='【為什麼選擇教育業】';
+const NOTE_SEP_OTHER='【其他補充】';
+
+// 把三段組合成一個字串（存到 state.notepad）
+function buildNoteString(qComma,qEdu,other){
+  const c=(qComma||'').trim();
+  const e=(qEdu||'').trim();
+  const o=(other||'').trim();
+  if(!c&&!e&&!o)return '';
+  return `${NOTE_SEP_COMMA}\n${c}\n\n${NOTE_SEP_EDU}\n${e}\n\n${NOTE_SEP_OTHER}\n${o}`;
+}
+// 從字串解析回三段
+function parseNoteString(str){
+  const result={qComma:'',qEdu:'',other:''};
+  if(!str)return result;
+  // 若是舊資料（沒有標記），全部塞到「其他補充」
+  if(!str.includes(NOTE_SEP_COMMA)&&!str.includes(NOTE_SEP_EDU)&&!str.includes(NOTE_SEP_OTHER)){
+    result.other=str;
+    return result;
+  }
+  const iC=str.indexOf(NOTE_SEP_COMMA);
+  const iE=str.indexOf(NOTE_SEP_EDU);
+  const iO=str.indexOf(NOTE_SEP_OTHER);
+  if(iC>=0){
+    const end=iE>=0?iE:(iO>=0?iO:str.length);
+    result.qComma=str.substring(iC+NOTE_SEP_COMMA.length,end).trim();
+  }
+  if(iE>=0){
+    const end=iO>=0?iO:str.length;
+    result.qEdu=str.substring(iE+NOTE_SEP_EDU.length,end).trim();
+  }
+  if(iO>=0){
+    result.other=str.substring(iO+NOTE_SEP_OTHER.length).trim();
+  }
+  return result;
+}
+// 把 state.notepad 解析後填入三個 textarea
+function hydrateNoteWidget(){
+  if(!state)return;
+  const parsed=parseNoteString(state.notepad||'');
+  const c=document.getElementById('note-q-comma');
+  const e=document.getElementById('note-q-edu');
+  const o=document.getElementById('note-widget-text');
+  if(c)c.value=parsed.qComma;
+  if(e)e.value=parsed.qEdu;
+  if(o)o.value=parsed.other;
+}
 
 function toggleNoteWidget(){
   const w=document.getElementById('note-widget');
@@ -1754,9 +1840,7 @@ function toggleNoteWidget(){
 function showNoteFab(){
   const fab=document.getElementById('note-fab');
   if(fab)fab.classList.add('visible');
-  // 同步筆記內容
-  const ta=document.getElementById('note-widget-text');
-  if(ta&&state)ta.value=state.notepad||'';
+  hydrateNoteWidget();
 }
 function hideNoteFab(){
   const fab=document.getElementById('note-fab');
@@ -1766,17 +1850,30 @@ function hideNoteFab(){
 }
 
 function onNoteInput(){
-  const ta=document.getElementById('note-widget-text');
-  if(!ta||!state)return;
-  state.notepad=ta.value;
-  // debounce 自動存檔提示
+  if(!state)return;
+  const c=document.getElementById('note-q-comma');
+  const e=document.getElementById('note-q-edu');
+  const o=document.getElementById('note-widget-text');
+  state.notepad=buildNoteString(c?c.value:'',e?e.value:'',o?o.value:'');
   const hint=document.getElementById('note-save-hint');
   if(hint)hint.textContent='正在輸入...';
   clearTimeout(noteDebounceTimer);
+  // debounce 1 秒後自動寫入資料庫
   noteDebounceTimer=setTimeout(()=>{
-    if(hint)hint.textContent='✓ 已自動儲存';
-    setTimeout(()=>{if(hint)hint.textContent='自動儲存';},1500);
-  },800);
+    // 必須有姓名才能寫 DB（doc_id 用 姓名_日期 組成）
+    if(!state.name||!state.name.trim()){
+      if(hint)hint.textContent='⚠ 請先填應徵者姓名才會自動儲存';
+      return;
+    }
+    try{
+      saveToSupabaseOptimistic();
+      if(hint)hint.textContent='✓ 已自動儲存到後台';
+      setTimeout(()=>{if(hint)hint.textContent='自動儲存';},2000);
+    }catch(err){
+      if(hint)hint.textContent='⚠ 儲存失敗，請按暫存';
+      console.error('筆記自動儲存失敗:',err);
+    }
+  },1000);
 }
 
 // ===== 後台筆記查看 =====
@@ -1784,10 +1881,33 @@ function openNoteModal(docId){
   const r=allData.find(x=>x.doc_id===docId);
   if(!r)return;
   const s=r.state_json||r;
-  const noteContent=s.notepad||'（此份面試沒有筆記）';
+  const raw=s.notepad||'';
   const el=document.getElementById('note-modal-content');
   const modal=document.getElementById('note-modal');
-  if(el)el.textContent=noteContent;
+  if(!el){if(modal)modal.classList.add('show');return;}
+  if(!raw){
+    el.innerHTML='<div style="color:var(--text3);text-align:center;padding:20px;">（此份面試沒有筆記）</div>';
+    if(modal)modal.classList.add('show');
+    return;
+  }
+  const parsed=parseNoteString(raw);
+  // 用 textContent 避免 XSS,先做 HTML escape
+  const esc=t=>{const d=document.createElement('div');d.textContent=t;return d.innerHTML;};
+  // 統一的卡片渲染:標題列 + 內容區(空與非空一致版面)
+  const renderBlock=(title,content,color,bg)=>{
+    const hasContent=content&&content.trim();
+    const body=hasContent
+      ? `<div style="padding:10px 12px;color:var(--text);white-space:pre-wrap;line-height:1.7;font-size:13px;">${esc(content)}</div>`
+      : `<div style="padding:10px 12px;color:var(--text3);font-style:italic;font-size:13px;">（未填寫）</div>`;
+    return `<div style="margin-bottom:14px;">
+      <div style="font-weight:700;font-size:12px;color:${color};margin-bottom:0;padding:6px 10px;background:${bg};border-left:3px solid ${color};">${title}</div>
+      ${body}
+    </div>`;
+  };
+  el.innerHTML=
+    renderBlock('1. 為什麼選擇逗點？',parsed.qComma,'#1D6FD8','#EBF3FF')+
+    renderBlock('2. 為什麼選擇教育業？',parsed.qEdu,'#059669','#F0FDF4')+
+    renderBlock('其他補充',parsed.other,'#D97706','#FFFBEB');
   if(modal)modal.classList.add('show');
 }
 
