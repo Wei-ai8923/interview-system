@@ -208,7 +208,13 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .time-select:focus{border-color:var(--blue);background:var(--white);}
 .time-colon{font-size:15px;font-weight:700;color:var(--text2);}
 .s1-group{margin-bottom:8px;}
-.s1-group-title{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.05em;margin-bottom:4px;border-left:2px solid var(--blue);padding-left:6px;display:flex;align-items:baseline;gap:2px;}
+.s1-group-title{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.05em;margin-bottom:4px;border-left:2px solid var(--blue);padding-left:6px;display:flex;align-items:baseline;gap:2px;position:relative;}
+.s1-group-title.has-desc{cursor:help;}
+.s1-group-title.has-desc::after{content:'❓';font-size:10px;margin-left:4px;opacity:.5;}
+.s1-group-title.has-desc:hover::after{opacity:1;}
+.s1-group-desc{visibility:hidden;opacity:0;position:absolute;top:130%;left:0;background:var(--text);color:white;padding:10px 14px;border-radius:6px;font-size:12px;line-height:1.7;width:480px;max-width:90vw;white-space:pre-wrap;text-align:left;z-index:50;pointer-events:none;font-weight:400;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:opacity .15s;letter-spacing:0;}
+.s1-group-desc::before{content:'';position:absolute;bottom:100%;left:14px;border:6px solid transparent;border-bottom-color:var(--text);}
+.s1-group-title.has-desc:hover .s1-group-desc{visibility:visible;opacity:1;}
 .score-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;margin-bottom:3px;background:var(--bg);border:1px solid var(--border);gap:8px;transition:background .15s;}
 .score-row:hover{background:var(--blue-light);}
 .score-q{font-size:13px;color:var(--text);line-height:1.4;flex:1;min-width:0;}
@@ -491,8 +497,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
           <input type="text" id="ai-input-name" placeholder="應徵者姓名">
         </div>
         <div class="ai-upload-field">
-          <label>💼 應徵職位(選填)</label>
-          <input type="text" id="ai-input-position" placeholder="例如:安親導師、行政導師">
+          <label>💼 應徵職位 <span style="color:#DC2626;">*</span> <span style="color:var(--text3);font-weight:400;font-size:11px;">(AI 會依職位調整評分嚴格度)</span></label>
+          <input type="text" id="ai-input-position" placeholder="例如:安親導師、班級導師、行政導師、主任、總部會計">
         </div>
         <div class="ai-upload-field">
           <label>📎 上傳履歷 PDF(選填)</label>
@@ -933,7 +939,18 @@ let SCORE_WEIGHTS={s1:0.30,s2:0.10,s3:0.60};
 
 const HS_BRANCHES=["中壢心夢想校","園中方舟校","青埔旭日校","大園參天校","青埔升大校","國高中營運處"];
 const ES_BRANCHES=["青園展翅校","青埔翱翔校","大園晨光校","內壢森耀校","竹北知行校","文化極光校","快樂騰雲校","國小營運處"];
-const S1_DATA=[{id:'exp',title:"工作經歷",weight:0.20,max:5,qs:["最能代表其專業能力及理想的經歷？"]},{id:'mot',title:"動機與價值",weight:0.35,max:10,qs:["與我們最契合的價值觀？","影響個人去留的主因？"]},{id:'sty',title:"工作風格",weight:0.25,max:10,qs:["最滿意或欣賞的工作環境、管理制度？","感到挫敗或壓力最大的案例？當時如何應對？"]},{id:'sal',title:"薪資與期待",weight:0.20,max:15,qs:["期望月薪/年薪及初期最低薪資？","最感興趣的工作任務與職涯關聯？","想了解或擔心的部分？"]},{id:'bon',title:"特別加分題",weight:0.01,max:5,qs:["補充說明"]}];
+const S1_DATA=[
+  {id:'exp',title:"工作經歷",weight:0.20,max:5,qs:["最能代表其專業能力及理想的經歷？"],
+    desc:"您的職涯中，最能代表您專業及理想的是哪一部份？可以填寫經驗值/專業度最充實的經歷，並補充具體執行的任務。"},
+  {id:'mot',title:"動機與價值",weight:0.35,max:10,qs:["與我們最契合的價值觀？","影響個人去留的主因？"],
+    desc:"1) 逗點的企業理念、團隊文化中，您覺得有哪些共通的價值觀？您可以用自己的說法列舉 1-3 項與您的價值觀連結簡要敘述。\n\n2) 在整體組織運作中（含工作環境），您認為會影響您個人決定去留的主因前三項是什麼？"},
+  {id:'sty',title:"工作風格",weight:0.25,max:10,qs:["最滿意或欣賞的工作環境、管理制度？","感到挫敗或壓力最大的案例？當時如何應對？"],
+    desc:"1) 在過往經驗中，有哪一些制度、風氣或是領導人特質，是讓您覺得滿意或欣賞的。\n\n2) 請您分享一段挫敗或壓力最深刻的具體事例，您是如何應對它、淬鍊為自我養份？"},
+  {id:'sal',title:"薪資與期待",weight:0.20,max:15,qs:["期望月薪/年薪及初期最低薪資？","最感興趣的工作任務與職涯關聯？","想了解或擔心的部分？"],
+    desc:"1) 逗點將不餘遺力提供給您職能培訓資源和實務互助，可以描述您期望的月薪或年薪 和 培育（磨合）初期最低薪資。\n\n2) 對本次應徵的職務，您感到最有興趣的工作任務是哪一項，且和您職涯規劃的關係？\n\n3) 您即將任職，會有哪些想更多了解或擔憂的部份？"},
+  {id:'bon',title:"特別加分題",weight:0.01,max:5,qs:["補充說明"],
+    desc:"面試官依照求職者整體表現給予滿意程度評分。"}
+];
 const S2_QUESTIONS=["儀容穿著","禮貌應對","表達流暢","自信穩健","誠懇親和","對分校了解","對職務認知","企圖心展現","配合度","邏輯思考","臨場反應","學習意願","情緒穩定","抗壓性","團隊合作","經歷相關","專業知識"];
 
 // ===== 載入所有設定 =====
@@ -1490,17 +1507,19 @@ function renderS1(){
   let html='';
   S1_DATA.forEach(g=>{
     const isBonus=g.id==='bon';
-    html+=`<div class="s1-group"><div class="s1-group-title">${g.title}</div>`;
+    const titleHtml=g.desc
+      ? `<div class="s1-group-title has-desc">${g.title}<span class="s1-group-desc">${g.desc.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span></div>`
+      : `<div class="s1-group-title">${g.title}</div>`;
+    html+=`<div class="s1-group">${titleHtml}`;
     if(isBonus){
       html+=`<div class="bon-wrap"><div style="font-size:11px;color:var(--blue);font-weight:700;margin-bottom:4px;">💡 只要有填寫都可以依照內容做加分唷！</div><textarea id="s1-bon-text" class="bon-textarea" rows="2" placeholder="補充說明（選填）..." oninput="state.s1.bonText=this.value;updateBonusSummary()">${state.s1.bonText||''}</textarea>`;
-      html+=`<div class="score-row"><div class="score-q">特別加分評分</div><div class="score-btns">`;
+      html+=`<div class="score-row"><div class="score-q">特別加分評分<div style="font-size:10px;color:var(--text3);font-weight:400;margin-top:2px;">面試官依照求職者的內容給予滿意程度 1~5 分</div></div><div class="score-btns">`;
       [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-bon',0,${v},this)" class="score-btn${state.s1.bon[0]==v?' active':''}" data-val="${v}">${v}</button>`;});
-      const bv=state.s1.bon[0];
-      html+=`</div></div><div id="s1desc-bon-0" class="s1-desc-box${bv>0?' show':''}"><div class="s1-desc-label">分數定義</div><span>${bv>0?S1_TIPS[bv]:''}</span></div></div>`;
+      html+=`</div></div></div>`;
     }else{
       g.qs.forEach((q,i)=>{
         html+=`<div class="score-row"><div class="score-q">${q}</div><div class="score-btns">`;
-        [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-${g.id}',${i},${v},this)" class="score-btn${state.s1[g.id][i]==v?' active':''}" data-val="${v}">${v}</button>`;});
+        [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-${g.id}',${i},${v},this)" class="score-btn${state.s1[g.id][i]==v?' active':''}" data-val="${v}" data-group="${g.id}" data-idx="${i}">${v}</button>`;});
         const cv=state.s1[g.id][i];
         html+=`</div></div><div id="s1desc-${g.id}-${i}" class="s1-desc-box${cv>0?' show':''}"><div class="s1-desc-label">分數定義</div><span>${cv>0?S1_TIPS[cv]:''}</span></div>`;
       });
@@ -1593,8 +1612,8 @@ function setScore(group,idx,val,btn){
   let cur=0;if(group==='s2')cur=state.s2[idx];else if(group.startsWith('s1-'))cur=state.s1[group.split('-')[1]][idx];
   const nv=(cur===val)?0:val;if(nv>0)btn.classList.add('active');
   if(group==='s2')state.s2[idx]=nv;else if(group.startsWith('s1-'))state.s1[group.split('-')[1]][idx]=nv;
-  // 筆試:更新分數定義描述框(同職能面試機制)
-  if(group.startsWith('s1-')){
+  // 筆試:更新分數定義描述框(加分題 'bon' 不顯示定義)
+  if(group.startsWith('s1-') && group!=='s1-bon'){
     const sub=group.split('-')[1];
     const db=document.getElementById(`s1desc-${sub}-${idx}`);
     const dt=db?db.querySelector('span'):null;
@@ -2066,6 +2085,11 @@ async function startAiAnalysis(){
     alert('請至少提供「履歷 PDF」或「前測問卷內容」其中一項');
     return;
   }
+  if(!position){
+    alert('請填寫「應徵職位」(AI 需要根據職位調整評分嚴格度)');
+    document.getElementById('ai-input-position').focus();
+    return;
+  }
   
   document.getElementById('ai-stage-upload').style.display='none';
   document.getElementById('ai-stage-loading').style.display='block';
@@ -2137,8 +2161,32 @@ function renderAiResult(data){
   
   // 應徵者資訊
   if(data.candidate){
+    const pt=data.candidate.position_type?` 　 <strong>職位類型:</strong> <span style="color:var(--blue);">${esc(data.candidate.position_type)}</span>`:'';
     html+=`<div style="background:var(--bg);padding:8px 12px;border-radius:4px;font-size:12px;margin-bottom:14px;">
-      <strong>應徵者:</strong> ${esc(data.candidate.name||'-')} 　 <strong>應徵職位:</strong> ${esc(data.candidate.position||'-')}
+      <strong>應徵者:</strong> ${esc(data.candidate.name||'-')} 　 <strong>應徵職位:</strong> ${esc(data.candidate.position||'-')}${pt}
+    </div>`;
+  }
+  
+  // 總分摘要
+  if(data.totals){
+    const t=data.totals;
+    html+=`<div style="background:linear-gradient(135deg,#EBF3FF 0%,#F0FDF4 100%);padding:12px 16px;border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-around;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="font-size:10px;color:var(--text3);">筆試總分</div>
+        <div style="font-size:20px;font-weight:700;color:#1D6FD8;">${esc(t.s1_total)}<span style="font-size:11px;color:var(--text3);">/40</span></div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:10px;color:var(--text3);">核心職能</div>
+        <div style="font-size:20px;font-weight:700;color:#059669;">${esc(t.s3_core_total)}<span style="font-size:11px;color:var(--text3);">/30</span></div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:10px;color:var(--text3);">管理職能</div>
+        <div style="font-size:20px;font-weight:700;color:#D97706;">${esc(t.s3_mgmt_total)}<span style="font-size:11px;color:var(--text3);">/15</span></div>
+      </div>
+      <div style="text-align:center;border-left:1.5px solid var(--border);padding-left:14px;">
+        <div style="font-size:10px;color:var(--text2);font-weight:700;">建議總分</div>
+        <div style="font-size:24px;font-weight:900;color:var(--text);">${esc(t.grand_total)}<span style="font-size:12px;color:var(--text3);">/85</span></div>
+      </div>
     </div>`;
   }
   
@@ -2151,7 +2199,7 @@ function renderAiResult(data){
           <th style="width:25%;">題目</th>
           <th style="width:10%;">建議分數</th>
           <th style="width:30%;">評語</th>
-          <th style="width:35%;">評分依據</th>
+          <th style="width:35%;">評分依據(原文引用)</th>
         </tr></thead>
         <tbody>`;
     data.s1.forEach(item=>{
@@ -2159,7 +2207,7 @@ function renderAiResult(data){
         <td>${esc(item.title||'')}</td>
         <td style="text-align:center;">${scoreBadge(item.score)}</td>
         <td>${esc(item.comment||'')}</td>
-        <td style="color:var(--text2);">${esc(item.evidence||'')}</td>
+        <td style="color:var(--text2);font-style:italic;">${esc(item.evidence||'')}</td>
       </tr>`;
     });
     html+=`</tbody></table></div>`;
@@ -2172,12 +2220,12 @@ function renderAiResult(data){
       <div class="ai-result-section-title">${title}</div>
       <table class="ai-result-table">
         <thead><tr>
-          <th style="width:14%;">職能</th>
-          <th style="width:32%;">BEI / CAR 問題</th>
+          <th style="width:13%;">職能</th>
+          <th style="width:35%;">深挖式 BEI / CAR 問題</th>
           <th style="width:9%;">建議分數</th>
-          <th style="width:13%;">行為等級</th>
+          <th style="width:12%;">行為等級</th>
           <th style="width:18%;">判斷原因</th>
-          <th style="width:14%;">參考來源</th>
+          <th style="width:13%;">參考來源</th>
         </tr></thead>
         <tbody>`;
     arr.forEach(item=>{
