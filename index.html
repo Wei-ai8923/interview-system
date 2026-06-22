@@ -208,13 +208,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .time-select:focus{border-color:var(--blue);background:var(--white);}
 .time-colon{font-size:15px;font-weight:700;color:var(--text2);}
 .s1-group{margin-bottom:8px;}
-.s1-group-title{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.05em;margin-bottom:4px;border-left:2px solid var(--blue);padding-left:6px;display:flex;align-items:baseline;gap:2px;position:relative;}
-.s1-group-title.has-desc{cursor:help;}
-.s1-group-title.has-desc::after{content:'❓';font-size:10px;margin-left:4px;opacity:.5;}
-.s1-group-title.has-desc:hover::after{opacity:1;}
-.s1-group-desc{visibility:hidden;opacity:0;position:absolute;top:130%;left:0;background:var(--text);color:white;padding:10px 14px;border-radius:6px;font-size:12px;line-height:1.7;width:480px;max-width:90vw;white-space:pre-wrap;text-align:left;z-index:50;pointer-events:none;font-weight:400;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:opacity .15s;letter-spacing:0;}
-.s1-group-desc::before{content:'';position:absolute;bottom:100%;left:14px;border:6px solid transparent;border-bottom-color:var(--text);}
-.s1-group-title.has-desc:hover .s1-group-desc{visibility:visible;opacity:1;}
+.s1-group-title{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.05em;margin-bottom:4px;border-left:2px solid var(--blue);padding-left:6px;display:flex;align-items:baseline;gap:2px;}
 .score-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;margin-bottom:3px;background:var(--bg);border:1px solid var(--border);gap:8px;transition:background .15s;}
 .score-row:hover{background:var(--blue-light);}
 .score-q{font-size:13px;color:var(--text);line-height:1.4;flex:1;min-width:0;}
@@ -501,6 +495,19 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
           <input type="text" id="ai-input-position" placeholder="例如:安親導師、班級導師、行政導師、主任、總部會計">
         </div>
         <div class="ai-upload-field">
+          <label>🎯 面試職等 <span style="color:#DC2626;">*</span> <span style="color:var(--text3);font-weight:400;font-size:11px;">(影響 S3 職能面試的核心/管理權重)</span></label>
+          <select id="ai-input-level" style="width:100%;border:1.5px solid var(--border);border-radius:4px;padding:8px 10px;font-size:13px;font-family:'Noto Sans TC',sans-serif;color:var(--text);outline:none;background:white;">
+            <option value="">— 請選擇職等 —</option>
+            <option value="1">職等 1 — 核心 90% / 管理 10%(一般執行職:行政、櫃台、會計等)</option>
+            <option value="2">職等 2 — 核心 85% / 管理 15%(第一線老師:安親、班級、授課師)</option>
+            <option value="3">職等 3 — 核心 70% / 管理 30%(資深老師、組長)</option>
+            <option value="4">職等 4 — 核心 60% / 管理 40%(主任)</option>
+            <option value="5">職等 5 — 核心 50% / 管理 50%(課長)</option>
+            <option value="6">職等 6 — 核心 40% / 管理 60%(處長)</option>
+            <option value="7">職等 7 — 核心 30% / 管理 70%(高階主管)</option>
+          </select>
+        </div>
+        <div class="ai-upload-field">
           <label>📎 上傳履歷 PDF(選填)</label>
           <div class="ai-file-zone" id="ai-file-zone" onclick="document.getElementById('ai-file-input').click()">
             <div class="ai-file-icon">📄</div>
@@ -512,8 +519,14 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
           <label>📋 貼上前測問卷內容(選填)</label>
           <textarea id="ai-input-survey" placeholder="把前測問卷的問答完整貼上來(問題+回答),AI 會根據這些資料分析..."></textarea>
         </div>
+        <div class="ai-upload-field">
+          <label>🎙️ 面試錄影逐字稿(選填,面試後使用)</label>
+          <textarea id="ai-input-transcript" placeholder="把面試錄影的逐字稿貼上來。若有逐字稿,AI 會優先以實際面試表現評分,並給予更精確的職能建議(此欄為選填,面試前分析可留空)..." style="min-height:140px;"></textarea>
+        </div>
         <div style="background:#FFF7E6;border-left:3px solid #D97706;padding:8px 12px;font-size:11px;color:#92400E;border-radius:4px;margin-bottom:14px;line-height:1.5;">
-          ⚠️ 履歷與問卷至少要提供一項,AI 才能分析。建議兩項都提供以獲得最完整建議。
+          ⚠️ <strong>履歷、問卷、逐字稿至少要提供一項</strong>,AI 才能分析。<br>
+          📌 面試前 → 上傳「履歷 + 問卷」獲得 BEI 建議與預估分數<br>
+          📌 面試後 → 加上「逐字稿」,AI 會根據實際表現給更精確的職能評分
         </div>
         <div class="ai-result-actions">
           <button class="ai-btn-secondary" onclick="closeAiHelperModal()">取消</button>
@@ -939,18 +952,7 @@ let SCORE_WEIGHTS={s1:0.30,s2:0.10,s3:0.60};
 
 const HS_BRANCHES=["中壢心夢想校","園中方舟校","青埔旭日校","大園參天校","青埔升大校","國高中營運處"];
 const ES_BRANCHES=["青園展翅校","青埔翱翔校","大園晨光校","內壢森耀校","竹北知行校","文化極光校","快樂騰雲校","國小營運處"];
-const S1_DATA=[
-  {id:'exp',title:"工作經歷",weight:0.20,max:5,qs:["最能代表其專業能力及理想的經歷？"],
-    desc:"您的職涯中，最能代表您專業及理想的是哪一部份？可以填寫經驗值/專業度最充實的經歷，並補充具體執行的任務。"},
-  {id:'mot',title:"動機與價值",weight:0.35,max:10,qs:["與我們最契合的價值觀？","影響個人去留的主因？"],
-    desc:"1) 逗點的企業理念、團隊文化中，您覺得有哪些共通的價值觀？您可以用自己的說法列舉 1-3 項與您的價值觀連結簡要敘述。\n\n2) 在整體組織運作中（含工作環境），您認為會影響您個人決定去留的主因前三項是什麼？"},
-  {id:'sty',title:"工作風格",weight:0.25,max:10,qs:["最滿意或欣賞的工作環境、管理制度？","感到挫敗或壓力最大的案例？當時如何應對？"],
-    desc:"1) 在過往經驗中，有哪一些制度、風氣或是領導人特質，是讓您覺得滿意或欣賞的。\n\n2) 請您分享一段挫敗或壓力最深刻的具體事例，您是如何應對它、淬鍊為自我養份？"},
-  {id:'sal',title:"薪資與期待",weight:0.20,max:15,qs:["期望月薪/年薪及初期最低薪資？","最感興趣的工作任務與職涯關聯？","想了解或擔心的部分？"],
-    desc:"1) 逗點將不餘遺力提供給您職能培訓資源和實務互助，可以描述您期望的月薪或年薪 和 培育（磨合）初期最低薪資。\n\n2) 對本次應徵的職務，您感到最有興趣的工作任務是哪一項，且和您職涯規劃的關係？\n\n3) 您即將任職，會有哪些想更多了解或擔憂的部份？"},
-  {id:'bon',title:"特別加分題",weight:0.01,max:5,qs:["補充說明"],
-    desc:"面試官依照求職者整體表現給予滿意程度評分。"}
-];
+const S1_DATA=[{id:'exp',title:"工作經歷",weight:0.20,max:5,qs:["最能代表其專業能力及理想的經歷？"]},{id:'mot',title:"動機與價值",weight:0.35,max:10,qs:["與我們最契合的價值觀？","影響個人去留的主因？"]},{id:'sty',title:"工作風格",weight:0.25,max:10,qs:["最滿意或欣賞的工作環境、管理制度？","感到挫敗或壓力最大的案例？當時如何應對？"]},{id:'sal',title:"薪資與期待",weight:0.20,max:15,qs:["期望月薪/年薪及初期最低薪資？","最感興趣的工作任務與職涯關聯？","想了解或擔心的部分？"]},{id:'bon',title:"特別加分題",weight:0.01,max:5,qs:["補充說明"]}];
 const S2_QUESTIONS=["儀容穿著","禮貌應對","表達流暢","自信穩健","誠懇親和","對分校了解","對職務認知","企圖心展現","配合度","邏輯思考","臨場反應","學習意願","情緒穩定","抗壓性","團隊合作","經歷相關","專業知識"];
 
 // ===== 載入所有設定 =====
@@ -1507,19 +1509,17 @@ function renderS1(){
   let html='';
   S1_DATA.forEach(g=>{
     const isBonus=g.id==='bon';
-    const titleHtml=g.desc
-      ? `<div class="s1-group-title has-desc">${g.title}<span class="s1-group-desc">${g.desc.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span></div>`
-      : `<div class="s1-group-title">${g.title}</div>`;
-    html+=`<div class="s1-group">${titleHtml}`;
+    html+=`<div class="s1-group"><div class="s1-group-title">${g.title}</div>`;
     if(isBonus){
       html+=`<div class="bon-wrap"><div style="font-size:11px;color:var(--blue);font-weight:700;margin-bottom:4px;">💡 只要有填寫都可以依照內容做加分唷！</div><textarea id="s1-bon-text" class="bon-textarea" rows="2" placeholder="補充說明（選填）..." oninput="state.s1.bonText=this.value;updateBonusSummary()">${state.s1.bonText||''}</textarea>`;
-      html+=`<div class="score-row"><div class="score-q">特別加分評分<div style="font-size:10px;color:var(--text3);font-weight:400;margin-top:2px;">面試官依照求職者的內容給予滿意程度 1~5 分</div></div><div class="score-btns">`;
+      html+=`<div class="score-row"><div class="score-q">特別加分評分</div><div class="score-btns">`;
       [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-bon',0,${v},this)" class="score-btn${state.s1.bon[0]==v?' active':''}" data-val="${v}">${v}</button>`;});
-      html+=`</div></div></div>`;
+      const bv=state.s1.bon[0];
+      html+=`</div></div><div id="s1desc-bon-0" class="s1-desc-box${bv>0?' show':''}"><div class="s1-desc-label">分數定義</div><span>${bv>0?S1_TIPS[bv]:''}</span></div></div>`;
     }else{
       g.qs.forEach((q,i)=>{
         html+=`<div class="score-row"><div class="score-q">${q}</div><div class="score-btns">`;
-        [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-${g.id}',${i},${v},this)" class="score-btn${state.s1[g.id][i]==v?' active':''}" data-val="${v}" data-group="${g.id}" data-idx="${i}">${v}</button>`;});
+        [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-${g.id}',${i},${v},this)" class="score-btn${state.s1[g.id][i]==v?' active':''}" data-val="${v}">${v}</button>`;});
         const cv=state.s1[g.id][i];
         html+=`</div></div><div id="s1desc-${g.id}-${i}" class="s1-desc-box${cv>0?' show':''}"><div class="s1-desc-label">分數定義</div><span>${cv>0?S1_TIPS[cv]:''}</span></div>`;
       });
@@ -1612,8 +1612,8 @@ function setScore(group,idx,val,btn){
   let cur=0;if(group==='s2')cur=state.s2[idx];else if(group.startsWith('s1-'))cur=state.s1[group.split('-')[1]][idx];
   const nv=(cur===val)?0:val;if(nv>0)btn.classList.add('active');
   if(group==='s2')state.s2[idx]=nv;else if(group.startsWith('s1-'))state.s1[group.split('-')[1]][idx]=nv;
-  // 筆試:更新分數定義描述框(加分題 'bon' 不顯示定義)
-  if(group.startsWith('s1-') && group!=='s1-bon'){
+  // 筆試:更新分數定義描述框(同職能面試機制)
+  if(group.startsWith('s1-')){
     const sub=group.split('-')[1];
     const db=document.getElementById(`s1desc-${sub}-${idx}`);
     const dt=db?db.querySelector('span'):null;
@@ -2036,6 +2036,11 @@ function openAiHelperModal(){
     if(n)n.value=state.name||'';
     const p=document.getElementById('ai-input-position');
     if(p)p.value=state.position||'';
+    // 如果前台已選職等,同步預填
+    if(state.level){
+      const lv=document.getElementById('ai-input-level');
+      if(lv)lv.value=String(state.level);
+    }
   }
 }
 function closeAiHelperModal(){
@@ -2076,20 +2081,33 @@ function fileToBase64(file){
     reader.readAsDataURL(file);
   });
 }
+// 主任在 AI Modal 上選的職等(獨立於前台 state.level)
+let aiSelectedLevel='';
+
 async function startAiAnalysis(){
   const name=document.getElementById('ai-input-name').value.trim();
   const position=document.getElementById('ai-input-position').value.trim();
+  const level=document.getElementById('ai-input-level').value;
   const survey=document.getElementById('ai-input-survey').value.trim();
+  const transcript=document.getElementById('ai-input-transcript').value.trim();
   
-  if(!aiSelectedFile && !survey){
-    alert('請至少提供「履歷 PDF」或「前測問卷內容」其中一項');
-    return;
-  }
   if(!position){
     alert('請填寫「應徵職位」(AI 需要根據職位調整評分嚴格度)');
     document.getElementById('ai-input-position').focus();
     return;
   }
+  if(!level){
+    alert('請選擇「面試職等」(AI 需要根據職等計算 S3 職能面試分數)');
+    document.getElementById('ai-input-level').focus();
+    return;
+  }
+  if(!aiSelectedFile && !survey && !transcript){
+    alert('請至少提供「履歷 PDF」、「前測問卷」或「面試逐字稿」其中一項');
+    return;
+  }
+  
+  // 儲存職等供 calculateAiScores 使用
+  aiSelectedLevel=level;
   
   document.getElementById('ai-stage-upload').style.display='none';
   document.getElementById('ai-stage-loading').style.display='block';
@@ -2104,8 +2122,10 @@ async function startAiAnalysis(){
     const payload={
       candidateName:name,
       position:position,
+      level:level,
       resumeBase64:resumeBase64,
-      surveyText:survey
+      surveyText:survey,
+      transcriptText:transcript
     };
     
     const res=await fetch(AI_ENDPOINT,{
@@ -2153,40 +2173,110 @@ async function startAiAnalysis(){
       </div>`;
   }
 }
+// ============================================================
+// 計算 AI 預估分數(完全套用系統真實的 calculateScores 邏輯)
+// 系統配分:S1 筆試 30 / S2 外顯特質 10 / S3 職能面試 60
+// S2 由 AI 無法評(履歷/問卷看不到面試現場觀察),只算 S1 + S3
+// ============================================================
+function calculateAiScores(data){
+  if(!data||!data.s1||!data.s3)return null;
+  // AI 回傳的 s1 8 題對應到 S1_DATA 的分類結構
+  const mapping=[['exp',0],['mot',0],['mot',1],['sty',0],['sty',1],['sal',0],['sal',1],['sal',2]];
+  const s1Raw={exp:[0],mot:[0,0],sty:[0,0],sal:[0,0,0]};
+  data.s1.forEach((item,i)=>{
+    const m=mapping[i];
+    if(m&&item&&typeof item.score==='number')s1Raw[m[0]][m[1]]=item.score;
+  });
+  // 計算 S1 加權分(同系統邏輯)
+  let s1p=0;
+  S1_DATA.forEach(g=>{
+    if(g.id==='bon')return;
+    const arr=s1Raw[g.id];if(!arr)return;
+    const raw=arr.reduce((a,b)=>a+b,0);
+    if(raw>0)s1p+=(raw/g.max)*100*g.weight;
+  });
+  const s1Max=100*SCORE_WEIGHTS.s1;
+  const s2Max=100*SCORE_WEIGHTS.s2;
+  const s3Max=100*SCORE_WEIGHTS.s3;
+  const s1f=(s1p/100)*s1Max;
+  // 計算 S3(優先用 AI Modal 上選的職等;沒選才用前台 state.level)
+  let lv=null;
+  if(typeof aiSelectedLevel!=='undefined' && aiSelectedLevel) lv=String(aiSelectedLevel);
+  else if(typeof state!=='undefined' && state && state.level) lv=String(state.level);
+  let s3f=0,hasLevel=false,levelName='';
+  if(lv&&typeof S3_LEVELS!=='undefined'&&S3_LEVELS[lv]){
+    hasLevel=true;
+    levelName=S3_LEVELS[lv].name||lv;
+    const d=S3_LEVELS[lv];
+    let cs=0,ms=0;
+    (data.s3.core||[]).forEach((item,i)=>{cs+=(item.score||0)*((d.c[i]||0)/100);});
+    (data.s3.mgmt||[]).forEach((item,i)=>{ms+=(item.score||0)*((d.m[i]||0)/100);});
+    const s3r=((cs/5)*100*(d.ratio.c/100))+((ms/5)*100*(d.ratio.m/100));
+    s3f=s3r*(s3Max/100);
+  }
+  const grand=hasLevel?(s1f+s3f):s1f;
+  const grandMax=hasLevel?(s1Max+s3Max):s1Max;
+  return{
+    s1:s1f.toFixed(2),s1Max:Math.round(s1Max),
+    s2Max:Math.round(s2Max),
+    s3:hasLevel?s3f.toFixed(2):null,s3Max:Math.round(s3Max),
+    grand:grand.toFixed(2),grandMax:Math.round(grandMax),
+    hasLevel:hasLevel,levelName:levelName
+  };
+}
+
 function renderAiResult(data){
   const esc=t=>{const d=document.createElement('div');d.textContent=(t==null?'':String(t));return d.innerHTML;};
   const scoreBadge=s=>`<span class="ai-result-score s${s}">${s}分</span>`;
   
   let html='';
   
-  // 應徵者資訊
+  // 應徵者資訊(加上 position_type)
   if(data.candidate){
     const pt=data.candidate.position_type?` 　 <strong>職位類型:</strong> <span style="color:var(--blue);">${esc(data.candidate.position_type)}</span>`:'';
+    // 判斷分析模式(從 modal 上的欄位回查)
+    const hasTranscript=document.getElementById('ai-input-transcript')&&document.getElementById('ai-input-transcript').value.trim();
+    const modeTag=hasTranscript
+      ? `<span style="display:inline-block;background:#059669;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;margin-left:6px;">🎙️ 面試後綜合分析(含逐字稿)</span>`
+      : `<span style="display:inline-block;background:#D97706;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;margin-left:6px;">📋 面試前預評</span>`;
     html+=`<div style="background:var(--bg);padding:8px 12px;border-radius:4px;font-size:12px;margin-bottom:14px;">
-      <strong>應徵者:</strong> ${esc(data.candidate.name||'-')} 　 <strong>應徵職位:</strong> ${esc(data.candidate.position||'-')}${pt}
+      <strong>應徵者:</strong> ${esc(data.candidate.name||'-')} 　 <strong>應徵職位:</strong> ${esc(data.candidate.position||'-')}${pt}${modeTag}
     </div>`;
   }
   
-  // 總分摘要
-  if(data.totals){
-    const t=data.totals;
-    html+=`<div style="background:linear-gradient(135deg,#EBF3FF 0%,#F0FDF4 100%);padding:12px 16px;border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-around;align-items:center;gap:10px;flex-wrap:wrap;">
-      <div style="text-align:center;">
-        <div style="font-size:10px;color:var(--text3);">筆試總分</div>
-        <div style="font-size:20px;font-weight:700;color:#1D6FD8;">${esc(t.s1_total)}<span style="font-size:11px;color:var(--text3);">/40</span></div>
+  // 總分摘要(用系統真實配分 30/10/60 計算)
+  const sc=calculateAiScores(data);
+  if(sc){
+    const lvHint=sc.hasLevel
+      ? `<span style="color:var(--text3);font-size:10px;">職等:${esc(sc.levelName)}</span>`
+      : `<span style="color:#DC2626;font-size:10px;font-weight:700;">⚠ 未選職等,職能無法計算</span>`;
+    html+=`<div style="background:linear-gradient(135deg,#EBF3FF 0%,#F0FDF4 100%);padding:12px 16px;border-radius:6px;margin-bottom:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+        <strong style="font-size:12px;">📊 AI 預估分數(依系統真實配分計算)</strong>
+        ${lvHint}
       </div>
-      <div style="text-align:center;">
-        <div style="font-size:10px;color:var(--text3);">核心職能</div>
-        <div style="font-size:20px;font-weight:700;color:#059669;">${esc(t.s3_core_total)}<span style="font-size:11px;color:var(--text3);">/30</span></div>
+      <div style="display:flex;justify-content:space-around;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div style="font-size:10px;color:var(--text3);">筆試 (S1)</div>
+          <div style="font-size:20px;font-weight:700;color:#1D6FD8;">${esc(sc.s1)}<span style="font-size:11px;color:var(--text3);">/${sc.s1Max}</span></div>
+        </div>
+        <div style="text-align:center;opacity:.55;">
+          <div style="font-size:10px;color:var(--text3);">外顯特質 (S2)</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text3);">面試現場評<span style="font-size:11px;">/${sc.s2Max}</span></div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:10px;color:var(--text3);">職能面試 (S3)</div>
+          <div style="font-size:20px;font-weight:700;color:#059669;">${sc.s3?esc(sc.s3):'—'}<span style="font-size:11px;color:var(--text3);">/${sc.s3Max}</span></div>
+        </div>
+        <div style="text-align:center;border-left:1.5px solid var(--border);padding-left:14px;">
+          <div style="font-size:10px;color:var(--text2);font-weight:700;">AI 預估總分</div>
+          <div style="font-size:24px;font-weight:900;color:var(--text);">${esc(sc.grand)}<span style="font-size:12px;color:var(--text3);">/${sc.grandMax}</span></div>
+          <div style="font-size:9px;color:var(--text3);">${sc.hasLevel?'不含 S2(現場評)':'未含 S3(請選職等)'}</div>
+        </div>
       </div>
-      <div style="text-align:center;">
-        <div style="font-size:10px;color:var(--text3);">管理職能</div>
-        <div style="font-size:20px;font-weight:700;color:#D97706;">${esc(t.s3_mgmt_total)}<span style="font-size:11px;color:var(--text3);">/15</span></div>
-      </div>
-      <div style="text-align:center;border-left:1.5px solid var(--border);padding-left:14px;">
-        <div style="font-size:10px;color:var(--text2);font-weight:700;">建議總分</div>
-        <div style="font-size:24px;font-weight:900;color:var(--text);">${esc(t.grand_total)}<span style="font-size:12px;color:var(--text3);">/85</span></div>
-      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.6;background:#FFF7E6;padding:6px 10px;border-radius:4px;border-left:3px solid #D97706;">
+      💡 <strong>分數說明</strong>:依系統配分計算(S1 ${sc.s1Max}% + S2 ${sc.s2Max}% + S3 ${sc.s3Max}% = 100%)。S2 外顯特質需面試現場觀察(儀容、表達、應對),AI 無法預測,因此 AI 預估總分滿分為 ${sc.grandMax}(完成 S2 後可達 100)。
     </div>`;
   }
   
