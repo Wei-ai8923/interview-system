@@ -6,6 +6,8 @@
 <title>逗點教室｜面試系統</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -105,6 +107,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .ai-file-zone{border:2px dashed var(--border2);border-radius:6px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);}
 .ai-file-zone:hover{border-color:var(--blue);background:#EBF3FF;}
 .ai-file-zone.has-file{border-color:#059669;background:#F0FDF4;border-style:solid;}
+.ai-file-zone.locked{cursor:not-allowed;background:#F1F5F9;border-style:solid;border-color:#059669;opacity:.9;}
 .ai-file-icon{font-size:24px;margin-bottom:6px;}
 .ai-file-text{font-size:12px;color:var(--text2);}
 .ai-file-name{font-size:13px;font-weight:700;color:#059669;}
@@ -137,6 +140,13 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .ai-btn-primary{background:var(--blue);border:1.5px solid var(--blue);color:white;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
 .ai-btn-primary:disabled{opacity:.5;cursor:not-allowed;}
 .s1-desc-label{font-weight:700;font-size:10px;margin-bottom:2px;color:#1D6FD8;}
+/* 筆試題目旁的「表單原題」氣泡提示(讓面試官對照求職者實際被問了什麼) */
+.s1-src{position:relative;display:inline-block;margin-left:5px;cursor:help;font-size:11px;opacity:.55;vertical-align:middle;}
+.s1-src:hover{opacity:1;}
+.s1-src-tip{display:none;position:absolute;left:0;top:calc(100% + 6px);z-index:50;width:320px;background:#1A2338;color:#fff;padding:9px 11px;border-radius:5px;font-size:11.5px;line-height:1.65;white-space:pre-line;box-shadow:0 6px 20px rgba(26,35,56,.28);font-weight:400;text-align:left;}
+.s1-src-tip::before{content:'';position:absolute;left:8px;top:-5px;border:5px solid transparent;border-top:none;border-bottom-color:#1A2338;}
+.s1-src-tip-label{display:block;font-size:10px;font-weight:700;color:#8FB8F0;margin-bottom:3px;letter-spacing:.04em;}
+.s1-src:hover .s1-src-tip{display:block;}
 .note-modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,35,56,.4);z-index:9999;align-items:center;justify-content:center;}
 .note-modal-overlay.show{display:flex;}
 .note-modal-box{background:white;border:1px solid var(--border);width:90%;max-width:480px;box-shadow:0 20px 60px rgba(29,111,216,.2);}
@@ -273,7 +283,64 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .bonus-summary-content{font-size:12px;color:var(--text2);line-height:1.6;}
 .report-textarea{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:2px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;resize:vertical;min-height:64px;font-family:'Noto Sans TC',sans-serif;}
 .report-textarea:focus{border-color:var(--blue);}
+.hire-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;}
+.hire-cell{display:flex;flex-direction:column;}
+.hire-label{font-size:11px;color:var(--text2);font-weight:700;margin-bottom:3px;}
+.hire-input{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:2px;padding:7px 9px;font-size:12.5px;color:var(--text);outline:none;font-family:'Noto Sans TC',sans-serif;}
+.hire-input:focus{border-color:var(--blue);}
 .decision-row{display:flex;gap:8px;margin-top:10px;}
+/* 面試流程導引 */
+.flow-guide{background:var(--white);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;overflow:hidden;}
+.flow-guide-head{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#F0F4FA;border-bottom:1px solid var(--border);}
+.flow-guide-title{font-size:14px;font-weight:900;color:var(--text);}
+.flow-guide-hint{font-size:11px;color:var(--text3);font-weight:400;margin-left:6px;}
+.flow-guide-toggle{background:none;border:none;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.flow-guide-body{display:flex;gap:0;padding:14px 16px;align-items:stretch;}
+.fg-col{flex:1;background:#FBFCFE;border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;}
+.fg-arrow{display:flex;align-items:center;color:var(--text3);font-size:20px;padding:0 8px;flex:none;}
+.fg-col-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid currentColor;}
+.fg-col-title{font-size:15px;font-weight:900;}
+.fg-col-sub{font-size:11px;color:var(--text3);font-weight:400;}
+.fg-count{font-size:11px;color:var(--text2);white-space:nowrap;}
+.fg-count strong{color:var(--text);}
+.fg-items{flex:1;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;}
+.fg-item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2);}
+.fg-item.done .fg-label{color:var(--text);}
+.fg-box{width:18px;height:18px;flex:none;border:1.5px solid var(--border2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:900;}
+.fg-box.fg-manual{cursor:pointer;}
+.fg-box.on{background:#059669;border-color:#059669;}
+.fg-box.fg-auto{border-style:dashed;}
+.fg-box.fg-auto.on{background:#059669;border-style:solid;}
+.fg-btn{width:100%;padding:9px;background:var(--white);border:1.5px solid;border-radius:5px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+@media(max-width:900px){.flow-guide-body{flex-direction:column;}.fg-arrow{transform:rotate(90deg);padding:4px 0;}}
+/* 面試流程說明視窗 */
+.fd-note{background:#FFF7E6;border-left:3px solid #D97706;padding:9px 12px;border-radius:4px;font-size:12px;color:#92400E;line-height:1.6;margin-bottom:16px;}
+.fd-h1{font-size:17px;font-weight:900;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid currentColor;}
+.fd-h2{font-size:13.5px;font-weight:900;color:var(--text);margin:14px 0 6px;}
+.fd-goal{background:#F0F4FA;border-radius:4px;padding:8px 12px;font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:10px;}
+.fd-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px;}
+.fd-table th{background:#F0F4FA;padding:7px 9px;text-align:left;font-weight:700;border:1px solid var(--border);color:var(--text);}
+.fd-table td{padding:7px 9px;border:1px solid var(--border);vertical-align:top;line-height:1.6;color:var(--text2);}
+.fd-list{margin:6px 0 10px;padding-left:20px;}
+.fd-list li{font-size:12.5px;color:var(--text2);line-height:1.8;}
+.fd-script{background:#FBFCFE;border:1px solid var(--border);border-left:3px solid #1D6FD8;border-radius:4px;padding:10px 12px;font-size:12.5px;color:var(--text);line-height:1.8;}
+/* 面試滿意度呈現(像漂亮版 Excel) */
+.sat-avg{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sat-avg-num{font-size:26px;font-weight:900;color:#E8632F;}
+.sat-avg-lbl{font-size:11px;color:var(--text3);}
+.sat-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px;}
+.sat-table td{border:1px solid var(--border);padding:6px 8px;vertical-align:middle;}
+.sat-table td.sat-qn{color:var(--text);}
+.sat-bar-wrap{display:flex;align-items:center;gap:7px;width:150px;}
+.sat-bar{flex:1;height:9px;background:#F1E6D6;border-radius:999px;overflow:hidden;}
+.sat-bar i{display:block;height:100%;background:linear-gradient(90deg,#FF7A4D,#F6B953);}
+.sat-bar-v{font-weight:900;color:#E8632F;width:26px;text-align:right;}
+.sat-open{background:#FFF7E6;border-left:3px solid #F6B953;padding:8px 10px;border-radius:4px;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:10px;}
+.sat-ai-box{border:1px solid var(--border);border-radius:6px;padding:10px 12px;background:#F8FAFF;}
+.sat-ai-sum{font-size:12.5px;font-weight:700;color:#1D6FD8;margin-bottom:6px;}
+.sat-ai-col{font-size:11.5px;color:var(--text2);line-height:1.7;}
+.sat-ai-col b{color:var(--text);}
+.sat-empty{font-size:12px;color:var(--text3);padding:8px 0;}
 .decision-btn{flex:1;padding:10px;border-radius:2px;font-size:13px;font-weight:900;cursor:pointer;transition:all .2s;background:var(--white);color:var(--text2);font-family:'Noto Sans TC',sans-serif;border:1.5px solid var(--border2);}
 .decision-btn:hover{border-color:var(--blue);color:var(--blue);}
 .decision-btn.active-pass{background:#ECFDF5;border-color:#10B981;color:#065F46;}
@@ -368,6 +435,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .print-modal-actions{display:flex;gap:8px;align-items:center;}
 .btn-do-print{padding:6px 16px;background:var(--blue);color:white;border:none;border-radius:2px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
 .btn-close-print{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;}
+.print-picker{background:#FFF7E6;border-bottom:1px solid var(--border);padding:9px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:44px;z-index:9;}
+.print-picker-label{font-size:12px;font-weight:700;color:#92400E;}
+.print-picker label{font-size:12.5px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:700;}
+.print-picker input[type="checkbox"]{width:15px;height:15px;cursor:pointer;}
+.print-picker-dl{margin-left:auto;padding:5px 12px;background:#fff;border:1.5px solid #FF7A4D;color:#E8632F;border-radius:3px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
 .print-content{padding:24px 28px;}
 .pc-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--blue);}
 .pc-logo{width:52px;height:52px;border-radius:50%;object-fit:cover;}
@@ -403,11 +475,67 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .pc-result-val{font-size:13px;font-weight:700;color:var(--text);}
 .decision-pass{color:#059669;font-weight:900;}
 .decision-fail{color:#DC2626;font-weight:900;}
+/* ===== AI 結果分頁切換 ===== */
+.ai-tabs{display:flex;gap:6px;border-bottom:2px solid var(--border);margin-bottom:14px;}
+.ai-tab{background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;padding:8px 14px;font-size:13px;font-weight:700;color:var(--text3);cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.ai-tab:hover{color:var(--text2);}
+.ai-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+
+/* ===== 夥伴使用說明書(pm = partner manual,獨立命名空間,勿與系統藍色主題混用)===== */
+.pm-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#FFF7E6;border-left:3px solid #D97706;padding:8px 12px;border-radius:4px;margin-bottom:14px;}
+.pm-toolbar-hint{font-size:11px;color:#92400E;line-height:1.5;}
+.pm-btn{background:#FF7A4D;border:1.5px solid #FF7A4D;color:#fff;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Noto Sans TC',sans-serif;}
+.pm-btn:hover{background:#E8632F;border-color:#E8632F;}
+.pm-btn:disabled{opacity:.5;cursor:not-allowed;}
+.pm-empty{background:#F8F9FA;border:1px dashed var(--border2);border-radius:6px;padding:28px 20px;text-align:center;font-size:12px;color:var(--text3);line-height:1.7;}
+.pm-card{max-width:720px;margin:0 auto;background:linear-gradient(180deg,#FFFDFA,#FFF8EF);border-radius:28px;padding:44px;border:1px solid #EFE1CF;color:#4A3B32;font-family:'Noto Sans TC',sans-serif;line-height:1.8;position:relative;overflow:hidden;}
+.pm-card::before{content:'，';position:absolute;top:-30px;right:10px;font-size:200px;font-weight:900;color:#FF7A4D;opacity:.05;line-height:1;}
+.pm-head{text-align:center;margin-bottom:26px;position:relative;}
+.pm-head h2{font-size:26px;font-weight:900;margin:0;color:#4A3B32;}
+.pm-head p{color:#7A6A5C;font-size:13px;margin:8px 0 0;}
+.pm-type{text-align:center;background:#FFE3D2;border-radius:16px;padding:24px;margin-bottom:22px;}
+.pm-hint{font-size:11.5px;color:#A99887;margin-bottom:6px;}
+.pm-type-name{font-size:24px;font-weight:900;color:#E8632F;}
+.pm-chips{margin:10px 0;}
+.pm-chip{display:inline-block;background:rgba(255,255,255,.65);color:#E8632F;font-weight:700;font-size:12.5px;padding:5px 14px;border-radius:999px;margin:3px 4px;}
+.pm-type-summary{font-size:13.5px;margin-top:10px;line-height:1.8;}
+.pm-section{margin-bottom:22px;}
+.pm-section h3{font-size:15px;font-weight:900;margin:0 0 10px;display:flex;align-items:center;gap:8px;color:#4A3B32;}
+.pm-section h3::before{content:'';width:6px;height:6px;border-radius:50%;background:#FF7A4D;display:inline-block;flex:none;}
+.pm-text{font-size:13.5px;line-height:1.9;margin:0;}
+.pm-list{padding-left:20px;margin:0;}
+.pm-list li{font-size:13.5px;line-height:1.85;margin-bottom:8px;}
+mark.pm-quote{background:none;color:#E8632F;font-weight:800;font-size:1.08em;padding:0;}
+.pm-footer{margin-top:26px;padding-top:16px;border-top:1px dashed #EFE1CF;font-size:11.5px;color:#A99887;}
+.pm-footer p{margin:0;}
+/* 型號比例長條(您的特質組成) */
+.pm-dist{margin-top:16px;text-align:left;}
+.pm-dist-title{font-size:11.5px;color:#A99887;margin-bottom:8px;font-weight:700;text-align:center;}
+.pm-dist-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.pm-dist-label{font-size:12px;font-weight:700;color:#4A3B32;width:104px;flex:none;white-space:nowrap;}
+.pm-dist-bar{flex:1;height:14px;background:#F1E6D6;border-radius:999px;overflow:hidden;}
+.pm-dist-bar i{display:block;height:100%;background:linear-gradient(90deg,#FF7A4D,#F6B953);border-radius:999px;}
+.pm-dist-pct{font-size:12px;font-weight:900;color:#E8632F;width:38px;flex:none;text-align:right;}
+/* 第二頁:八大型號指南 */
+.pm-catalog{max-width:720px;margin:22px auto 0;}
+.pm-page-break{page-break-before:always;}
+.pm-cat-head{text-align:center;margin-bottom:18px;}
+.pm-cat-head h2{font-size:20px;font-weight:900;color:#4A3B32;margin:0;}
+.pm-cat-head p{font-size:12px;color:#7A6A5C;margin:8px 0 0;line-height:1.7;}
+.pm-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pm-cat-card{background:linear-gradient(180deg,#FFFDFA,#FFF8EF);border:1px solid #EFE1CF;border-radius:14px;padding:14px 16px;}
+.pm-cat-card.is-you{border-color:#FF7A4D;border-width:2px;background:#FFF3EC;}
+.pm-cat-icon{font-size:26px;line-height:1;}
+.pm-cat-name{font-size:15px;font-weight:900;color:#4A3B32;margin-top:6px;}
+.pm-you-tag{font-size:10px;font-weight:700;color:#fff;background:#FF7A4D;border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:middle;}
+.pm-cat-kw{font-size:11.5px;color:#E8632F;font-weight:700;margin-top:3px;}
+.pm-cat-sum{font-size:11.5px;color:#7A6A5C;line-height:1.65;margin-top:6px;}
 @media print{
   body>*:not(#print-modal){display:none!important;}
   #print-modal{display:block!important;position:static!important;background:none!important;}
   .print-modal{width:100%!important;max-height:none!important;box-shadow:none!important;border:none!important;overflow:visible!important;}
   .print-modal-header{display:none!important;}
+  .print-picker{display:none!important;}
   .print-content{padding:0!important;overflow:visible!important;height:auto!important;max-height:none!important;}
   @page{
     size:A4 portrait;
@@ -486,6 +614,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="ai-modal-body">
       <!-- 階段 1:上傳 -->
       <div id="ai-stage-upload">
+        <div id="ai-transcript-banner" style="display:none;background:#F0FDF4;border-left:3px solid #059669;padding:9px 12px;font-size:12px;color:#065F46;border-radius:4px;margin-bottom:12px;line-height:1.5;">🎙️ <strong>逐字稿模式</strong>：履歷與表單沿用面試前那份（無需更動），這次貼上逐字稿後，<strong>只會更新職能面試，筆試分數維持不變</strong>。</div>
         <div class="ai-upload-field">
           <label>👤 應徵者姓名(選填)</label>
           <input type="text" id="ai-input-name" placeholder="應徵者姓名">
@@ -505,6 +634,23 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
             <option value="5">職等 5 — 核心 50% / 管理 50%(課長)</option>
             <option value="6">職等 6 — 核心 40% / 管理 60%(處長)</option>
             <option value="7">職等 7 — 核心 30% / 管理 70%(高階主管)</option>
+          </select>
+        </div>
+        <div class="ai-upload-field">
+          <label>🏫 應徵分校/單位 <span style="color:var(--text3);font-weight:400;font-size:11px;">(選填,讓 AI 知道求職者填的是哪一版前測問卷)</span></label>
+          <select id="ai-input-branch" style="width:100%;border:1.5px solid var(--border);border-radius:4px;padding:8px 10px;font-size:13px;font-family:'Noto Sans TC',sans-serif;color:var(--text);outline:none;background:white;">
+            <option value="">— 未指定(AI 會自行判斷問卷版本)—</option>
+            <optgroup label="各分校">
+              <option>青埔升大校</option><option>青埔翱翔校</option><option>青園展翅校</option>
+              <option>大園晨光校</option><option>內壢森耀校</option><option>竹北知行校</option>
+              <option>文化極光校</option><option>快樂騰雲校</option><option>大園參天校</option>
+              <option>園中方舟校</option><option>青埔旭日校</option><option>中壢心夢想校</option>
+            </optgroup>
+            <optgroup label="總部處室">
+              <option>行政溝通處</option><option>人力資源處</option><option>財務會計處</option>
+              <option>國小營運處</option><option>國高中營運處</option><option>產品研發處</option>
+              <option>品牌行銷處</option><option>行銷辦公室</option><option>國小英文管理科</option>
+            </optgroup>
           </select>
         </div>
         <div class="ai-upload-field">
@@ -543,26 +689,161 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
       </div>
       <!-- 階段 3:結果 -->
       <div id="ai-stage-result" style="display:none;">
-        <div class="ai-result-warn">
-          ⚠️ <strong>AI 建議僅供參考</strong>。建議分數可能會產生錨定效應,請以實際面試現場的觀察與互動為主進行評定。本表格不會自動填入前台,所有評分仍需面試官自行決定。
+        <div id="ai-restore-banner" style="display:none;background:#EFF6FF;border-left:3px solid #1D6FD8;padding:8px 12px;font-size:12px;color:#1e40af;border-radius:4px;margin-bottom:12px;line-height:1.5;"></div>
+        <div class="ai-tabs">
+          <button class="ai-tab active" id="ai-tab-score" onclick="switchAiTab('score')">📊 職能預測分數</button>
+          <button class="ai-tab" id="ai-tab-manual" onclick="switchAiTab('manual')">🎁 夥伴使用說明書</button>
         </div>
-        <div id="ai-result-content"></div>
+        <!-- 分頁 A:職能預測分數(給面試官看) -->
+        <div id="ai-pane-score">
+          <div class="ai-result-warn">
+            ⚠️ <strong>AI 建議僅供參考</strong>。建議分數可能會產生錨定效應,請以實際面試現場的觀察與互動為主進行評定。本表格不會自動填入前台,所有評分仍需面試官自行決定。
+          </div>
+          <div id="ai-result-content"></div>
+        </div>
+        <!-- 分頁 B:夥伴使用說明書(面談時送給求職者) -->
+        <div id="ai-pane-manual" style="display:none;">
+          <div class="pm-toolbar">
+            <div class="pm-toolbar-hint">
+              🎁 這份說明書是<strong>要當面送給求職者</strong>的面談禮物,不是評估報告。<br>
+              送出前請先看過一遍,確認引述的內容正確、語氣貼近本人。
+            </div>
+            <button class="pm-btn" id="pm-download-btn" onclick="downloadPartnerManualPDF()">⬇ 下載說明書 PDF</button>
+          </div>
+          <div id="pm-content"></div>
+        </div>
         <div class="ai-result-actions">
-          <button class="ai-btn-secondary" onclick="resetAiHelperModal()">重新分析</button>
+          <span style="flex:1;font-size:10.5px;color:var(--text3);line-height:1.4;text-align:left;">💾 存檔會對應到後台<strong>同名</strong>的最新一筆<br>(需先在前台暫存或送出過這位應徵者)</span>
+          <button class="ai-btn-secondary" onclick="chooseReanalyze()">重新分析</button>
+          <button class="ai-btn-secondary" id="ai-import-btn" onclick="importAiToFront()" style="border-color:#1D6FD8;color:#1D6FD8;">📥 導入前台計分表</button>
+          <button class="ai-btn-secondary" id="ai-save-btn" onclick="saveAiToRecord()" style="border-color:#059669;color:#059669;">💾 存到後台這位應徵者</button>
           <button class="ai-btn-primary" onclick="closeAiHelperModal()">關閉</button>
         </div>
       </div>
     </div>
   </div>
 </div>
+<div id="ai-reanalyze-modal" class="ai-modal-overlay">
+  <div class="ai-modal-box" style="max-width:440px;">
+    <div class="ai-modal-header">
+      <div class="ai-modal-title">🔄 重新分析</div>
+      <button class="ai-modal-close" onclick="document.getElementById('ai-reanalyze-modal').classList.remove('show')">✕</button>
+    </div>
+    <div class="ai-modal-body">
+      <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin:0 0 14px;">請選擇這次要怎麼重新分析：</p>
+      <button class="ai-btn-secondary" style="width:100%;text-align:left;padding:12px;margin-bottom:10px;" onclick="reanalyzeAll()">
+        <strong style="color:var(--blue);">🔄 重新分析全部</strong><br>
+        <span style="font-size:11px;color:var(--text3);">清空重來，重新上傳履歷＋表單，筆試與職能都重新評。</span>
+      </button>
+      <button class="ai-btn-secondary" id="reanalyze-transcript-btn" style="width:100%;text-align:left;padding:12px;border-color:#059669;" onclick="startTranscriptMode()">
+        <strong style="color:#059669;">🎙️ 新增逐字稿（筆試不動）</strong><br>
+        <span style="font-size:11px;color:var(--text3);">履歷與表單沿用先前那份，只貼面試逐字稿，<strong>只更新職能面試</strong>。</span>
+      </button>
+    </div>
+  </div>
+</div>
+<div id="flow-doc-modal" class="ai-modal-overlay">
+  <div class="ai-modal-box" style="max-width:940px;">
+    <div class="ai-modal-header">
+      <div class="ai-modal-title">📖 面試流程說明（現場小抄 × 人事檢核）</div>
+      <button class="ai-modal-close" onclick="document.getElementById('flow-doc-modal').classList.remove('show')">✕</button>
+    </div>
+    <div class="ai-modal-body">
+      <div class="fd-note">核心定位｜面試官是面談主責；人事負責資料提供、流程提醒、問句式檢核、數字確認與後續通知。這不是被審問，而是讓求職者覺得「沒來逗點很可惜」。</div>
+
+      <div class="fd-h1" style="color:#059669;">一、面試前｜行前準備</div>
+      <div class="fd-goal">目標感受：讓求職者一進來就感覺——逗點真的有看過我的資料，不是臨時找我來面試。</div>
+      <table class="fd-table"><thead><tr><th style="width:46%;">面試官／主任主責</th><th>人事問句式檢核</th></tr></thead><tbody>
+        <tr><td>閱讀履歷、表單、《夥伴使用說明書》與面試官概要。</td><td>你會從他的哪一段經歷或回答開始，對他表示好奇？</td></tr>
+        <tr><td>在面試平台「職能面試」填好預計提問。</td><td>針對你寫的這一題，為什麼會對他這段回答感到好奇？你想確認什麼？</td></tr>
+        <tr><td>確認本次面試要觀察的核心職能。</td><td>這個職位今天最需要確認哪 2~3 個能力？</td></tr>
+        <tr><td>準備 CAR／BEI 追問方向。</td><td>你預計怎麼追問：情境、行動、結果？</td></tr>
+        <tr><td>填妥任用條件：聘僱薪資、上班星期及時段、職稱、到職日＝簽約日。</td><td>請直接確認數字／區間：薪資多少？上班星期及時段？職稱？到職／簽約日是否已與人資確認？</td></tr>
+        <tr><td>其他補充說明：1~3 個月培育、任務安排或晉升計劃。</td><td>1~3 個月你預計讓他先做什麼、學什麼、觀察什麼？若有晉升計劃，關鍵條件是什麼？</td></tr>
+        <tr><td>面試前 1 天最後修改：面試題目、任用條件、職能追問與培育安排。</td><td>最後版本是否已確認？有沒有不能現場承諾的地方需要避開？</td></tr>
+        <tr><td>面試前 1 天電聯：確認面談時間、地點、到場方式與注意事項。</td><td>是否已完成電聯？求職者是否確認會到場？有沒有需要人事協助補充的資訊？</td></tr>
+      </tbody></table>
+      <div class="fd-h2">面試前最小完成清單</div>
+      <ul class="fd-list">
+        <li>開場好奇點：至少 1 個，需來自履歷或表單。</li>
+        <li>職能提問：已寫在面試平台，並能說明「為什麼問」。</li>
+        <li>任用條件：聘僱薪資、上班星期及時段、職稱、到職／簽約日已填妥。</li>
+        <li>補充規劃：1~3 個月培育／晉升計劃與其他安排已具體寫清楚。</li>
+        <li>不可承諾提醒：錄取、薪資、福利、特殊排班，皆不於現場保證。</li>
+        <li>面試前一天確認：主任已電聯確認求職者面談時間、地點與到場注意事項。</li>
+      </ul>
+
+      <div class="fd-h1" style="color:#1D6FD8;">二、面試中｜現場流程</div>
+      <div class="fd-goal">目標感受：這不是被審問，而是逗點真的有看見我、理解我，也讓我更認識逗點。</div>
+      <table class="fd-table"><thead><tr><th style="width:8%;">順序</th><th style="width:46%;">面試官／主任要做什麼</th><th>重點</th></tr></thead><tbody>
+        <tr><td>1 開場連結</td><td>用履歷或表單中的一段內容開場，先對他產生具體好奇。</td><td>不要一開始就自我介紹或問制式問題。</td></tr>
+        <tr><td>2 說明今日流程</td><td>說明今天會先認識彼此，再聊職務、能力與逗點。</td><td>讓他安心，不是考試。</td></tr>
+        <tr><td>3 關鍵問題</td><td>問：為什麼選擇逗點？為什麼想選擇教育業？</td><td>先確認動機與方向。</td></tr>
+        <tr><td>4 職能面談</td><td>依面試平台題目，用 CAR／BEI 問具體事例。</td><td>不憑感覺，要有依據。</td></tr>
+        <tr><td>5 企業簡介</td><td>使用簡報說明逗點集團、理念、願景使命。</td><td>讓他知道逗點不只是補習班。</td></tr>
+        <tr><td>6 職務說明</td><td>說明工作內容、出勤時間、薪資架構、培訓資源。</td><td>說清楚，但不過度承諾。</td></tr>
+        <tr><td>7 求職者提問</td><td>保留時間讓他問工作、薪資、培訓、現場狀況。</td><td>可回應，但不現場保證錄取。</td></tr>
+        <tr><td>8 送出《夥伴使用說明書》</td><td>作為面談禮物送給求職者。</td><td>安排在求職者提問後、滿意度調查前。</td></tr>
+        <tr><td>9 使用說明書互動</td><td>帶他看 2~3 個重點，並邀請他補充或修正。</td><td>不是人格定義，是面談後段的互動收尾。</td></tr>
+        <tr><td>10 滿意度調查</td><td>離開前現場填寫簡短滿意度。</td><td>不要等離開後，避免沒填。</td></tr>
+        <tr><td>11 收尾</td><td>邀請他 2 天內於 104 回覆意願。</td><td>讓後續流程清楚。</td></tr>
+      </tbody></table>
+      <div class="fd-h2">關鍵問題</div>
+      <table class="fd-table"><thead><tr><th style="width:50%;">問題</th><th>目的</th></tr></thead><tbody>
+        <tr><td>為什麼這次會選擇逗點？</td><td>確認是否理解逗點，以及他靠近逗點的真實動機。</td></tr>
+        <tr><td>為什麼會想選擇教育業，或想靠近教育現場？</td><td>確認教育動機、價值觀與現場適配度。</td></tr>
+      </tbody></table>
+      <div class="fd-h2">《夥伴使用說明書》建議話術</div>
+      <div class="fd-script">今天聊到這裡，逗點想送您一份小小的禮物。這份《夥伴使用說明書》是我們依據您的履歷和表單內容整理的。它不是評分，也不是人格定義，而是我們想用一種比較逗點的方式，試著理解您。如果有哪裡很像您，或其實不太像，也很歡迎您直接補充或修正。</div>
+      <div class="fd-h2">滿意度調查話術</div>
+      <div class="fd-script">在您離開前，想邀請您花 1 分鐘幫我們完成一份很短的面談回饋。這不是評分您，而是幫助逗點知道今天的面談流程有沒有讓您感受到被尊重、被理解，也讓我們下一次可以做得更好。</div>
+      <div class="fd-h2">收尾話術</div>
+      <div class="fd-script">今天很謝謝您願意來到逗點，也謝謝您和我們分享這麼多。如果您在今天面談後，也覺得逗點可能是您下一趟旅程的目的地，歡迎您在 2 天內於 104 回覆我們您的決定，我們也會依照雙方意願安排後續事項。後續結果與安排，會由人事統一與您聯繫。</div>
+
+      <div class="fd-h1" style="color:#7C3AED;">三、面試後｜評分與回報</div>
+      <div class="fd-goal">目標感受：逗點面談不是聊完就散，而是有紀錄、有判斷、有後續。</div>
+      <table class="fd-table"><thead><tr><th style="width:46%;">面試官／主任主責</th><th>人事問句式檢核</th></tr></thead><tbody>
+        <tr><td>當日或隔日中午前，上傳錄音／逐字稿，由 AI 協助整理至對應欄位，並完成面試評分系統。</td><td>逐字稿是否已整理？你預計什麼時候完成確認與評分？</td></tr>
+        <tr><td>面試官需確認 AI 整理內容；評分仍須有具體回答或行為事例，不直接採用 AI 判斷。</td><td>你的評分依據是哪一段具體回答？AI 整理內容是否需要修正？</td></tr>
+        <tr><td>提出建議：錄取、保留、二面、觀課、不錄取。</td><td>你目前建議是什麼？主要依據是什麼？</td></tr>
+        <tr><td>若需二面／觀課，告知人事協助安排。</td><td>下一階段你希望再確認什麼？</td></tr>
+        <tr><td>不自行通知求職者。</td><td>後續需要人事通知他什麼結果或安排？</td></tr>
+        <tr><td>記錄本次好做法與改善處；參考滿意度回饋調整面談方式。</td><td>這場面談哪裡做得好？下次哪裡可以更好？求職者回饋中有沒有要調整的地方？</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+<div id="survey-qr-modal" class="ai-modal-overlay">
+  <div class="ai-modal-box" style="max-width:420px;">
+    <div class="ai-modal-header">
+      <div class="ai-modal-title">📱 滿意度問卷 QR</div>
+      <button class="ai-modal-close" onclick="document.getElementById('survey-qr-modal').classList.remove('show')">✕</button>
+    </div>
+    <div class="ai-modal-body" style="text-align:center;">
+      <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin:0 0 14px;">面談尾聲，請求職者用手機掃描這個 QR 填寫回饋。<br>填完的結果會回到後台「面試滿意度」。</p>
+      <div id="survey-qr-box" style="display:inline-block;padding:12px;background:#fff;border:1px solid var(--border);border-radius:8px;"></div>
+      <div id="survey-qr-url" style="font-size:11px;color:var(--text3);word-break:break-all;margin-top:12px;"></div>
+      <div id="survey-qr-hint" style="display:none;font-size:11px;color:#92400E;background:#FFF7E6;border-radius:4px;padding:8px 10px;margin-top:10px;line-height:1.5;">⚠️ 目前是<strong>本機測試網址</strong>（127.0.0.1），只有這台電腦點得開、手機無法掃描。正式部署到網站後，QR 會自動改用正式網址，手機就掃得到。</div>
+      <button class="ai-btn-secondary" style="margin-top:12px;" onclick="copySurveyUrl()">📋 複製連結</button>
+    </div>
+  </div>
+</div>
 <div id="print-modal" class="print-modal-overlay">
   <div class="print-modal">
     <div class="print-modal-header">
-      <span class="print-modal-title">逗點教室｜面試評分表預覽</span>
+      <span class="print-modal-title">逗點教室｜列印預覽</span>
       <div class="print-modal-actions">
         <button class="btn-do-print" onclick="window.print()">🖨 列印 / 下載 PDF</button>
         <button class="btn-close-print" onclick="closePrintModal()">✕</button>
       </div>
+    </div>
+    <!-- 列印勾選列:選要印哪幾項(列印時會被 @media print 隱藏) -->
+    <div class="print-picker" id="print-picker">
+      <span class="print-picker-label">要列印：</span>
+      <label id="pick-scorecard-wrap"><input type="checkbox" id="pick-scorecard" checked onchange="renderPrintContent()"> 成績單</label>
+      <label id="pick-manual-wrap" style="display:none;"><input type="checkbox" id="pick-manual" onchange="renderPrintContent()"> 夥伴使用說明書</label>
+      <label id="pick-sat-wrap" style="display:none;"><input type="checkbox" id="pick-sat" onchange="renderPrintContent()"> 滿意度</label>
+      <button id="pick-resume-btn" class="print-picker-dl" style="display:none;" onclick="downloadArchivedResume()">⬇ 下載履歷 PDF</button>
     </div>
     <div class="print-content" id="print-content"></div>
   </div>
@@ -607,6 +888,14 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 <!-- ===== FRONT PAGE ===== -->
 <div id="page-front" class="page">
   <div class="container">
+    <!-- 面試流程導引(三欄:前/中/後) -->
+    <div class="flow-guide">
+      <div class="flow-guide-head">
+        <div class="flow-guide-title">📋 面試流程導引 <span class="flow-guide-hint">依流程完成面試，更完整記錄與評分</span></div>
+        <button class="flow-guide-toggle" id="flow-guide-toggle" onclick="toggleFlowGuide()">收合 ▲</button>
+      </div>
+      <div id="flow-guide-body" class="flow-guide-body"></div>
+    </div>
     <!-- AI 面試前預評卡片 -->
     <div class="ai-helper-card">
       <div class="ai-helper-card-text">
@@ -736,13 +1025,28 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
           <div class="bonus-summary-box"><div class="bonus-summary-content" id="bonus-summary-display" style="color:var(--text3);">尚未填寫加分項目</div></div>
         </div>
         <div class="report-box">
-          <div class="report-field-label">面試官備註</div>
-          <textarea id="interview-note-input" class="report-textarea" oninput="syncState()" placeholder="補充備註..."></textarea>
-          <div class="report-field-label" style="margin-bottom:8px;">最終錄取結果<span class="req">*</span></div>
+          <div class="report-field-label">面試官說明</div>
+          <textarea id="interview-note-input" class="report-textarea" oninput="syncState()" placeholder="面試官備註（整體印象、觀察補充）..."></textarea>
+          <div style="font-size:11px;color:var(--text3);margin:10px 0 6px;line-height:1.5;">📋 任用條件（確認錄取者<strong>必填</strong>；不予錄取者可留空）</div>
+          <div class="hire-grid">
+            <div class="hire-cell"><label class="hire-label">預估薪資</label><input type="text" id="hire-salary" class="hire-input" oninput="syncState()" placeholder="例如：32,000（最終由人資回應）"></div>
+            <div class="hire-cell"><label class="hire-label">出勤時間（上班星期及時段）</label><input type="text" id="hire-schedule" class="hire-input" oninput="syncState()" placeholder="例如：週一至週五 13:00-21:00"></div>
+            <div class="hire-cell"><label class="hire-label">職稱</label><input type="text" id="hire-title" class="hire-input" oninput="syncState()" placeholder="例如：班級導師"></div>
+            <div class="hire-cell"><label class="hire-label">到職日（＝簽約日，第一天在總部受訓）</label><input type="date" id="hire-startdate" class="hire-input" onchange="syncState()"></div>
+          </div>
+          <div class="hire-cell" style="margin-top:8px;"><label class="hire-label">1~3 個月計劃（預估即可）</label><textarea id="hire-plan" class="report-textarea" style="min-height:64px;" oninput="syncState()" placeholder="到職後 1~3 個月的培育／適應方向..."></textarea></div>
+          <div class="report-field-label" style="margin:14px 0 8px;">最終錄取結果<span class="req">*</span></div>
           <div class="decision-row">
             <button id="btn-pass" class="decision-btn" onclick="handleDecision('pass')">✓ 確認錄取</button>
             <button id="btn-fail" class="decision-btn" onclick="handleDecision('fail')">✕ 不予錄取</button>
           </div>
+        </div>
+        <div class="report-box" style="grid-column:1/-1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="report-field-label" style="margin:0;">面試滿意度（求職者回饋）</div>
+            <button class="btn-add-int" onclick="refreshSatisfactionFront()">🔄 滿意度更新</button>
+          </div>
+          <div id="satisfaction-front"><div style="font-size:12px;color:var(--text3);padding:6px 0;">按「滿意度更新」讀取求職者剛填寫的問卷結果。</div></div>
         </div>
       </div>
     </div>
@@ -755,6 +1059,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
     <div class="bottom-total">總得分：<span id="footer-total">0.00</span></div>
     <div class="bottom-actions">
       <button class="btn-bottom btn-clear" onclick="handleClear()">清除資料</button>
+      <button class="btn-bottom" onclick="openSurveyQr()" style="border-color:#FF7A4D;color:#E8632F;">📱 滿意度 QR</button>
       <button class="btn-bottom" onclick="handleSaveDraft()">暫存資料</button>
       <button class="btn-bottom btn-submit" onclick="handleFinalSubmit()">確認送出</button>
     </div>
@@ -765,10 +1070,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 <div id="page-admin" class="page">
   <div class="admin-main">
     <div class="stats-row">
-      <div class="stat-card"><div><div class="stat-label">總面試筆數</div><div class="stat-value" id="stat-total" style="color:var(--blue);">0</div></div></div>
-      <div class="stat-card" style="border-top-color:#059669;"><div><div class="stat-label">錄取人數</div><div class="stat-value" id="stat-pass" style="color:#059669;">0</div></div></div>
-      <div class="stat-card" style="border-top-color:#DC2626;"><div><div class="stat-label">不錄取人數</div><div class="stat-value" id="stat-fail" style="color:#DC2626;">0</div></div></div>
-      <div class="stat-card" style="border-top-color:#D97706;"><div><div class="stat-label">平均總分</div><div class="stat-value" id="stat-avg" style="color:#D97706;">-</div></div></div>
+      <div class="stat-card" style="cursor:pointer;" title="顯示全部" onclick="statCardFilter('all')"><div><div class="stat-label">總面試筆數</div><div class="stat-value" id="stat-total" style="color:var(--blue);">0</div></div></div>
+      <div class="stat-card" style="border-top-color:#059669;cursor:pointer;" title="只看錄取" onclick="statCardFilter('pass')"><div><div class="stat-label">錄取人數</div><div class="stat-value" id="stat-pass" style="color:#059669;">0</div></div></div>
+      <div class="stat-card" style="border-top-color:#DC2626;cursor:pointer;" title="只看不錄取" onclick="statCardFilter('fail')"><div><div class="stat-label">不錄取人數</div><div class="stat-value" id="stat-fail" style="color:#DC2626;">0</div></div></div>
+      <div class="stat-card" style="border-top-color:#D97706;cursor:pointer;" title="顯示全部" onclick="statCardFilter('all')"><div><div class="stat-label">平均總分</div><div class="stat-value" id="stat-avg" style="color:#D97706;">-</div></div></div>
+      <div class="stat-card" style="border-top-color:#FF7A4D;cursor:pointer;" title="只看有填問卷的人" onclick="statCardFilter('sat')"><div><div class="stat-label">面試滿意度<span id="stat-sat-n" style="font-size:10px;color:var(--text3);font-weight:400;"></span></div><div class="stat-value" id="stat-sat" style="color:#FF7A4D;">-</div></div></div>
     </div>
     <div class="filter-bar">
       <div class="filter-group"><label>搜尋姓名</label><input type="text" id="filter-name" class="filter-input" placeholder="應徵者姓名" oninput="renderTable()" style="width:120px;"></div>
@@ -780,8 +1086,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
       <div class="table-header"><span class="table-header-title">面試紀錄</span><span class="table-count" id="table-count"></span></div>
       <div class="tbl-wrap">
         <table class="tbl">
-          <thead><tr><th>面試日期</th><th>應徵者</th><th>分校/單位</th><th>職位</th><th>面試官</th><th>總分</th><th>填寫進度</th><th>結果</th><th>操作</th></tr></thead>
-          <tbody id="admin-tbody"><tr><td colspan="9" style="text-align:center;padding:48px;color:var(--text3);font-size:13px;font-weight:700;">載入中...</td></tr></tbody>
+          <thead><tr><th>面試日期</th><th>應徵者</th><th>分校/單位</th><th>職位</th><th>面試官</th><th>總分</th><th>滿意度</th><th>填寫進度</th><th>結果</th><th>操作</th></tr></thead>
+          <tbody id="admin-tbody"><tr><td colspan="10" style="text-align:center;padding:48px;color:var(--text3);font-size:13px;font-weight:700;">載入中...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -955,6 +1261,54 @@ const ES_BRANCHES=["青園展翅校","青埔翱翔校","大園晨光校","內壢
 const S1_DATA=[{id:'exp',title:"工作經歷",weight:0.20,max:5,qs:["最能代表其專業能力及理想的經歷？"]},{id:'mot',title:"動機與價值",weight:0.35,max:10,qs:["與我們最契合的價值觀？","影響個人去留的主因？"]},{id:'sty',title:"工作風格",weight:0.25,max:10,qs:["最滿意或欣賞的工作環境、管理制度？","感到挫敗或壓力最大的案例？當時如何應對？"]},{id:'sal',title:"薪資與期待",weight:0.20,max:15,qs:["期望月薪/年薪及初期最低薪資？","最感興趣的工作任務與職涯關聯？","想了解或擔心的部分？"]},{id:'bon',title:"特別加分題",weight:0.01,max:5,qs:["補充說明"]}];
 const S2_QUESTIONS=["儀容穿著","禮貌應對","表達流暢","自信穩健","誠懇親和","對分校了解","對職務認知","企圖心展現","配合度","邏輯思考","臨場反應","學習意願","情緒穩定","抗壓性","團隊合作","經歷相關","專業知識"];
 
+// ===== 前測問卷分版:國高中用新表單,國小/總部仍用舊表單 =====
+// 前台顯示的題目文字必須跟求職者實際填的表單一致,否則面試官會對著錯的題目評分。
+// 目前只有第 4 題(工作風格第 1 小題)問法不同;S1_DATA 的分類、配分、順序都不變。
+// 日後國小/總部表單改版時,照樣加一份 S1_QS_ES 覆寫表即可,不必動邏輯。
+const S1_QS_HS={sty:{0:'過去有哪些主管/領導人帶領方式，曾讓您覺得被支持或欣賞？'}};
+
+// 表單版本判定用。內容目前與權限用的 HS_BRANCHES 相同,但語意不同(一個是「看得到哪些分校」,
+// 一個是「填的是哪一版問卷」),故獨立命名 —— 日後兩者要脫鉤時,改這一行就好。
+const HS_FORM_BRANCHES=HS_BRANCHES;
+function isHsBranch(b){return HS_FORM_BRANCHES.includes(b);}
+function s1QuestionText(groupId,idx,branch){
+  const b=(branch!==undefined?branch:(state?state.branch:''))||'';
+  if(isHsBranch(b)&&S1_QS_HS[groupId]&&S1_QS_HS[groupId][idx]!=null)return S1_QS_HS[groupId][idx];
+  const g=S1_DATA.find(x=>x.id===groupId);
+  return g?g.qs[idx]:'';
+}
+
+// 求職者在「前測問卷」上實際看到的題目原文(供面試官滑鼠滑過對照)。
+// 跟上面的評分題目不是同一回事:評分題目是系統的分類標題,這裡是表單上的真實問法。
+// sal[1] 會顯示兩行,因為國高中新表單把「最感興趣的工作任務與職涯關聯」拆成了兩題。
+const S1_SOURCE_Q={
+  hs:{
+    exp:{0:'回顧過去的經歷，哪一段最能代表您的專業、努力或理想？'},
+    mot:{0:'看過逗點的介紹後，哪一個理念、文化或工作氛圍比較吸引您？\n（可用自己的說法列舉 1-3 項與您的價值觀連結，簡要敘述）',
+         1:'選擇一份工作時，哪些三項因素最會影響您想不想長期投入？'},
+    sty:{0:'過去有哪些主管/領導人帶領方式，曾讓您覺得被支持或欣賞？',
+         1:'回想一段不太順利、但讓您有所成長的經驗？當時您怎麼面對？後來帶給您什麼提醒？'},
+    sal:{0:'可以描述您期望的月薪或年薪，和培育（磨合）初期最低薪資',
+         1:'在這次應徵的職務中，哪一項工作內容最讓您感到有興趣？為什麼？\n＋ 您期待這一份職務，在您的人生職涯共同經歷多少美好時光？',
+         2:'在進一步面談前，您有哪些想先了解，或心裡有點在意的地方？'},
+    bon:{0:'整段旅程即將結束，有沒有什麼事我們沒問到，但你想多說的？'}
+  },
+  // 國小/總部舊表單的原題尚未取得。拿到後把文字填進來,提示就會自動出現,邏輯不用改。
+  es:{}
+};
+function s1SourceQuestion(groupId,idx,branch){
+  const b=(branch!==undefined?branch:(state?state.branch:''))||'';
+  const tbl=S1_SOURCE_Q[isHsBranch(b)?'hs':'es'];
+  return (tbl&&tbl[groupId]&&tbl[groupId][idx]!=null)?tbl[groupId][idx]:'';
+}
+function escHtml(t){const d=document.createElement('div');d.textContent=(t==null?'':String(t));return d.innerHTML;}
+// 查得到表單原題才長出 📋;查不到就什麼都不顯示,不要留一個空殼提示
+function s1SrcTip(groupId,idx){
+  const src=s1SourceQuestion(groupId,idx);
+  if(!src)return '';
+  return `<span class="s1-src">📋<span class="s1-src-tip"><span class="s1-src-tip-label">求職者在前測問卷看到的題目</span>${escHtml(src)}</span></span>`;
+}
+
 // ===== 載入所有設定 =====
 async function loadAllConfig(){
   try{
@@ -1012,6 +1366,8 @@ let currentUser=null,state=null,allData=[];
 
 function getEmptyState(){
   return{name:"",branch:"",position:"",otherPosition:"",otherNote:"",date:"",time:"",level:0,finalDecision:null,idealStatus:"",grandTotal:"0.00",s1Final:"0.00",s2Final:"0.00",s3Final:"0.00",docStatus:"new",interviewNote:"",positions:[],otherPositions:[],notepad:"",
+    hire:{salary:"",schedule:"",title:"",startDate:"",plan:""},
+    checklist:{pre:{},mid:{},post:{}},
     s1:{exp:[0],mot:[0,0],sty:[0,0],sal:[0,0,0],bon:[0],bonText:""},
     s2:Array(S2_QUESTIONS.length).fill(0),
     s3:{core:Array(6).fill(0),mgmt:Array(3).fill(0)},
@@ -1117,8 +1473,8 @@ async function handleLogin(){
   logo.className='anim-welcome';txt.className='anim-welcome';
   overlay.classList.add('show');
 
-  // 背景載入面試資料（不阻塞畫面切換）
-  fetchCloudDB();
+  // 背景載入面試資料（不阻塞畫面切換）；滿意度也載入,供流程導引偵測「完成滿意度調查」
+  Promise.all([fetchCloudDB(),loadSatisfaction()]).then(()=>{if(typeof renderFlowGuide==='function')renderFlowGuide();});
 
   setTimeout(()=>{
     overlay.classList.remove('show');
@@ -1406,8 +1762,19 @@ async function loadAdminData(){
     else if(!['HR','ADMIN'].includes(currentUser.role))q=q.eq('branch',currentUser.dept);
     const{data,error}=await q;
     if(!error)allData=data||[];
+    await loadSatisfaction();
     populateBranchFilter();
   }catch(e){showToast('載入失敗');}
+}
+// 載入滿意度問卷結果,以 doc_id 為 key 存進 satisfactionMap
+let satisfactionMap={};
+async function loadSatisfaction(){
+  try{
+    const{data,error}=await sb.from('satisfaction').select('*');
+    if(error){console.warn('satisfaction 載入略過(表可能尚未建立):',error.message);return;}
+    satisfactionMap={};
+    (data||[]).forEach(r=>{satisfactionMap[r.doc_id]=r;});
+  }catch(e){console.warn('satisfaction 載入失敗:',e);}
 }
 
 // 黑名單切換直接用快取
@@ -1445,6 +1812,248 @@ function saveToSupabaseOptimistic(){
   return docId;
 }
 
+// 把某一筆既有的 allData 紀錄寫回 Supabase(供「存到後台」把 aiArchive 併進既有紀錄用)
+function upsertRecord(record){
+  const s=record.state_json||{};
+  const payload={
+    doc_id:record.doc_id,
+    candidate_name:record.candidate_name||s.name||'',
+    branch:record.branch||s.branch||'',
+    position:record.position||s.position||'',
+    other_position:record.other_position||s.otherPosition||'',
+    interviewer:record.interviewer||'',
+    interview_date:record.interview_date||s.date||'',
+    interview_time:record.interview_time||s.time||'',
+    s1_final:parseFloat(record.s1_final)||0,
+    s2_final:parseFloat(record.s2_final)||0,
+    s3_final:parseFloat(record.s3_final)||0,
+    grand_total:parseFloat(record.grand_total)||0,
+    doc_status:record.doc_status||s.docStatus||'',
+    final_decision:record.final_decision||s.finalDecision||'',
+    ideal_status:record.ideal_status||s.idealStatus||'',
+    interview_note:record.interview_note||s.interviewNote||'',
+    state_json:s
+  };
+  return sb.from('interviews').upsert(payload,{onConflict:'doc_id'});
+}
+
+// 把 AI 分析結果(履歷/說明書/分數)存到後台同名的最新一筆紀錄
+async function saveAiToRecord(){
+  const name=(document.getElementById('ai-input-name').value||'').trim();
+  if(!name){showToast('請先在上方填「應徵者姓名」,才能對應到後台紀錄',true);return;}
+  if(!aiLastData){showToast('尚未有可儲存的分析結果',true);return;}
+  const matches=allData.filter(r=>(r.candidate_name||'').trim()===name);
+  if(matches.length===0){
+    showToast('後台找不到「'+name+'」。請先在前台按暫存或確定送出,後台有這筆才能存 AI 結果',true);
+    return;
+  }
+  // 多筆同名取最新(依面試日期)
+  matches.sort((a,b)=>String(b.interview_date||'').localeCompare(String(a.interview_date||'')));
+  const rec=matches[0];
+  if(!rec.state_json)rec.state_json={};
+  rec.state_json.aiArchive={
+    partnerManual:(aiLastData.partner_manual)||null,
+    aiData:aiLastData,
+    resumeBase64:aiLastResumeBase64||null,
+    resumeName:aiLastResumeName||'',
+    surveyText:aiLastSurvey||'',
+    level:(typeof aiSelectedLevel!=='undefined'?aiSelectedLevel:'')||'',
+    hasTranscript:(typeof aiMode!=='undefined'&&aiMode==='transcript'),
+    savedAt:new Date().toISOString()
+  };
+  const btn=document.getElementById('ai-save-btn');
+  const label=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='儲存中…';}
+  try{
+    const {error}=await upsertRecord(rec);
+    if(error){showToast('⚠ 存到後台失敗,請重試',true);console.error('saveAiToRecord:',error);}
+    else{
+      const rn=aiLastResumeName&&!aiLastResumeBase64?'(履歷過大未存,其餘已存)':'';
+      showToast('✓ 已存到後台「'+name+'」'+(rec.interview_date?' '+rec.interview_date:'')+rn);
+      if(typeof renderFlowGuide==='function')renderFlowGuide();
+    }
+  }catch(e){showToast('⚠ 存到後台失敗,請重試',true);console.error(e);}
+  finally{if(btn){btn.disabled=false;btn.textContent=label;}}
+}
+
+// 把 AI 預估分數與職能題目導入前台計分表(供面試官確認調整)
+function importAiToFront(){
+  if(!aiLastData){showToast('尚未有可導入的分析結果',true);return;}
+  if(!state){showToast('請先在前台開啟一筆面試再導入',true);return;}
+  const aiName=(document.getElementById('ai-input-name').value||'').trim();
+  if(aiName&&state.name&&aiName!==state.name){
+    if(!confirm('AI 分析的是「'+aiName+'」,但前台目前開的是「'+state.name+'」。\n確定要把分數導入到「'+state.name+'」這筆嗎?'))return;
+  }
+  const txMode=(aiMode==='transcript');
+  if(!confirm(txMode
+    ? '逐字稿模式:只會更新「職能面試」的題目、CAR 與分數,筆試維持不變。確定?'
+    : '導入會覆蓋前台目前的評分與 BEI 內容,確定嗎?'))return;
+  // 前台沒選職等 → 用 AI Modal 的職等補上,否則職能表渲染不出來
+  if(!state.level&&aiSelectedLevel){
+    state.level=parseInt(aiSelectedLevel)||aiSelectedLevel;
+    const lvSel=document.getElementById('job-level-select');
+    if(lvSel){lvSel.value=String(state.level);lvSel.className='level-select';}
+  }
+  // 筆試 8 題:只有「全部」模式才寫;逐字稿模式完全不碰筆試
+  if(!txMode){
+    const mapping=[['exp',0],['mot',0],['mot',1],['sty',0],['sty',1],['sal',0],['sal',1],['sal',2]];
+    if(Array.isArray(aiLastData.s1)){
+      aiLastData.s1.forEach((item,k)=>{
+        const m=mapping[k];
+        if(m&&item&&typeof item.score==='number'&&state.s1[m[0]]){state.s1[m[0]][m[1]]=item.score;}
+      });
+    }
+  }
+  // 職能:分數 + BEI/CAR 文字
+  const applyS3=(sub,arr)=>{
+    if(!Array.isArray(arr))return;
+    arr.forEach((item,i)=>{
+      if(!item)return;
+      if(typeof item.score==='number'&&state.s3[sub])state.s3[sub][i]=item.score;
+      if(state.s3Texts&&state.s3Texts[sub]&&state.s3Texts[sub][i]){
+        const car=item.car||{};
+        state.s3Texts[sub][i]={bei:item.bei||'',c:car.c||'',a:car.a||'',r:car.r||''};
+      }
+    });
+  };
+  if(aiLastData.s3){applyS3('core',aiLastData.s3.core);applyS3('mgmt',aiLastData.s3.mgmt);}
+  // 重繪 + 重算 + 同步
+  if(typeof renderS1==='function')renderS1();
+  if(typeof renderS3==='function')renderS3();
+  if(typeof calculateScores==='function')calculateScores();
+  if(typeof syncState==='function')syncState();
+  closeAiHelperModal();
+  showToast(txMode?'✓ 已更新職能面試（筆試維持不變）':'✓ 已導入前台,請確認調整後再暫存/送出');
+}
+
+// 滿意度問卷網址:
+//  - 本機測試(Go Live/127.0.0.1)→ 指向本機,面試官電腦點 QR 就能測問卷
+//  - 正式站 → 指向 github.io,手機才掃得到(手機連不到你電腦的 127.0.0.1)
+const SURVEY_BASE_URL='https://wei-ai8923.github.io/interview-system/';
+function isLocalHost(){
+  const h=location.hostname;
+  return h==='127.0.0.1'||h==='localhost'||h===''||h.startsWith('192.168.')||h.startsWith('10.')||h.endsWith('.local');
+}
+function surveyUrlFor(docId){
+  const base=isLocalHost()?(location.origin+location.pathname):SURVEY_BASE_URL;
+  return base+'?survey='+encodeURIComponent(docId);
+}
+// 用 QRCode 函式庫產生 QR 的 data URI(可嵌進說明書 HTML / PDF / 列印);失敗回空字串
+function makeQrDataUrl(text,size){
+  if(typeof QRCode==='undefined'||!text)return '';
+  try{
+    const tmp=document.createElement('div');
+    tmp.style.cssText='position:fixed;left:-9999px;top:0;';
+    document.body.appendChild(tmp);
+    new QRCode(tmp,{text:text,width:size||150,height:size||150,colorDark:'#4A3B32',colorLight:'#ffffff'});
+    const cv=tmp.querySelector('canvas');
+    const img=tmp.querySelector('img');
+    let url='';
+    if(cv&&cv.toDataURL)url=cv.toDataURL('image/png');
+    else if(img&&img.src)url=img.src;
+    document.body.removeChild(tmp);
+    return url;
+  }catch(e){console.warn('makeQrDataUrl:',e);return '';}
+}
+// 顯示這場面試的滿意度問卷 QR(求職者掃碼填寫)
+let surveyUrlCache='';
+function openSurveyQr(){
+  syncState();
+  if(!state.name||!state.date){
+    showToast('請先填「應徵者姓名」與「面試日期」,並暫存後再產生 QR',true);return;
+  }
+  const docId=(state.name+'_'+state.date).replace(/\s/g,'_');
+  const url=surveyUrlFor(docId);
+  surveyUrlCache=url;
+  const box=document.getElementById('survey-qr-box');
+  box.innerHTML='';
+  if(typeof QRCode==='undefined'){
+    box.innerHTML='<div style="font-size:12px;color:#DC2626;padding:20px;">QR 函式庫未載入,請改用下方連結</div>';
+  }else{
+    new QRCode(box,{text:url,width:200,height:200,colorDark:'#4A3B32',colorLight:'#ffffff'});
+  }
+  document.getElementById('survey-qr-url').textContent=url;
+  const hint=document.getElementById('survey-qr-hint');
+  if(hint)hint.style.display=isLocalHost()?'block':'none';
+  document.getElementById('survey-qr-modal').classList.add('show');
+}
+function copySurveyUrl(){
+  if(!surveyUrlCache)return;
+  navigator.clipboard&&navigator.clipboard.writeText(surveyUrlCache).then(
+    ()=>showToast('✓ 已複製問卷連結'),
+    ()=>showToast('複製失敗,請手動選取網址',true)
+  );
+}
+
+// ===== 面試滿意度顯示 =====
+const SATISFACTION_ENDPOINT='https://yslzhijwfbhgropbmqab.supabase.co/functions/v1/satisfaction-analyzer';
+function satEsc(t){const d=document.createElement('div');d.textContent=(t==null?'':String(t));return d.innerHTML;}
+// 把一筆 satisfaction 資料組成漂亮表格(前台與列印共用)
+function buildSatisfactionHTML(sat){
+  if(!sat)return '<div class="sat-empty">求職者尚未填寫滿意度問卷。</div>';
+  const qs=(typeof SURVEY_QS!=='undefined')?SURVEY_QS:['流程清楚','被尊重與理解','說明書用心','更了解逗點'];
+  const vals=[sat.q1,sat.q2,sat.q3,sat.q4].map(v=>Number(v)||0);
+  const filled=vals.filter(v=>v>0);
+  const avg=filled.length?(filled.reduce((a,b)=>a+b,0)/filled.length):0;
+  const rows=qs.map((q,i)=>{
+    const v=vals[i];const pct=Math.round((v/5)*100);
+    return `<tr><td class="sat-qn">${i+1}. ${satEsc(q)}</td><td style="width:160px;"><div class="sat-bar-wrap"><div class="sat-bar"><i style="width:${pct}%"></i></div><span class="sat-bar-v">${v||'-'}</span></div></td></tr>`;
+  }).join('');
+  let html=`<div class="sat-avg"><span class="sat-avg-num">${avg?avg.toFixed(1):'-'}</span><span class="sat-avg-lbl">整體滿意度平均<br>（四題 1~5 分）</span></div>
+    <table class="sat-table"><tbody>${rows}</tbody></table>`;
+  if(sat.open_text&&String(sat.open_text).trim()){
+    html+=`<div class="sat-open">💬 <strong>求職者的話：</strong>${satEsc(sat.open_text)}</div>`;
+  }
+  const ai=sat.ai_analysis;
+  if(ai&&(ai.summary||ai.good||ai.improve)){
+    const list=arr=>(Array.isArray(arr)?arr:[]).map(x=>'・'+satEsc(x)).join('<br>');
+    html+=`<div class="sat-ai-box">
+      ${ai.summary?`<div class="sat-ai-sum">🤖 ${satEsc(ai.summary)}</div>`:''}
+      <div class="sat-ai-col"><b>做得好：</b><br>${list(ai.good)||'—'}</div>
+      <div class="sat-ai-col" style="margin-top:6px;"><b>可以更好：</b><br>${list(ai.improve)||'—'}</div>
+    </div>`;
+  }else if(sat.open_text&&String(sat.open_text).trim()){
+    html+=`<div class="sat-empty">（尚未產生 AI 質化分析，按「滿意度更新」即會分析開放題）</div>`;
+  }
+  return html;
+}
+// 拉取某 docId 的滿意度,必要時呼叫 AI 質化,回傳最新 satisfaction 物件
+async function fetchSatisfaction(docId){
+  const{data,error}=await sb.from('satisfaction').select('*').eq('doc_id',docId).maybeSingle();
+  if(error){console.warn('fetchSatisfaction:',error.message);return null;}
+  if(!data)return null;
+  satisfactionMap[docId]=data;
+  // 有開放題但還沒 AI 質化 → 呼叫 satisfaction-analyzer
+  if(data.open_text&&String(data.open_text).trim()&&!data.ai_analysis){
+    try{
+      const res=await fetch(SATISFACTION_ENDPOINT,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`},
+        body:JSON.stringify({candidateName:data.candidate_name,q1:data.q1,q2:data.q2,q3:data.q3,q4:data.q4,openText:data.open_text})
+      });
+      const ai=await res.json();
+      if(res.ok&&!ai.error){
+        data.ai_analysis=ai;
+        await sb.from('satisfaction').update({ai_analysis:ai,updated_at:new Date().toISOString()}).eq('doc_id',docId);
+        satisfactionMap[docId]=data;
+      }else{console.warn('質化分析失敗:',ai.error);}
+    }catch(e){console.warn('質化分析呼叫失敗:',e);}
+  }
+  return data;
+}
+// 前台「滿意度更新」按鈕
+async function refreshSatisfactionFront(){
+  syncState();
+  if(!state.name||!state.date){showToast('請先填姓名與日期並暫存,才能對應問卷',true);return;}
+  const docId=(state.name+'_'+state.date).replace(/\s/g,'_');
+  const box=document.getElementById('satisfaction-front');
+  box.innerHTML='<div class="sat-empty">讀取中…（若有開放題會一併做 AI 分析，約 10 秒）</div>';
+  const sat=await fetchSatisfaction(docId);
+  box.innerHTML=buildSatisfactionHTML(sat);
+  if(typeof renderFlowGuide==='function')renderFlowGuide();
+  if(sat)showToast('✓ 已更新滿意度');else showToast('求職者尚未填寫',true);
+}
+
 async function handleSaveDraft(){
   syncState();
   if(!state.name.trim())return alert('請先輸入應徵者姓名');
@@ -1461,6 +2070,15 @@ async function handleFinalSubmit(){
   if(!state.positions||state.positions.length===0)missing.push('應徵職位');
   if(!state.date)missing.push('面試日期');
   if(!state.finalDecision)missing.push('最終錄取結果');
+  // 確認錄取者,任用條件(面試官說明)必填
+  if(state.finalDecision==='pass'){
+    const h=state.hire||{};
+    if(!(h.salary||'').trim())missing.push('任用條件：預估薪資');
+    if(!(h.schedule||'').trim())missing.push('任用條件：出勤時間');
+    if(!(h.title||'').trim())missing.push('任用條件：職稱');
+    if(!(h.startDate||'').trim())missing.push('任用條件：到職日');
+    if(!(h.plan||'').trim())missing.push('任用條件：1~3 個月計劃');
+  }
   if(missing.length>0)return alert(`請填寫以下必填欄位：\n\n• ${missing.join('\n• ')}`);
   state.docStatus='completed';
   saveToSupabaseOptimistic(); // 不 await，立刻反應
@@ -1505,6 +2123,123 @@ const S1_TIPS={
   2:'回答表面、缺乏反思，文字敘述不完整或出現矛盾。',
   1:'敷衍或缺乏誠意，內容明顯與逗點文化不符。'
 };
+
+// ============================================================
+// ===== 面試流程導引檢核表(前台最上方,三欄:面試前/中/後)=====
+// 能偵測的自動打勾,現場口語步驟手動勾(state.checklist)
+// ============================================================
+const FLOW_DEF={
+  pre:{title:'面試前',sub:'準備資料與題目',color:'#059669',btn:{label:'前往設定任用條件',fn:'flowGotoHire()'},items:[
+    {id:'pre1',label:'完成 AI 面試前預評',auto:true},
+    {id:'pre2',label:'填寫面試基本資訊',auto:true},
+    {id:'pre3',label:'確認職等與職能題目',auto:true},
+    {id:'pre4',label:'確認任用條件',auto:true},
+    {id:'pre5',label:'完成面試前一天電聯',auto:false}
+  ]},
+  mid:{title:'面試中',sub:'依流程進行面談',color:'#1D6FD8',btn:{label:'查看面試流程說明',fn:'openFlowDoc()'},items:[
+    {id:'mid1',label:'從履歷或問卷內容建立連結',auto:false},
+    {id:'mid2',label:'說明今日面談流程',auto:false},
+    {id:'mid3',label:'詢問為什麼選擇逗點',auto:false},
+    {id:'mid4',label:'詢問為什麼選擇教育業',auto:false},
+    {id:'mid5',label:'進行職能面談及 CAR 追問',auto:false},
+    {id:'mid6',label:'說明企業、職務及任用條件',auto:false},
+    {id:'mid7',label:'保留求職者提問時間',auto:false},
+    {id:'mid8',label:'送出《夥伴使用說明書》',auto:true},
+    {id:'mid9',label:'完成滿意度調查',auto:true},
+    {id:'mid10',label:'說明後續流程與回覆方式',auto:false},
+    {id:'mid11',label:'結束面談',auto:false}
+  ]},
+  post:{title:'面試後',sub:'上傳錄音並完成評分',color:'#7C3AED',btn:{label:'上傳錄音／逐字稿',fn:'openAiHelperModal()'},items:[
+    {id:'post1',label:'上傳錄音或逐字稿',auto:true},
+    {id:'post2',label:'AI 完成內容分類',auto:true},
+    {id:'post3',label:'確認 AI 填入內容',auto:false},
+    {id:'post4',label:'完成各項評分',auto:true},
+    {id:'post5',label:'確認任用條件',auto:true},
+    {id:'post6',label:'選擇錄取結果',auto:true},
+    {id:'post7',label:'送交人事',auto:true}
+  ]}
+};
+// 自動項是否達成
+function flowAutoDone(id){
+  const s=state||{};
+  const docId=(s.name&&s.date)?((s.name+'_'+s.date).replace(/\s/g,'_')):'';
+  const rec=docId&&typeof allData!=='undefined'?allData.find(r=>r.doc_id===docId):null;
+  const arc=(rec&&rec.state_json&&rec.state_json.aiArchive)||null;
+  const hasArc=!!(arc&&arc.aiData)||!!(typeof aiLastData!=='undefined'&&aiLastData);
+  const sat=(docId&&typeof satisfactionMap!=='undefined')?satisfactionMap[docId]:null;
+  const hire=s.hire||{};
+  const hireDone=!!(hire.salary&&hire.schedule&&hire.title&&hire.startDate&&hire.plan);
+  const s3HasContent=!!(s.s3Texts&&((s.s3Texts.core||[]).some(t=>t&&(t.bei||'').trim())||(s.s3&&(s.s3.core||[]).some(v=>v>0))));
+  switch(id){
+    case 'pre1': return hasArc;
+    case 'pre2': return !!(s.name&&s.branch&&s.positions&&s.positions.length&&s.date);
+    case 'pre3': return !!(s.level&&s3HasContent);
+    case 'pre4': return hireDone;
+    case 'mid8': return !!(arc&&arc.partnerManual)||!!(typeof aiPartnerManual!=='undefined'&&aiPartnerManual);
+    case 'mid9': return !!sat;
+    case 'post1': return !!(arc&&arc.hasTranscript);
+    case 'post2': return hasArc;
+    case 'post4': return parseFloat(s.grandTotal)>0;
+    case 'post5': return hireDone;
+    case 'post6': return !!s.finalDecision;
+    case 'post7': return s.docStatus==='completed';
+    default: return false;
+  }
+}
+// 一項是否完成(自動→偵測;手動→看 checklist)
+function flowItemDone(phase,item){
+  if(item.auto)return flowAutoDone(item.id);
+  return !!(state&&state.checklist&&state.checklist[phase]&&state.checklist[phase][item.id]);
+}
+function toggleFlowCheck(phase,id){
+  if(!state)return;
+  if(!state.checklist)state.checklist={pre:{},mid:{},post:{}};
+  if(!state.checklist[phase])state.checklist[phase]={};
+  state.checklist[phase][id]=!state.checklist[phase][id];
+  syncState();
+  renderFlowGuide();
+}
+function flowGotoHire(){
+  const el=document.getElementById('hire-salary');
+  if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.focus();}
+}
+function openFlowDoc(){document.getElementById('flow-doc-modal').classList.add('show');}
+function toggleFlowGuide(){
+  const b=document.getElementById('flow-guide-body');
+  const t=document.getElementById('flow-guide-toggle');
+  if(!b)return;
+  const hidden=b.style.display==='none';
+  b.style.display=hidden?'':'none';
+  if(t)t.textContent=hidden?'收合 ▲':'展開 ▼';
+}
+function renderFlowGuide(){
+  const wrap=document.getElementById('flow-guide-body');
+  if(!wrap)return;
+  const cols=['pre','mid','post'].map(phase=>{
+    const def=FLOW_DEF[phase];
+    let done=0;
+    const rows=def.items.map(item=>{
+      const ok=flowItemDone(phase,item);
+      if(ok)done++;
+      const box=item.auto
+        ? `<span class="fg-box fg-auto${ok?' on':''}">${ok?'✔':''}</span>`
+        : `<span class="fg-box fg-manual${ok?' on':''}" onclick="toggleFlowCheck('${phase}','${item.id}')">${ok?'✔':''}</span>`;
+      const cls=ok?'fg-item done':'fg-item';
+      const click=item.auto?'':`onclick="toggleFlowCheck('${phase}','${item.id}')"`;
+      return `<div class="${cls}">${box}<span class="fg-label" ${click} style="${item.auto?'':'cursor:pointer;'}">${item.label}</span></div>`;
+    }).join('');
+    return `<div class="fg-col">
+      <div class="fg-col-head" style="color:${def.color};">
+        <div><span class="fg-col-title">${def.title}</span><span class="fg-col-sub">｜${def.sub}</span></div>
+        <span class="fg-count">完成度 <strong>${done}/${def.items.length}</strong></span>
+      </div>
+      <div class="fg-items">${rows}</div>
+      <button class="fg-btn" style="border-color:${def.color};color:${def.color};" onclick="${def.btn.fn}">${def.btn.label}</button>
+    </div>`;
+  }).join('<div class="fg-arrow">→</div>');
+  wrap.innerHTML=cols;
+}
+
 function renderS1(){
   let html='';
   S1_DATA.forEach(g=>{
@@ -1512,13 +2247,13 @@ function renderS1(){
     html+=`<div class="s1-group"><div class="s1-group-title">${g.title}</div>`;
     if(isBonus){
       html+=`<div class="bon-wrap"><div style="font-size:11px;color:var(--blue);font-weight:700;margin-bottom:4px;">💡 只要有填寫都可以依照內容做加分唷！</div><textarea id="s1-bon-text" class="bon-textarea" rows="2" placeholder="補充說明（選填）..." oninput="state.s1.bonText=this.value;updateBonusSummary()">${state.s1.bonText||''}</textarea>`;
-      html+=`<div class="score-row"><div class="score-q">特別加分評分</div><div class="score-btns">`;
+      html+=`<div class="score-row"><div class="score-q">特別加分評分${s1SrcTip('bon',0)}</div><div class="score-btns">`;
       [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-bon',0,${v},this)" class="score-btn${state.s1.bon[0]==v?' active':''}" data-val="${v}">${v}</button>`;});
       const bv=state.s1.bon[0];
       html+=`</div></div><div id="s1desc-bon-0" class="s1-desc-box${bv>0?' show':''}"><div class="s1-desc-label">分數定義</div><span>${bv>0?S1_TIPS[bv]:''}</span></div></div>`;
     }else{
       g.qs.forEach((q,i)=>{
-        html+=`<div class="score-row"><div class="score-q">${q}</div><div class="score-btns">`;
+        html+=`<div class="score-row"><div class="score-q">${s1QuestionText(g.id,i)}${s1SrcTip(g.id,i)}</div><div class="score-btns">`;
         [1,2,3,4,5].forEach(v=>{html+=`<button onclick="setScore('s1-${g.id}',${i},${v},this)" class="score-btn${state.s1[g.id][i]==v?' active':''}" data-val="${v}">${v}</button>`;});
         const cv=state.s1[g.id][i];
         html+=`</div></div><div id="s1desc-${g.id}-${i}" class="s1-desc-box${cv>0?' show':''}"><div class="s1-desc-label">分數定義</div><span>${cv>0?S1_TIPS[cv]:''}</span></div>`;
@@ -1560,6 +2295,12 @@ function hydrateUI(){
   if(g('ipt-date'))g('ipt-date').value=state.date||new Date().toISOString().split('T')[0];
   if(state.time&&state.time.includes(':')){const[h,m]=state.time.split(':');if(g('ipt-hour'))g('ipt-hour').value=h;if(g('ipt-minute'))g('ipt-minute').value=m;}
   if(g('interview-note-input'))g('interview-note-input').value=state.interviewNote||'';
+  const hire=state.hire||{};
+  if(g('hire-salary'))g('hire-salary').value=hire.salary||'';
+  if(g('hire-schedule'))g('hire-schedule').value=hire.schedule||'';
+  if(g('hire-title'))g('hire-title').value=hire.title||'';
+  if(g('hire-startdate'))g('hire-startdate').value=hire.startDate||'';
+  if(g('hire-plan'))g('hire-plan').value=hire.plan||'';
   const lvSel=g('job-level-select');
   if(lvSel){lvSel.value=state.level||'';lvSel.className=(!state.level||state.level===0)?'level-select not-selected':'level-select';}
   const sb2=g('sel-branch');
@@ -1584,11 +2325,19 @@ function hydrateUI(){
   if(bp){bp.classList.remove('active-pass');if(state.finalDecision==='pass')bp.classList.add('active-pass');}
   if(bf){bf.classList.remove('active-fail');if(state.finalDecision==='fail')bf.classList.add('active-fail');}
   renderS1();renderS2();renderS3();updateBonusSummary();
+  renderFlowGuide();
 }
 function syncState(){
   const v=id=>{const e=document.getElementById(id);return e?e.value:'';};
   state.name=v('ipt-name');
-  const sb2=document.getElementById('sel-branch');if(sb2&&!sb2.disabled)state.branch=sb2.value;
+  const sb2=document.getElementById('sel-branch');
+  if(sb2&&!sb2.disabled){
+    const prevBranch=state.branch;
+    state.branch=sb2.value;
+    // 分校決定用哪一版前測問卷(見 s1QuestionText),學制切換時 S1 題目文字要跟著換。
+    // 只在「國高中 ⇄ 非國高中」真的翻轉時重繪,避免每次打字都重畫;分數存在 state.s1,重繪不會掉。
+    if(isHsBranch(prevBranch)!==isHsBranch(state.branch))renderS1();
+  }
   state.positions=Array.from(document.querySelectorAll('.ipt-position')).map(e=>e.value).filter(v=>v);
   state.position=state.positions[0]||'';
   state.otherPositions=[];
@@ -1597,6 +2346,13 @@ function syncState(){
   state.date=v('ipt-date');
   const h=v('ipt-hour'),m=v('ipt-minute');state.time=(h&&m)?`${h}:${m}`:'';
   state.interviewNote=v('interview-note-input');
+  // 任用條件(面試官說明)
+  if(!state.hire)state.hire={salary:"",schedule:"",title:"",startDate:"",plan:""};
+  state.hire.salary=v('hire-salary');
+  state.hire.schedule=v('hire-schedule');
+  state.hire.title=v('hire-title');
+  state.hire.startDate=v('hire-startdate');
+  state.hire.plan=v('hire-plan');
   const bt=document.getElementById('s1-bon-text');if(bt)state.s1.bonText=bt.value;
   // 同步筆記區三段內容（修正：避免送出時筆記沒寫到 state）
   const nC=document.getElementById('note-q-comma');
@@ -1605,6 +2361,7 @@ function syncState(){
   if(nC||nE||nO){
     state.notepad=buildNoteString(nC?nC.value:'',nE?nE.value:'',nO?nO.value:'');
   }
+  renderFlowGuide();
 }
 function updateBonusSummary(){const bonText=state.s1?state.s1.bonText||'':'';const el=document.getElementById('bonus-summary-display');if(el){el.textContent=bonText.trim()||'尚未填寫加分項目';el.style.color=bonText.trim()?'var(--text)':'var(--text3)';}}
 function setScore(group,idx,val,btn){
@@ -1695,6 +2452,23 @@ function detectProgress(r){
   return 'none';
 }
 function progressBadge(p){return{none:'<span class="badge prog-none">未完成</span>',pre:'<span class="badge prog-pre">面試前準備完成</span>',scored:'<span class="badge prog-scored">面試評分完成</span>',done:'<span class="badge prog-done">已送出結果</span>'}[p]||'<span class="badge prog-none">未完成</span>';}
+// 統計卡點擊:設篩選並重繪
+let satFilterMode=false;
+function statCardFilter(type){
+  const dec=document.getElementById('filter-decision');
+  const prog=document.getElementById('filter-progress');
+  satFilterMode=(type==='sat');
+  if(type==='pass'){if(dec)dec.value='pass';}
+  else if(type==='fail'){if(dec)dec.value='fail';}
+  else{if(dec)dec.value='';if(prog&&type==='all')prog.value='';} // all / sat 都清掉錄取篩選
+  renderTable();
+}
+// 取一筆的滿意度四題平均(無回覆回 null)
+function satAvgOf(docId){
+  const s=satisfactionMap&&satisfactionMap[docId];if(!s)return null;
+  const v=[s.q1,s.q2,s.q3,s.q4].map(x=>Number(x)||0).filter(x=>x>0);
+  return v.length?(v.reduce((a,b)=>a+b,0)/v.length):null;
+}
 function renderTable(){
   const nameQ=document.getElementById('filter-name').value.trim();
   const branchQ=document.getElementById('filter-branch').value;
@@ -1705,6 +2479,7 @@ function renderTable(){
     if(branchQ&&r.branch!==branchQ)return false;
     if(decQ&&r.final_decision!==decQ)return false;
     if(progQ&&detectProgress(r)!==progQ)return false;
+    if(satFilterMode&&satAvgOf(r.doc_id)==null)return false; // 滿意度模式:只留有填問卷的
     return true;
   });
   document.getElementById('stat-total').textContent=filtered.length;
@@ -1712,9 +2487,15 @@ function renderTable(){
   document.getElementById('stat-fail').textContent=filtered.filter(r=>r.final_decision==='fail').length;
   const scores=filtered.map(r=>parseFloat(r.grand_total)).filter(n=>!isNaN(n));
   document.getElementById('stat-avg').textContent=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):'-';
+  // 面試滿意度:對目前列表中有問卷回覆的紀錄,取四題平均再平均
+  const satVals=[];
+  filtered.forEach(r=>{const s=satisfactionMap&&satisfactionMap[r.doc_id];if(!s)return;const v=[s.q1,s.q2,s.q3,s.q4].map(x=>Number(x)||0).filter(x=>x>0);if(v.length)satVals.push(v.reduce((a,b)=>a+b,0)/v.length);});
+  const satEl=document.getElementById('stat-sat'),satN=document.getElementById('stat-sat-n');
+  if(satEl)satEl.textContent=satVals.length?(satVals.reduce((a,b)=>a+b,0)/satVals.length).toFixed(1):'-';
+  if(satN)satN.textContent=satVals.length?('（'+satVals.length+' 份）'):'';
   document.getElementById('table-count').textContent=`共 ${filtered.length} 筆`;
   const tbody=document.getElementById('admin-tbody');
-  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:48px;color:var(--text3);font-size:13px;font-weight:700;">目前無符合條件的資料</td></tr>`;return;}
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="10" style="text-align:center;padding:48px;color:var(--text3);font-size:13px;font-weight:700;">${satFilterMode?'目前沒有已填寫滿意度問卷的紀錄':'目前無符合條件的資料'}</td></tr>`;return;}
   const db=d=>d==='pass'?'<span class="badge badge-pass">錄取</span>':d==='fail'?'<span class="badge badge-fail">不錄取</span>':'-';
   tbody.innerHTML=filtered.map(r=>{
     const logoSrc=getBranchLogo(r.branch);
@@ -1732,6 +2513,7 @@ function renderTable(){
         onmouseleave="hideScorePopup()">
         <span class="total-score-val">${r.grand_total??'-'}</span>
       </td>
+      <td style="text-align:center;">${(()=>{const a=satAvgOf(r.doc_id);const s=satisfactionMap&&satisfactionMap[r.doc_id];const tip=s?`流程${s.q1||'-'}/尊重${s.q2||'-'}/說明書${s.q3||'-'}/了解${s.q4||'-'}`:'';return a!=null?`<span title="${tip}" style="font-weight:900;color:#E8632F;">${a.toFixed(1)}</span>`:'<span style="color:var(--text3);">-</span>';})()}</td>
       <td>${progressBadge(prog)}</td>
       <td>${db(r.final_decision)}</td>
       <td onclick="event.stopPropagation()"><div class="action-btns">
@@ -1751,6 +2533,8 @@ function editRecord(docId){
   if(!s.s3)s.s3={core:Array(6).fill(0),mgmt:Array(3).fill(0)};
   if(!s.s2)s.s2=Array(17).fill(0);
   if(!s.s1)s.s1={exp:[0],mot:[0,0],sty:[0,0],sal:[0,0,0],bon:[0],bonText:''};
+  if(!s.hire)s.hire={salary:"",schedule:"",title:"",startDate:"",plan:""};
+  if(!s.checklist)s.checklist={pre:{},mid:{},post:{}};
   if(!s.positions||s.positions.length===0)s.positions=s.position?s.position.split('、').map(p=>p.trim()).filter(Boolean):[];
   if(!s.otherPositions||s.otherPositions.length===0)s.otherPositions=s.otherPosition?s.otherPosition.split('、').map(p=>p.trim()).filter(Boolean):[];
   if(!s.notepad)s.notepad='';
@@ -1763,9 +2547,68 @@ function editRecord(docId){
     hydrateNoteWidget();
   },600);
 }
+// 目前正在列印預覽的那筆紀錄(供勾選重組用)
+let printRec=null;
 function printRecord(docId, recordOverride){
   const r=recordOverride||allData.find(x=>x.doc_id===docId);
   if(!r)return;
+  printRec=r;
+  const arc=(r.state_json&&r.state_json.aiArchive)||null;
+  // 依這筆有沒有存過 AI 結果,決定顯示哪些勾選項
+  const manualWrap=document.getElementById('pick-manual-wrap');
+  const resumeBtn=document.getElementById('pick-resume-btn');
+  const pickManual=document.getElementById('pick-manual');
+  const pickScorecard=document.getElementById('pick-scorecard');
+  if(pickScorecard)pickScorecard.checked=true;
+  if(pickManual)pickManual.checked=false;
+  if(manualWrap)manualWrap.style.display=(arc&&arc.partnerManual)?'flex':'none';
+  if(resumeBtn)resumeBtn.style.display=(arc&&arc.resumeBase64)?'inline-block':'none';
+  // 滿意度:這筆有問卷結果才顯示勾選
+  const satWrap=document.getElementById('pick-sat-wrap');
+  const pickSat=document.getElementById('pick-sat');
+  const hasSat=!!(satisfactionMap&&satisfactionMap[r.doc_id]);
+  if(pickSat)pickSat.checked=false;
+  if(satWrap)satWrap.style.display=hasSat?'flex':'none';
+  renderPrintContent();
+  document.getElementById('print-modal').classList.add('show');
+}
+// 依勾選重組列印內容
+function renderPrintContent(){
+  const r=printRec;if(!r)return;
+  const wantScore=document.getElementById('pick-scorecard').checked;
+  const pm=document.getElementById('pick-manual');
+  const wantManual=pm&&pm.checked;
+  const arc=(r.state_json&&r.state_json.aiArchive)||null;
+  let html='';
+  if(wantScore)html+=buildScorecardHTML(r);
+  if(wantManual&&arc&&arc.partnerManual){
+    // 說明書換到新的一頁(若成績單也印)
+    html+=`<div style="${wantScore?'page-break-before:always;':''}padding-top:8px;">`
+      +buildPartnerManualHTML(arc.partnerManual,r.candidate_name||'',arc.aiData&&arc.aiData.candidate&&arc.aiData.candidate.position||r.position||'',r.doc_id||'')
+      +`</div>`;
+  }
+  const ps=document.getElementById('pick-sat');
+  const wantSat=ps&&ps.checked;
+  if(wantSat&&satisfactionMap&&satisfactionMap[r.doc_id]){
+    const anyBefore=wantScore||wantManual;
+    html+=`<div style="${anyBefore?'page-break-before:always;':''}padding:16px 4px;">`
+      +`<div class="pc-section-title" style="font-size:15px;font-weight:900;margin-bottom:12px;">面試滿意度（求職者回饋）— ${satEsc(r.candidate_name||'')}</div>`
+      +buildSatisfactionHTML(satisfactionMap[r.doc_id])
+      +`</div>`;
+  }
+  if(!html)html='<div style="padding:40px;text-align:center;color:#999;font-size:13px;">請至少勾選一項要列印的內容</div>';
+  document.getElementById('print-content').innerHTML=html;
+}
+// 下載這筆紀錄存檔的履歷 PDF
+function downloadArchivedResume(){
+  const arc=(printRec&&printRec.state_json&&printRec.state_json.aiArchive)||null;
+  if(!arc||!arc.resumeBase64){showToast('這筆沒有存履歷 PDF',true);return;}
+  const a=document.createElement('a');
+  a.href='data:application/pdf;base64,'+arc.resumeBase64;
+  a.download=(printRec.candidate_name||'履歷')+'_'+(arc.resumeName||'履歷.pdf').replace(/\.pdf$/i,'')+'.pdf';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+function buildScorecardHTML(r){
   const s=r.state_json||r;
   const logoSrc=getBranchLogo(r.branch);
   const decText=r.final_decision==='pass'?'<span class="decision-pass">✓ 錄取</span>':r.final_decision==='fail'?'<span class="decision-fail">✕ 不予錄取</span>':'尚未決定';
@@ -1775,7 +2618,7 @@ function printRecord(docId, recordOverride){
     posDisplay=s.positions.map(p=>{if(p==='其他'){const ov=otherArr[otherCount++]||'';return ov?`其他（${ov}）`:'其他';}return p;}).filter(Boolean).join('、');
   }else if(r.position){posDisplay=r.position+(r.other_position?`（${r.other_position}）`:'');}
   let s1Rows='';
-  if(s.s1){S1_DATA.forEach(g=>{if(g.id==='bon'){s1Rows+=`<tr><td style="font-weight:700;background:#F8FAFF;white-space:nowrap;">${g.title}</td><td colspan="2">${s.s1.bonText||'-'}</td><td style="text-align:center;font-weight:700;">${s.s1.bon?s.s1.bon[0]||'-':'-'}</td></tr>`;}else{g.qs.forEach((q,i)=>{s1Rows+=`<tr><td style="font-weight:700;background:#F8FAFF;white-space:nowrap;">${g.title}</td><td colspan="2">${q}</td><td style="text-align:center;font-weight:700;">${s.s1[g.id]?s.s1[g.id][i]||'-':'-'}</td></tr>`;});}});}
+  if(s.s1){S1_DATA.forEach(g=>{if(g.id==='bon'){s1Rows+=`<tr><td style="font-weight:700;background:#F8FAFF;white-space:nowrap;">${g.title}</td><td colspan="2">${s.s1.bonText||'-'}</td><td style="text-align:center;font-weight:700;">${s.s1.bon?s.s1.bon[0]||'-':'-'}</td></tr>`;}else{g.qs.forEach((q,i)=>{s1Rows+=`<tr><td style="font-weight:700;background:#F8FAFF;white-space:nowrap;">${g.title}</td><td colspan="2">${s1QuestionText(g.id,i,s.branch||r.branch)}</td><td style="text-align:center;font-weight:700;">${s.s1[g.id]?s.s1[g.id][i]||'-':'-'}</td></tr>`;});}});}
   let s2Rows='';
   if(s.s2){const li=S2_QUESTIONS.slice(0,9),ri=S2_QUESTIONS.slice(9);const ml=Math.max(li.length,ri.length);for(let i=0;i<ml;i++){const lq=li[i]?`<div class="pc-s2-row" style="border-right:1px solid var(--border);"><span>${i+1}. ${li[i]}</span><span class="pc-s2-score">${s.s2[i]||'-'}</span></div>`:'<div class="pc-s2-row" style="border-right:1px solid var(--border);background:#fafafa;"></div>';const ri2=i+9;const rq=ri[i]?`<div class="pc-s2-row"><span>${ri2+1}. ${ri[i]}</span><span class="pc-s2-score">${s.s2[ri2]||'-'}</span></div>`:'<div class="pc-s2-row"></div>';s2Rows+=lq+rq;}}
   let s3Rows='';
@@ -1795,12 +2638,12 @@ function printRecord(docId, recordOverride){
       <div class="pc-total-box"><div class="pc-total-label">系統最終總得分</div><div class="pc-total-score">${r.grand_total||'-'}</div></div>
       <div class="pc-sub-grid"><div class="pc-sub-cell"><div class="pc-sub-label">一、筆試</div><div class="pc-sub-score" style="color:#059669;">${r.s1_final||'-'}</div></div><div class="pc-sub-cell"><div class="pc-sub-label">二、職能</div><div class="pc-sub-score" style="color:#D97706;">${r.s3_final||'-'}</div></div><div class="pc-sub-cell"><div class="pc-sub-label">三、外顯</div><div class="pc-sub-score" style="color:#4F46E5;">${r.s2_final||'-'}</div></div></div>
       <div class="pc-result-grid" style="margin-top:4px;"><div class="pc-result-box"><div class="pc-result-label">加分項目</div><div class="pc-result-val">${(s.s1&&s.s1.bonText)||'-'}</div></div><div class="pc-result-box"><div class="pc-result-label">最終錄取結果</div><div class="pc-result-val">${decText}</div></div><div class="pc-result-box-full"><div class="pc-result-label">面試官備註</div><div class="pc-result-val">${r.interview_note||'-'}</div></div></div>
+      ${(()=>{const h=s.hire||{};const any=h.salary||h.schedule||h.title||h.startDate||h.plan;if(!any)return '';const c=(l,v)=>`<div class="pc-result-box"><div class="pc-result-label">${l}</div><div class="pc-result-val">${v||'-'}</div></div>`;return `<div class="pc-result-grid" style="margin-top:4px;"><div class="pc-result-box-full" style="background:#F8FAFF;"><div class="pc-result-label" style="color:#1D6FD8;">📋 任用條件（面試官說明）</div></div>${c('預估薪資',h.salary)}${c('出勤時間',h.schedule)}${c('職稱',h.title)}${c('到職日',h.startDate)}<div class="pc-result-box-full"><div class="pc-result-label">1~3 個月計劃</div><div class="pc-result-val">${h.plan||'-'}</div></div></div>`;})()}
     </div>
     <div class="pc-section"><div class="pc-section-title">一、筆試和綜合面談（30%）</div><table class="pc-table"><thead><tr><th style="width:80px;">類別</th><th colspan="2">題目</th><th style="width:50px;text-align:center;">分數</th></tr></thead><tbody>${s1Rows}</tbody></table></div>
     <div class="pc-section"><div class="pc-section-title">二、職能面試（60%）</div><table class="pc-table"><thead><tr><th>維度</th><th>職能項目</th><th>BEI 問題描述</th><th>狀況 C</th><th>行動 A</th><th>結果 R</th><th style="width:44px;text-align:center;">分數</th></tr></thead><tbody>${s3Rows}</tbody></table></div>
     <div class="pc-section"><div class="pc-section-title">三、外顯特質（10%）</div><div class="pc-s2-grid">${s2Rows}</div></div>`;
-  document.getElementById('print-content').innerHTML=html;
-  document.getElementById('print-modal').classList.add('show');
+  return html;
 }
 function closePrintModal(){document.getElementById('print-modal').classList.remove('show');}
 // ===== 黑名單功能 =====
@@ -2027,29 +2870,155 @@ function onNoteInput(){
 // ============================================================
 const AI_ENDPOINT='https://yslzhijwfbhgropbmqab.supabase.co/functions/v1/ai-interview-advisor';
 let aiSelectedFile=null;
+// 本次分析產出的《夥伴使用說明書》(下載 PDF 時要用)
+let aiPartnerManual=null;
+// 本次分析的完整結果(供「存到後台」用):AI 回應、履歷 base64、履歷檔名、問卷/姓名
+let aiLastData=null,aiLastResumeBase64=null,aiLastResumeName='',aiLastSurvey='',aiLastName='';
+// 分析模式:'full'=面試前(履歷+表單,筆試+職能都算);'transcript'=面試後(只更新職能,筆試沿用)
+let aiMode='full';
 
 function openAiHelperModal(){
   document.getElementById('ai-helper-modal').classList.add('show');
+  // 每次開啟都回到乾淨狀態:清掉上一位應徵者殘留的 PDF 與貼上的文字
+  // (若不清,換人分析時會把前一份履歷偷偷送出去)
+  clearAiFile();
+  document.getElementById('ai-input-branch').value='';
+  document.getElementById('ai-input-survey').value='';
+  document.getElementById('ai-input-transcript').value='';
+  document.getElementById('ai-result-content').innerHTML='';
+  document.getElementById('pm-content').innerHTML='';
+  aiPartnerManual=null;
+  aiLastData=null;aiLastResumeBase64=null;aiLastResumeName='';aiLastSurvey='';aiLastName='';
+  resetAiHelperModal();
   // 預填前台已有資訊
   if(state){
     const n=document.getElementById('ai-input-name');
     if(n)n.value=state.name||'';
     const p=document.getElementById('ai-input-position');
     if(p)p.value=state.position||'';
+    // 分校決定求職者填的是哪一版前測問卷,直接沿用前台已選的
+    const br=document.getElementById('ai-input-branch');
+    if(br)br.value=state.branch||'';
     // 如果前台已選職等,同步預填
     if(state.level){
       const lv=document.getElementById('ai-input-level');
       if(lv)lv.value=String(state.level);
     }
+    // 記憶:若這位應徵者後台已存過分析,直接顯示上次結果(不用重餵)
+    restoreAiArchiveIfAny(state.name);
   }
+}
+// 找後台同名最新一筆的 aiArchive,有就還原結果頁
+function restoreAiArchiveIfAny(name){
+  name=(name||'').trim();
+  if(!name)return false;
+  const matches=allData.filter(r=>(r.candidate_name||'').trim()===name&&r.state_json&&r.state_json.aiArchive&&r.state_json.aiArchive.aiData);
+  if(matches.length===0)return false;
+  matches.sort((a,b)=>String(b.interview_date||'').localeCompare(String(a.interview_date||'')));
+  const arc=matches[0].state_json.aiArchive;
+  const data=arc.aiData;
+  // 還原模組層變數,讓「存到後台」「導入前台」「下載說明書」都能運作
+  aiLastData=data;
+  aiLastResumeBase64=arc.resumeBase64||null;
+  aiLastResumeName=arc.resumeName||'';
+  aiLastSurvey=arc.surveyText||'';
+  aiLastName=name;
+  if(arc.level)aiSelectedLevel=String(arc.level);
+  const pos=(data.candidate&&data.candidate.position)||'';
+  renderAiResult(data);
+  renderPartnerManual(data.partner_manual,name,pos);
+  // 頂部橫幅提示這是還原的
+  const banner=document.getElementById('ai-restore-banner');
+  if(banner){
+    banner.style.display='block';
+    banner.innerHTML='📂 已載入這位應徵者上次的分析結果'+(arc.savedAt?'（存於 '+String(arc.savedAt).slice(0,10)+'）':'')+'。要重新迭代請按「重新分析」。';
+  }
+  document.getElementById('ai-stage-upload').style.display='none';
+  document.getElementById('ai-stage-loading').style.display='none';
+  document.getElementById('ai-stage-result').style.display='block';
+  switchAiTab('score');
+  return true;
 }
 function closeAiHelperModal(){
   document.getElementById('ai-helper-modal').classList.remove('show');
 }
 function resetAiHelperModal(){
+  aiMode='full';
+  clearTranscriptLock();
   document.getElementById('ai-stage-upload').style.display='block';
   document.getElementById('ai-stage-loading').style.display='none';
   document.getElementById('ai-stage-result').style.display='none';
+  const banner=document.getElementById('ai-restore-banner');
+  if(banner)banner.style.display='none';
+  switchAiTab('score');
+}
+// 重新分析:二選一(全部 / 只加逐字稿)
+function chooseReanalyze(){
+  const tbtn=document.getElementById('reanalyze-transcript-btn');
+  // 沒有前一次分析(沒有 s1 可沿用) → 逐字稿模式沒意義,停用它
+  const canTranscript=!!(aiLastData&&aiLastData.s1);
+  if(tbtn){tbtn.style.opacity=canTranscript?'1':'.5';tbtn.style.pointerEvents=canTranscript?'auto':'none';}
+  document.getElementById('ai-reanalyze-modal').classList.add('show');
+}
+function reanalyzeAll(){
+  document.getElementById('ai-reanalyze-modal').classList.remove('show');
+  // 清空輸入,回到全新上傳
+  clearAiFile();
+  document.getElementById('ai-input-survey').value='';
+  document.getElementById('ai-input-transcript').value='';
+  aiLastData=null;aiLastResumeBase64=null;aiLastResumeName='';aiLastSurvey='';
+  resetAiHelperModal();
+}
+// 進逐字稿模式:履歷+表單鎖成「無需更動」,只填逐字稿
+function startTranscriptMode(){
+  if(!(aiLastData&&aiLastData.s1)){showToast('請先做一次面試前分析,才能只更新職能',true);return;}
+  document.getElementById('ai-reanalyze-modal').classList.remove('show');
+  aiMode='transcript';
+  document.getElementById('ai-stage-result').style.display='none';
+  document.getElementById('ai-stage-loading').style.display='none';
+  document.getElementById('ai-stage-upload').style.display='block';
+  applyTranscriptLock();
+  const tp=document.getElementById('ai-input-transcript');
+  if(tp){tp.value='';tp.focus();}
+  switchAiTab('score');
+}
+// 逐字稿模式:把履歷區、問卷區鎖成唯讀「無需更動」
+function applyTranscriptLock(){
+  const zone=document.getElementById('ai-file-zone');
+  const txt=document.getElementById('ai-file-text');
+  if(zone){zone.classList.add('locked');zone.onclick=null;}
+  if(txt)txt.innerHTML='<div style="color:#059669;font-weight:700;">🔒 履歷無需更動</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">'+(aiLastResumeName?satEsc(aiLastResumeName):'沿用面試前那份')+'</div>';
+  const sv=document.getElementById('ai-input-survey');
+  if(sv){sv.readOnly=true;sv.style.background='#F1F5F9';sv.value=aiLastSurvey?aiLastSurvey:'（沿用面試前的前測問卷，無需更動）';}
+  const banner=document.getElementById('ai-transcript-banner');
+  if(banner)banner.style.display='block';
+}
+function clearTranscriptLock(){
+  const zone=document.getElementById('ai-file-zone');
+  const txt=document.getElementById('ai-file-text');
+  if(zone){zone.classList.remove('locked');zone.onclick=function(){document.getElementById('ai-file-input').click();};}
+  if(txt)txt.textContent='點此選擇 PDF 檔案,或拖放到此區域';
+  const sv=document.getElementById('ai-input-survey');
+  if(sv){sv.readOnly=false;sv.style.background='';}
+  const banner=document.getElementById('ai-transcript-banner');
+  if(banner)banner.style.display='none';
+}
+// 清空已選的履歷 PDF,把上傳區還原成初始樣子
+function clearAiFile(){
+  aiSelectedFile=null;
+  const input=document.getElementById('ai-file-input');
+  if(input)input.value='';
+  const zone=document.getElementById('ai-file-zone');
+  if(zone)zone.classList.remove('has-file');
+  const txt=document.getElementById('ai-file-text');
+  if(txt)txt.textContent='點此選擇 PDF 檔案,或拖放到此區域';
+}
+function switchAiTab(which){
+  const isScore=which!=='manual';
+  document.getElementById('ai-tab-score').classList.toggle('active',isScore);
+  document.getElementById('ai-tab-manual').classList.toggle('active',!isScore);
+  document.getElementById('ai-pane-score').style.display=isScore?'block':'none';
+  document.getElementById('ai-pane-manual').style.display=isScore?'none':'block';
 }
 function onAiFileSelect(e){
   const f=e.target.files[0];
@@ -2088,6 +3057,7 @@ async function startAiAnalysis(){
   const name=document.getElementById('ai-input-name').value.trim();
   const position=document.getElementById('ai-input-position').value.trim();
   const level=document.getElementById('ai-input-level').value;
+  const branch=document.getElementById('ai-input-branch').value;
   const survey=document.getElementById('ai-input-survey').value.trim();
   const transcript=document.getElementById('ai-input-transcript').value.trim();
   
@@ -2101,11 +3071,14 @@ async function startAiAnalysis(){
     document.getElementById('ai-input-level').focus();
     return;
   }
-  if(!aiSelectedFile && !survey && !transcript){
+  const isTx=(aiMode==='transcript');
+  if(isTx){
+    if(!transcript){alert('逐字稿模式:請貼上面試逐字稿');document.getElementById('ai-input-transcript').focus();return;}
+  }else if(!aiSelectedFile && !survey && !transcript){
     alert('請至少提供「履歷 PDF」、「前測問卷」或「面試逐字稿」其中一項');
     return;
   }
-  
+
   // 儲存職等供 calculateAiScores 使用
   aiSelectedLevel=level;
   
@@ -2115,16 +3088,23 @@ async function startAiAnalysis(){
   
   try{
     let resumeBase64=null;
-    if(aiSelectedFile){
+    if(isTx){
+      // 逐字稿模式:履歷與問卷沿用先前那份(不重新上傳)
+      resumeBase64=aiLastResumeBase64||null;
+    }else if(aiSelectedFile){
       resumeBase64=await fileToBase64(aiSelectedFile);
     }
-    
+    const surveyForApi=isTx?(aiLastSurvey||''):survey;
+
     const payload={
       candidateName:name,
       position:position,
       level:level,
+      branch:branch,
+      // 沒選分校就送空字串,後端會退回「兩種問法都算數」的通則,不會壞
+      formVersion:branch?(isHsBranch(branch)?'hs':'es'):'',
       resumeBase64:resumeBase64,
-      surveyText:survey,
+      surveyText:surveyForApi,
       transcriptText:transcript
     };
     
@@ -2147,14 +3127,38 @@ async function startAiAnalysis(){
       throw e;
     }
     
+    // 逐字稿模式:只更新職能面試(s3),筆試(s1)與說明書沿用面試前那份
+    if(isTx&&aiLastData){
+      data.s1=aiLastData.s1;
+      data.partner_manual=aiLastData.partner_manual;
+    }
+    // 職能分數與夥伴使用說明書各自獨立渲染:
+    // 說明書生不出來時,分數照樣要看得到(反之亦然)
     renderAiResult(data);
+    renderPartnerManual(data.partner_manual,name,position);
+    // 記下本次結果,供「存到後台」按鈕使用(履歷 base64 太大就不留,避免撐爆 state_json)
+    aiLastData=data;
+    if(!isTx){
+      aiLastResumeBase64=(resumeBase64&&resumeBase64.length<=3*1024*1024)?resumeBase64:null;
+      aiLastResumeName=aiSelectedFile?aiSelectedFile.name:'';
+      aiLastSurvey=survey;
+    }
+    aiLastName=name;
     document.getElementById('ai-stage-loading').style.display='none';
     document.getElementById('ai-stage-result').style.display='block';
-    
+    // 逐字稿模式完成後,顯示提示並解鎖(回到一般狀態)
+    if(isTx){
+      const banner=document.getElementById('ai-restore-banner');
+      if(banner){banner.style.display='block';banner.innerHTML='🎙️ 已用逐字稿更新<strong>職能面試</strong>，筆試分數維持面試前的結果。導入時只會更新職能。';}
+    }
+    switchAiTab('score');
+
   }catch(err){
     console.error('AI 分析失敗:',err);
     document.getElementById('ai-stage-loading').style.display='none';
     document.getElementById('ai-stage-result').style.display='block';
+    renderPartnerManual(null,name,position);
+    switchAiTab('score');
     const esc=t=>{const d=document.createElement('div');d.textContent=(t==null?'':String(t));return d.innerHTML;};
     let detailHtml='';
     if(err.detail){
@@ -2346,6 +3350,181 @@ function renderAiResult(data){
   document.getElementById('ai-result-content').innerHTML=html;
 }
 
+// ============================================================
+// ===== 夥伴使用說明書(面談現場當面送給求職者的禮物)=====
+// 型號與內容由 Gemini 判定(見 Edge Function 的 partner_manual)
+// 前端只負責排版與下載,不做任何判斷
+// ============================================================
+function pmEsc(t){const d=document.createElement('div');d.textContent=(t==null?'':String(t));return d.innerHTML;}
+// 把引用求職者原句的「…」標成重點色。務必「先逸出、再上色」,順序顛倒會開 XSS 破口
+function pmQuote(t){return pmEsc(t).replace(/「([^」]*)」/g,'<mark class="pm-quote">「$1」</mark>');}
+
+// 八大型號指南(靜態資料,不靠 AI;第二頁與比例長條共用)。文案基準同 Edge Function 的型號指南。
+const PM_TYPE_CATALOG=[
+  {id:'lion',icon:'🦁',name:'開路獅',kw:['目標感','行動力','推進力'],sum:'習慣把事情往前推，遇到卡點時傾向先找出突破的方向，而不是停在原地觀望。'},
+  {id:'dolphin',icon:'🐬',name:'暖陽海豚',kw:['親和力','陪伴感','互動溫度'],sum:'善於拉近人與人的距離，讓身邊的人放鬆，也容易在互動中創造被信任的氛圍。'},
+  {id:'elephant',icon:'🐘',name:'穩定大象',kw:['耐心','穩定','可靠'],sum:'習慣用穩定的步調把事情做好，重視長期的累積與可靠的關係，不喜歡被突然的變動打亂。'},
+  {id:'owl',icon:'🦉',name:'精準貓頭鷹',kw:['觀察','邏輯','細節'],sum:'習慣先觀察再判斷，重視資料與流程的完整，遇到模糊狀況時傾向先釐清脈絡再行動。'},
+  {id:'peacock',icon:'🦚',name:'火花孔雀',kw:['表達力','感染力','創意'],sum:'擅長用語言與表現力帶動氣氛，享受被看見，也容易把想法變成有感染力的呈現。'},
+  {id:'beaver',icon:'🦫',name:'深耕河狸',kw:['建構','累積','流程'],sum:'享受把混亂整理成清楚流程，重視方法與可複製性，喜歡看見事情隨時間越做越好。'},
+  {id:'fox',icon:'🦊',name:'敏銳狐狸',kw:['應變','策略思考','快速判斷'],sum:'對現場變化很敏感，擅長快速判斷情勢並找到應對方式，也重視自主處理狀況的空間。'},
+  {id:'dog',icon:'🐕',name:'引路牧羊犬',kw:['照顧秩序','陪伴團隊','提醒方向'],sum:'習慣照顧團隊的秩序與節奏，重視大家能一起完成目標，也擅長在現場提醒方向、穩住團隊。'}
+];
+function pmTypeIcon(id){const t=PM_TYPE_CATALOG.find(x=>x.id===id);return t?t.icon:'';}
+
+// 型號比例長條(您的特質組成)。type_distribution 為空就不顯示,維持舊資料相容
+function pmDistributionHTML(dist){
+  if(!Array.isArray(dist)||dist.length===0)return '';
+  const rows=dist.filter(d=>d&&typeof d.percent==='number').map(d=>{
+    const pct=Math.max(0,Math.min(100,Math.round(d.percent)));
+    const icon=pmTypeIcon(d.type_id);
+    return `<div class="pm-dist-row">
+      <span class="pm-dist-label">${icon?icon+' ':''}${pmEsc(d.type_name)}</span>
+      <span class="pm-dist-bar"><i style="width:${pct}%"></i></span>
+      <span class="pm-dist-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+  if(!rows)return '';
+  return `<div class="pm-dist"><div class="pm-dist-title">您的特質組成</div>${rows}</div>`;
+}
+
+// 第二頁:八大型號指南。highlightIds 是這位求職者命中的型號,會加框標「這是您」
+function pmCatalogHTML(highlightIds){
+  const mine=new Set(Array.isArray(highlightIds)?highlightIds:[]);
+  const cards=PM_TYPE_CATALOG.map(t=>{
+    const you=mine.has(t.id);
+    const tag=you?'<span class="pm-you-tag">這是您</span>':'';
+    return `<div class="pm-cat-card${you?' is-you':''}">
+      <div class="pm-cat-icon">${t.icon}</div>
+      <div class="pm-cat-name">${pmEsc(t.name)}${tag}</div>
+      <div class="pm-cat-kw">${t.kw.map(pmEsc).join('・')}</div>
+      <div class="pm-cat-sum">${pmEsc(t.sum)}</div>
+    </div>`;
+  }).join('');
+  return `<div class="pm-catalog pm-page-break">
+    <div class="pm-cat-head">
+      <h2>逗點的八大魅力</h2>
+      <p>每個人都是獨特的組合，沒有一種型號比另一種更好。<br>這是逗點看見夥伴的八種樣子，也許您也能在其中看見身邊的人。</p>
+    </div>
+    <div class="pm-cat-grid">${cards}</div>
+  </div>`;
+}
+
+function buildPartnerManualHTML(m,name,position,surveyDocId){
+  const li=arr=>(Array.isArray(arr)?arr:[]).map(x=>'<li>'+pmQuote(x)+'</li>').join('');
+  // 滿意度問卷 QR:有這場面試的 docId 才放(給說明書時順便請他掃碼填回饋)
+  let qrBlock='';
+  if(surveyDocId){
+    const qr=makeQrDataUrl(surveyUrlFor(surveyDocId),150);
+    if(qr)qrBlock=`<div class="pm-section" style="text-align:center;border-top:1px dashed #EFE1CF;padding-top:16px;margin-top:6px;">
+      <h3 style="justify-content:center;">🧡 留下您的面談回饋</h3>
+      <p class="pm-text" style="margin:0 0 8px;">用手機掃描下方 QR，花約 1 分鐘告訴我們今天的感受，<br>幫助逗點做得更好。</p>
+      <img src="${qr}" alt="滿意度問卷 QR" style="display:block;margin:8px auto 0;width:150px;height:150px;">
+    </div>`;
+  }
+  const chips=(Array.isArray(m.keywords)?m.keywords:[]).map(k=>'<span class="pm-chip">'+pmEsc(k)+'</span>').join('');
+  // 標題帶入求職者的名字:一律取「後兩個字」。
+  // 王明→王明(單名=姓+名)、鐘承恩→承恩、歐陽娣娣→娣娣。沒名字就用通用標題。
+  const nm=(name||'').trim();
+  const given=nm.slice(-2);
+  const title=given?'《'+pmEsc(given)+'的夥伴使用說明書》':'《夥伴使用說明書》';
+  // 副標:刪掉「一份依據…禮物」那句,只留姓名｜應徵職位
+  const sub=(nm?pmEsc(nm):'')
+    +(position?(nm?'｜':'')+'應徵：'+pmEsc(position):'');
+  const icon=pmTypeIcon(m.type_id);
+  const distHTML=pmDistributionHTML(m.type_distribution);
+  // 第二頁的八大指南:標出這位求職者命中的型號(有比例就用比例的,否則退回主型號)
+  const mineIds=(Array.isArray(m.type_distribution)&&m.type_distribution.length)
+    ? m.type_distribution.map(d=>d.type_id)
+    : (m.type_id?[m.type_id]:[]);
+  return `<div class="pm-card">
+    <div class="pm-head">
+      <h2>${title}</h2>
+      <p>${sub}</p>
+    </div>
+    <div class="pm-type">
+      <div class="pm-hint">您的魅力</div>
+      <div class="pm-type-name">${icon?icon+' ':''}${pmEsc(m.type_name)}</div>
+      <div class="pm-chips">${chips}</div>
+      <p class="pm-type-summary">${pmQuote(m.type_summary)}</p>
+      ${distHTML}
+    </div>
+    <div class="pm-section">
+      <h3>逗點初步看見的您</h3>
+      <p class="pm-text">${pmQuote(m.comma_observation)}</p>
+    </div>
+    <div class="pm-section">
+      <h3>您可能在乎的事</h3>
+      <ul class="pm-list">${li(m.possible_concerns)}</ul>
+    </div>
+    <div class="pm-section">
+      <h3>您容易發光的情境</h3>
+      <ul class="pm-list">${li(m.shine_situations)}</ul>
+    </div>
+    <div class="pm-section">
+      <h3>和您合作時,可以這樣靠近</h3>
+      <ul class="pm-list">${li(m.collaboration_tips)}</ul>
+    </div>
+    <div class="pm-section">
+      <h3>逗點想和您一起探索的角色方向</h3>
+      <ul class="pm-list">${li(m.role_directions)}</ul>
+    </div>
+    ${qrBlock}
+    <div class="pm-footer"><p>${pmEsc(m.footer_note)}</p></div>
+  </div>
+  ${pmCatalogHTML(mineIds)}`;
+}
+
+function renderPartnerManual(m,name,position){
+  const pane=document.getElementById('pm-content');
+  const btn=document.getElementById('pm-download-btn');
+  if(!m || !m.type_name){
+    aiPartnerManual=null;
+    btn.disabled=true;
+    pane.innerHTML=`<div class="pm-empty">
+      📭 本次未產生夥伴使用說明書。<br>
+      職能預測分數不受影響,可切回上一個分頁查看。<br>
+      <span style="font-size:11px;">(若履歷與問卷內容太少,AI 會選擇不硬湊型號)</span>
+    </div>`;
+    return;
+  }
+  // 說明書 QR 對應這場面試:用姓名+前台面試日期組 docId(沒日期就不放 QR)
+  const docId=(name&&state&&state.date)?((name+'_'+state.date).replace(/\s/g,'_')):'';
+  aiPartnerManual={m:m,name:name,position:position,docId:docId};
+  btn.disabled=false;
+  pane.innerHTML=buildPartnerManualHTML(m,name,position,docId);
+}
+
+async function downloadPartnerManualPDF(){
+  if(!aiPartnerManual){showToast('本次沒有可下載的夥伴使用說明書',true);return;}
+  if(!window.html2pdf){showToast('PDF 工具尚未載入,請確認網路連線後再試一次',true);return;}
+  const btn=document.getElementById('pm-download-btn');
+  const label=btn.textContent;
+  btn.disabled=true;btn.textContent='正在產生 PDF…';
+  // 放在畫面外的乾淨容器裡截圖,避免 modal 的捲軸與陰影被一起畫進去
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;left:-9999px;top:0;width:760px;background:#FBF3E8;padding:20px;';
+  wrap.innerHTML=buildPartnerManualHTML(aiPartnerManual.m,aiPartnerManual.name,aiPartnerManual.position,aiPartnerManual.docId||'');
+  document.body.appendChild(wrap);
+  try{
+    await html2pdf().set({
+      margin:[10,10,14,10],
+      filename:(aiPartnerManual.name||'夥伴')+'_夥伴使用說明書.pdf',
+      image:{type:'jpeg',quality:0.98},
+      html2canvas:{scale:2,useCORS:true,backgroundColor:'#FBF3E8'},
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+      pagebreak:{mode:['avoid-all','css','legacy']}
+    }).from(wrap.firstElementChild).save();
+    showToast('說明書 PDF 已下載');
+  }catch(err){
+    console.error(err);
+    showToast('產生 PDF 時發生問題,請再試一次',true);
+  }finally{
+    document.body.removeChild(wrap);
+    btn.disabled=false;btn.textContent=label;
+  }
+}
+
 // ===== 後台筆記查看 =====
 function openNoteModal(docId){
   const r=allData.find(x=>x.doc_id===docId);
@@ -2381,7 +3560,94 @@ function openNoteModal(docId){
   if(modal)modal.classList.add('show');
 }
 
+// ============================================================
+// ===== 滿意度問卷(求職者手機掃 QR 後的填寫頁)=====
+// 用 ?survey=<doc_id> 觸發,繞過登入,只顯示問卷
+// ============================================================
+const SURVEY_QS=[
+  '本次面談流程是否清楚？',
+  '面試官是否讓您感受到被尊重與被理解？',
+  '《夥伴使用說明書》是否讓您感受到逗點的用心？',
+  '本次面談是否讓您更了解逗點與應徵職務？'
+];
+function surveyEsc(t){const d=document.createElement('div');d.textContent=(t==null?'':String(t));return d.innerHTML;}
+let surveyPick={q1:0,q2:0,q3:0,q4:0};
+function renderSurveyPage(docId){
+  surveyPick={q1:0,q2:0,q3:0,q4:0};
+  const rows=SURVEY_QS.map((q,i)=>{
+    const key='q'+(i+1);
+    const btns=[1,2,3,4,5].map(v=>`<button type="button" class="sv-score" data-key="${key}" data-val="${v}" onclick="surveySet('${key}',${v},this)">${v}</button>`).join('');
+    return `<div class="sv-item"><div class="sv-q">${i+1}. ${surveyEsc(q)}</div><div class="sv-scale">${btns}</div><div class="sv-scale-hint"><span>非常不同意</span><span>非常同意</span></div></div>`;
+  }).join('');
+  document.body.innerHTML=`<div class="sv-wrap">
+    <div class="sv-card">
+      <div class="sv-head"><div class="sv-badge">逗點教室</div><h1>面談回饋小問卷</h1><p>謝謝您今天來到逗點，這份問卷只有 5 題，您的感受對我們很重要 🧡</p></div>
+      <div id="sv-body">
+        ${rows}
+        <div class="sv-item"><div class="sv-q">5. 本次面談中，哪一個環節讓您印象最深刻？有沒有哪裡可以更好？</div>
+          <textarea id="sv-open" class="sv-open" rows="4" placeholder="想跟我們說的都可以寫在這裡（選填）..."></textarea></div>
+        <button id="sv-submit" class="sv-submit" onclick="submitSurvey('${surveyEsc(docId)}')">送出回饋</button>
+        <div class="sv-foot">您的回饋會匿名協助我們做得更好。</div>
+      </div>
+    </div>
+  </div>
+  <style>
+    body{margin:0;background:#FBF3E8;font-family:'Noto Sans TC',sans-serif;-webkit-print-color-adjust:exact;}
+    .sv-wrap{min-height:100vh;padding:20px 14px;box-sizing:border-box;}
+    .sv-card{max-width:520px;margin:0 auto;background:linear-gradient(180deg,#FFFDFA,#FFF8EF);border:1px solid #EFE1CF;border-radius:22px;padding:26px 20px;box-shadow:0 10px 30px rgba(74,59,50,.1);}
+    .sv-head{text-align:center;margin-bottom:18px;}
+    .sv-badge{display:inline-block;background:#FFE3D2;color:#E8632F;font-weight:700;font-size:11px;padding:4px 12px;border-radius:999px;}
+    .sv-head h1{font-size:21px;font-weight:900;color:#4A3B32;margin:10px 0 6px;}
+    .sv-head p{font-size:12.5px;color:#7A6A5C;line-height:1.7;margin:0;}
+    .sv-item{background:#fff;border:1px solid #EFE1CF;border-radius:14px;padding:14px 14px;margin-bottom:12px;}
+    .sv-q{font-size:14px;font-weight:700;color:#4A3B32;line-height:1.6;margin-bottom:10px;}
+    .sv-scale{display:flex;gap:7px;}
+    .sv-score{flex:1;aspect-ratio:1;border:1.5px solid #EFD9C4;background:#fff;color:#A9836A;border-radius:10px;font-size:16px;font-weight:900;cursor:pointer;transition:all .15s;}
+    .sv-score.on{background:#FF7A4D;border-color:#FF7A4D;color:#fff;transform:scale(1.05);}
+    .sv-scale-hint{display:flex;justify-content:space-between;font-size:10px;color:#B0A090;margin-top:5px;}
+    .sv-open{width:100%;box-sizing:border-box;border:1.5px solid #EFD9C4;border-radius:10px;padding:10px;font-size:13.5px;font-family:'Noto Sans TC',sans-serif;color:#4A3B32;outline:none;resize:vertical;}
+    .sv-submit{width:100%;margin-top:6px;padding:14px;background:#FF7A4D;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:900;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+    .sv-submit:disabled{opacity:.55;}
+    .sv-foot{text-align:center;font-size:11px;color:#B0A090;margin-top:12px;}
+    .sv-done{text-align:center;padding:40px 10px;}
+    .sv-done .big{font-size:48px;}
+    .sv-done h2{font-size:20px;color:#4A3B32;margin:12px 0 6px;font-weight:900;}
+    .sv-done p{font-size:13px;color:#7A6A5C;line-height:1.7;}
+  </style>`;
+}
+function surveySet(key,val,btn){
+  surveyPick[key]=val;
+  btn.parentNode.querySelectorAll('.sv-score').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+async function submitSurvey(docId){
+  if(!surveyPick.q1||!surveyPick.q2||!surveyPick.q3||!surveyPick.q4){
+    alert('前 4 題麻煩都幫我們點一下分數 🙏');return;
+  }
+  const btn=document.getElementById('sv-submit');
+  btn.disabled=true;btn.textContent='送出中…';
+  const open=(document.getElementById('sv-open')||{}).value||'';
+  // doc_id = 姓名_日期,反解姓名供後台辨識(非必要)
+  const nm=String(docId).split('_')[0]||'';
+  try{
+    const {error}=await sb.from('satisfaction').upsert({
+      doc_id:docId,candidate_name:nm,
+      q1:surveyPick.q1,q2:surveyPick.q2,q3:surveyPick.q3,q4:surveyPick.q4,
+      open_text:open,updated_at:new Date().toISOString()
+    },{onConflict:'doc_id'});
+    if(error)throw error;
+    document.getElementById('sv-body').outerHTML=`<div class="sv-done"><div class="big">🧡</div><h2>已收到您的回饋</h2><p>謝謝您撥空填寫，<br>祝您有美好的一天！</p></div>`;
+  }catch(e){
+    console.error('survey submit:',e);
+    btn.disabled=false;btn.textContent='送出回饋';
+    alert('送出時有點問題，請確認網路後再試一次');
+  }
+}
+
 window.onload=async()=>{
+  // 滿意度問卷模式:掃 QR 進來的求職者,不進登入流程
+  const surveyId=new URLSearchParams(location.search).get('survey');
+  if(surveyId){renderSurveyPage(surveyId);return;}
   // 先載入所有設定
   await loadAllConfig();
   initTimePicker();
