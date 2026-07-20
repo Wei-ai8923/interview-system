@@ -713,10 +713,10 @@ mark.pm-quote{background:none;color:#E8632F;font-weight:800;font-size:1.08em;pad
           <div id="pm-content"></div>
         </div>
         <div class="ai-result-actions">
-          <span style="flex:1;font-size:10.5px;color:var(--text3);line-height:1.4;text-align:left;">💾 存檔會對應到後台<strong>同名</strong>的最新一筆<br>(需先在前台暫存或送出過這位應徵者)</span>
-          <button class="ai-btn-secondary" onclick="chooseReanalyze()">重新分析</button>
+          <span style="flex:1;font-size:10.5px;color:#059669;line-height:1.4;text-align:left;">✓ 分析結果已<strong>自動存到後台</strong>（後台沒這位會自動建一筆）</span>
+          <button class="ai-btn-secondary" onclick="backToUpload()">重新分析</button>
           <button class="ai-btn-secondary" id="ai-import-btn" onclick="importAiToFront()" style="border-color:#1D6FD8;color:#1D6FD8;">📥 導入前台計分表</button>
-          <button class="ai-btn-secondary" id="ai-save-btn" onclick="saveAiToRecord()" style="border-color:#059669;color:#059669;">💾 存到後台這位應徵者</button>
+          <button class="ai-btn-secondary" id="ai-save-btn" onclick="saveAiToRecord()" style="border-color:#059669;color:#059669;">💾 重新存檔</button>
           <button class="ai-btn-primary" onclick="closeAiHelperModal()">關閉</button>
         </div>
       </div>
@@ -738,6 +738,25 @@ mark.pm-quote{background:none;color:#E8632F;font-weight:800;font-size:1.08em;pad
       <button class="ai-btn-secondary" id="reanalyze-transcript-btn" style="width:100%;text-align:left;padding:12px;border-color:#059669;" onclick="startTranscriptMode()">
         <strong style="color:#059669;">🎙️ 新增逐字稿（筆試不動）</strong><br>
         <span style="font-size:11px;color:var(--text3);">履歷與表單沿用先前那份，只貼面試逐字稿，<strong>只更新職能面試</strong>。</span>
+      </button>
+    </div>
+  </div>
+</div>
+<div id="ai-scope-modal" class="ai-modal-overlay">
+  <div class="ai-modal-box" style="max-width:460px;">
+    <div class="ai-modal-header">
+      <div class="ai-modal-title">🎙️ 這次有逐字稿，要怎麼分析？</div>
+      <button class="ai-modal-close" onclick="document.getElementById('ai-scope-modal').classList.remove('show')">✕</button>
+    </div>
+    <div class="ai-modal-body">
+      <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin:0 0 14px;">你之前已經用履歷＋表單做過面試前分析。這次加了逐字稿，請選擇：</p>
+      <button class="ai-btn-secondary" style="width:100%;text-align:left;padding:12px;margin-bottom:10px;border-color:#1D6FD8;" onclick="startAiAnalysis('full')">
+        <strong style="color:#1D6FD8;">🔄 全部重新分析（含筆試）</strong><br>
+        <span style="font-size:11px;color:var(--text3);">連筆試也用這次資料重新評，導入時筆試＋職能都更新。</span>
+      </button>
+      <button class="ai-btn-secondary" style="width:100%;text-align:left;padding:12px;border-color:#059669;" onclick="startAiAnalysis('transcript')">
+        <strong style="color:#059669;">🎯 只更新職能面試（筆試沿用面試前）</strong><br>
+        <span style="font-size:11px;color:var(--text3);">筆試分數維持面試前的結果，這次只用逐字稿更新職能面試。</span>
       </button>
     </div>
   </div>
@@ -1368,6 +1387,7 @@ function getEmptyState(){
   return{name:"",branch:"",position:"",otherPosition:"",otherNote:"",date:"",time:"",level:0,finalDecision:null,idealStatus:"",grandTotal:"0.00",s1Final:"0.00",s2Final:"0.00",s3Final:"0.00",docStatus:"new",interviewNote:"",positions:[],otherPositions:[],notepad:"",
     hire:{salary:"",schedule:"",title:"",startDate:"",plan:""},
     checklist:{pre:{},mid:{},post:{}},
+    aiArchive:null,
     s1:{exp:[0],mot:[0,0],sty:[0,0],sal:[0,0,0],bon:[0],bonText:""},
     s2:Array(S2_QUESTIONS.length).fill(0),
     s3:{core:Array(6).fill(0),mgmt:Array(3).fill(0)},
@@ -1838,43 +1858,58 @@ function upsertRecord(record){
 }
 
 // 把 AI 分析結果(履歷/說明書/分數)存到後台同名的最新一筆紀錄
-async function saveAiToRecord(){
-  const name=(document.getElementById('ai-input-name').value||'').trim();
-  if(!name){showToast('請先在上方填「應徵者姓名」,才能對應到後台紀錄',true);return;}
-  if(!aiLastData){showToast('尚未有可儲存的分析結果',true);return;}
-  const matches=allData.filter(r=>(r.candidate_name||'').trim()===name);
-  if(matches.length===0){
-    showToast('後台找不到「'+name+'」。請先在前台按暫存或確定送出,後台有這筆才能存 AI 結果',true);
-    return;
-  }
-  // 多筆同名取最新(依面試日期)
-  matches.sort((a,b)=>String(b.interview_date||'').localeCompare(String(a.interview_date||'')));
-  const rec=matches[0];
-  if(!rec.state_json)rec.state_json={};
-  rec.state_json.aiArchive={
+// 分析完自動存到後台;後台沒這位就自動建一筆再存。手動按鈕也走這裡。
+async function autoSaveAiToRecord(name){
+  name=(name||(document.getElementById('ai-input-name')?document.getElementById('ai-input-name').value:'')||'').trim();
+  if(!name||!aiLastData)return;
+  const archive={
     partnerManual:(aiLastData.partner_manual)||null,
     aiData:aiLastData,
+    baseline:aiLastBaseline||null,
     resumeBase64:aiLastResumeBase64||null,
     resumeName:aiLastResumeName||'',
     surveyText:aiLastSurvey||'',
     level:(typeof aiSelectedLevel!=='undefined'?aiSelectedLevel:'')||'',
-    hasTranscript:(typeof aiMode!=='undefined'&&aiMode==='transcript'),
+    hasTranscript:!!(aiLastData&&aiLastData._hadTranscript),
     savedAt:new Date().toISOString()
   };
-  const btn=document.getElementById('ai-save-btn');
-  const label=btn?btn.textContent:'';
-  if(btn){btn.disabled=true;btn.textContent='儲存中…';}
+  // 這位是不是就是前台目前開的那位?是的話用前台的日期/分校對應同一筆,並讓前台 state 也帶著 aiArchive(前台存檔才不會蓋掉)
+  const useFront=!!(state&&(state.name||'').trim()===name);
+  const today=new Date().toISOString().split('T')[0];
+  const date=(useFront&&state.date)?state.date:today;
+  const docId=(name+'_'+date).replace(/\s/g,'_');
+  if(useFront)state.aiArchive=archive;
+  // 找對應紀錄:先 docId,再同名最新
+  let rec=allData.find(r=>r.doc_id===docId);
+  if(!rec){
+    const m=allData.filter(r=>(r.candidate_name||'').trim()===name).sort((a,b)=>String(b.interview_date||'').localeCompare(String(a.interview_date||'')));
+    rec=m[0];
+  }
+  if(!rec){
+    // 後台沒有 → 自動建一筆(最小資料)
+    const brEl=document.getElementById('ai-input-branch');
+    const poEl=document.getElementById('ai-input-position');
+    const branch=(useFront&&state.branch)?state.branch:(brEl?brEl.value:'');
+    const position=(poEl?poEl.value.trim():'')||(useFront?state.position:'')||'';
+    const sj=getEmptyState();
+    sj.name=name;sj.date=date;sj.branch=branch||'';sj.position=position;sj.positions=position?[position]:[];
+    rec={doc_id:docId,candidate_name:name,branch:branch||'',position:position,interviewer:(currentUser?currentUser.name:''),interview_date:date,doc_status:'new',state_json:sj};
+    allData.unshift(rec);
+  }
+  if(!rec.state_json)rec.state_json={};
+  rec.state_json.aiArchive=archive;
   try{
-    const {error}=await upsertRecord(rec);
-    if(error){showToast('⚠ 存到後台失敗,請重試',true);console.error('saveAiToRecord:',error);}
+    const{error}=await upsertRecord(rec);
+    if(error){showToast('⚠ 自動存後台失敗,可手動再按存檔',true);console.error('autoSaveAiToRecord:',error);}
     else{
       const rn=aiLastResumeName&&!aiLastResumeBase64?'(履歷過大未存,其餘已存)':'';
-      showToast('✓ 已存到後台「'+name+'」'+(rec.interview_date?' '+rec.interview_date:'')+rn);
-      if(typeof renderFlowGuide==='function')renderFlowGuide();
+      showToast('✓ 分析結果已自動存到後台「'+name+'」'+rn);
     }
-  }catch(e){showToast('⚠ 存到後台失敗,請重試',true);console.error(e);}
-  finally{if(btn){btn.disabled=false;btn.textContent=label;}}
+  }catch(e){showToast('⚠ 自動存後台失敗',true);console.error(e);}
+  if(typeof renderFlowGuide==='function')renderFlowGuide();
 }
+// 舊名沿用:手動按鈕仍可呼叫
+function saveAiToRecord(){return autoSaveAiToRecord();}
 
 // 把 AI 預估分數與職能題目導入前台計分表(供面試官確認調整)
 function importAiToFront(){
@@ -2520,7 +2555,9 @@ function renderTable(){
         <button class="btn-action btn-print" onclick="printRecord('${docId}')">列印</button>
         <button class="btn-action" style="background:#F0FDF4;border:1.5px solid #A7F3D0;color:#065F46;" onclick="openNoteModal('${docId}')">筆記</button>
         <button class="btn-action btn-blacklist" onclick="addToBlacklist('${docId}','${name}')">加入黑名單</button>
-        <button class="btn-action btn-delete" onclick="deleteRecord('${docId}','${name}')">刪除</button>
+        ${satFilterMode
+          ? `<button class="btn-action btn-delete" onclick="deleteSatisfaction('${docId}','${name}')">刪除滿意度</button>`
+          : `<button class="btn-action btn-delete" onclick="deleteRecord('${docId}','${name}')">刪除</button>`}
       </div></td>
     </tr>`;
   }).join('');
@@ -2732,6 +2769,16 @@ async function deleteRecord(docId,name){
   if(error){alert('刪除失敗：'+error.message);return;}
   allData=allData.filter(r=>r.doc_id!==docId);showToast(`已刪除 ${name} 的資料`);renderTable();
 }
+// 只刪這位求職者的「滿意度問卷」,面試資料保留(用於滿意度檢視)
+async function deleteSatisfaction(docId,name){
+  if(!confirm(`確定只刪除「${name}」的滿意度問卷嗎？\n\n（面試資料會保留，只清掉這份問卷回覆）`))return;
+  const{error}=await sb.from('satisfaction').delete().eq('doc_id',docId);
+  if(error){alert('刪除失敗：'+error.message);return;}
+  if(satisfactionMap)delete satisfactionMap[docId];
+  showToast(`已刪除 ${name} 的滿意度問卷`);
+  renderTable();
+  if(typeof renderFlowGuide==='function')renderFlowGuide();
+}
 function showToast(msg,isError){
   const t=document.getElementById('toast');
   if(t){
@@ -2874,8 +2921,10 @@ let aiSelectedFile=null;
 let aiPartnerManual=null;
 // 本次分析的完整結果(供「存到後台」用):AI 回應、履歷 base64、履歷檔名、問卷/姓名
 let aiLastData=null,aiLastResumeBase64=null,aiLastResumeName='',aiLastSurvey='',aiLastName='';
-// 分析模式:'full'=面試前(履歷+表單,筆試+職能都算);'transcript'=面試後(只更新職能,筆試沿用)
+// 分析模式:'full'=面試前(履歷+表單);'transcript'=面試後(有逐字稿,筆試+職能都重評)
 let aiMode='full';
+// 面試前(非現場)的分數快照,供逐字稿重評後「現場 vs 非現場」對照
+let aiLastBaseline=null;
 
 function openAiHelperModal(){
   document.getElementById('ai-helper-modal').classList.add('show');
@@ -2923,9 +2972,10 @@ function restoreAiArchiveIfAny(name){
   aiLastResumeName=arc.resumeName||'';
   aiLastSurvey=arc.surveyText||'';
   aiLastName=name;
+  aiLastBaseline=arc.baseline||null;
   if(arc.level)aiSelectedLevel=String(arc.level);
   const pos=(data.candidate&&data.candidate.position)||'';
-  renderAiResult(data);
+  renderAiResult(data,aiLastBaseline);
   renderPartnerManual(data.partner_manual,name,pos);
   // 頂部橫幅提示這是還原的
   const banner=document.getElementById('ai-restore-banner');
@@ -2950,6 +3000,26 @@ function resetAiHelperModal(){
   document.getElementById('ai-stage-result').style.display='none';
   const banner=document.getElementById('ai-restore-banner');
   if(banner)banner.style.display='none';
+  switchAiTab('score');
+}
+// 重新分析:回到上傳頁,履歷/問卷記著,補貼逐字稿即可。
+// 全部/只職能的選擇改到「開始分析」時才問(見 startAiAnalysis 的 scope)。
+function backToUpload(){
+  if(typeof clearTranscriptLock==='function')clearTranscriptLock();
+  aiMode='full';
+  const banner=document.getElementById('ai-restore-banner');if(banner)banner.style.display='none';
+  document.getElementById('ai-stage-result').style.display='none';
+  document.getElementById('ai-stage-loading').style.display='none';
+  document.getElementById('ai-stage-upload').style.display='block';
+  // 履歷:有快取就顯示「已記住」,方便看出不用重傳
+  const txt=document.getElementById('ai-file-text');
+  if(txt&&!aiSelectedFile&&aiLastResumeName){
+    txt.innerHTML='<div class="ai-file-name">✓ '+satEsc(aiLastResumeName)+'（已記住，無需重傳）</div><div style="font-size:11px;color:var(--text3);margin-top:3px;">要換履歷可點此重選</div>';
+  }
+  // 問卷:欄位空但有快取就帶回來
+  const sv=document.getElementById('ai-input-survey');
+  if(sv&&!sv.value.trim()&&aiLastSurvey)sv.value=aiLastSurvey;
+  const tp=document.getElementById('ai-input-transcript');if(tp){tp.value='';tp.focus();}
   switchAiTab('score');
 }
 // 重新分析:二選一(全部 / 只加逐字稿)
@@ -3053,14 +3123,15 @@ function fileToBase64(file){
 // 主任在 AI Modal 上選的職等(獨立於前台 state.level)
 let aiSelectedLevel='';
 
-async function startAiAnalysis(){
+// scope: 未帶=尚未決定;'full'=全部重評(含筆試);'transcript'=只更新職能(筆試沿用面試前)
+async function startAiAnalysis(scope){
   const name=document.getElementById('ai-input-name').value.trim();
   const position=document.getElementById('ai-input-position').value.trim();
   const level=document.getElementById('ai-input-level').value;
   const branch=document.getElementById('ai-input-branch').value;
   const survey=document.getElementById('ai-input-survey').value.trim();
   const transcript=document.getElementById('ai-input-transcript').value.trim();
-  
+
   if(!position){
     alert('請填寫「應徵職位」(AI 需要根據職位調整評分嚴格度)');
     document.getElementById('ai-input-position').focus();
@@ -3071,30 +3142,37 @@ async function startAiAnalysis(){
     document.getElementById('ai-input-level').focus();
     return;
   }
-  const isTx=(aiMode==='transcript');
-  if(isTx){
-    if(!transcript){alert('逐字稿模式:請貼上面試逐字稿');document.getElementById('ai-input-transcript').focus();return;}
-  }else if(!aiSelectedFile && !survey && !transcript){
+  if(!aiSelectedFile && !survey && !transcript && !aiLastResumeBase64 && !aiLastSurvey){
     alert('請至少提供「履歷 PDF」、「前測問卷」或「面試逐字稿」其中一項');
     return;
   }
 
+  // 有逐字稿 + 之前已做過面試前分析 → 先問要「全部重評」還是「只更新職能」
+  const hasPrior=!!(aiLastData&&aiLastData.s1);
+  if(transcript&&hasPrior&&!scope){
+    document.getElementById('ai-scope-modal').classList.add('show');
+    return;
+  }
+  aiMode=(scope==='transcript')?'transcript':'full';
+  const isTx=(aiMode==='transcript');
+
   // 儲存職等供 calculateAiScores 使用
   aiSelectedLevel=level;
-  
+
+  document.getElementById('ai-scope-modal').classList.remove('show');
   document.getElementById('ai-stage-upload').style.display='none';
   document.getElementById('ai-stage-loading').style.display='block';
   document.getElementById('ai-stage-result').style.display='none';
-  
+
   try{
+    // 履歷/問卷:欄位有就用欄位,沒有就沿用先前那份(補逐字稿時不用重傳)
     let resumeBase64=null;
-    if(isTx){
-      // 逐字稿模式:履歷與問卷沿用先前那份(不重新上傳)
-      resumeBase64=aiLastResumeBase64||null;
-    }else if(aiSelectedFile){
+    if(aiSelectedFile){
       resumeBase64=await fileToBase64(aiSelectedFile);
+    }else if(aiLastResumeBase64){
+      resumeBase64=aiLastResumeBase64;
     }
-    const surveyForApi=isTx?(aiLastSurvey||''):survey;
+    const surveyForApi=survey||aiLastSurvey||'';
 
     const payload={
       candidateName:name,
@@ -3127,31 +3205,32 @@ async function startAiAnalysis(){
       throw e;
     }
     
-    // 逐字稿模式:只更新職能面試(s3),筆試(s1)與說明書沿用面試前那份
+    // 面試後(有逐字稿):筆試與職能都重評;保留面試前分數當 baseline 供「現場 vs 非現場」對照。
+    // 說明書後端不會回傳(省時間),沿用面試前那份。
+    let baseline=null;
     if(isTx&&aiLastData){
-      data.s1=aiLastData.s1;
-      data.partner_manual=aiLastData.partner_manual;
+      baseline={s1:aiLastData.s1,s3:aiLastData.s3};
+      if(!data.partner_manual)data.partner_manual=aiLastData.partner_manual;
     }
-    // 職能分數與夥伴使用說明書各自獨立渲染:
-    // 說明書生不出來時,分數照樣要看得到(反之亦然)
-    renderAiResult(data);
+    aiLastBaseline=baseline;
+    // 分數表 + 說明書各自獨立渲染;有 baseline 就標出有變動的
+    renderAiResult(data,baseline);
     renderPartnerManual(data.partner_manual,name,position);
-    // 記下本次結果,供「存到後台」按鈕使用(履歷 base64 太大就不留,避免撐爆 state_json)
+    // 記下本次結果(履歷 base64 太大就不留,避免撐爆 state_json)
+    data._hadTranscript=!!transcript; // 供流程導引「上傳錄音/逐字稿」偵測
     aiLastData=data;
-    if(!isTx){
-      aiLastResumeBase64=(resumeBase64&&resumeBase64.length<=3*1024*1024)?resumeBase64:null;
-      aiLastResumeName=aiSelectedFile?aiSelectedFile.name:'';
-      aiLastSurvey=survey;
-    }
+    if(aiSelectedFile){aiLastResumeBase64=(resumeBase64&&resumeBase64.length<=3*1024*1024)?resumeBase64:null;aiLastResumeName=aiSelectedFile.name;}
+    if(survey)aiLastSurvey=survey;
     aiLastName=name;
     document.getElementById('ai-stage-loading').style.display='none';
     document.getElementById('ai-stage-result').style.display='block';
-    // 逐字稿模式完成後,顯示提示並解鎖(回到一般狀態)
     if(isTx){
       const banner=document.getElementById('ai-restore-banner');
-      if(banner){banner.style.display='block';banner.innerHTML='🎙️ 已用逐字稿更新<strong>職能面試</strong>，筆試分數維持面試前的結果。導入時只會更新職能。';}
+      if(banner){banner.style.display='block';banner.innerHTML='🎙️ 已用逐字稿重評，<strong>有變動的分數會標出「原本 X 分」</strong>（現場 vs 非現場）。導入時可選全部或只導職能。';}
     }
     switchAiTab('score');
+    // 分析完自動存到後台(不用再手動按「存到後台」)
+    autoSaveAiToRecord(name);
 
   }catch(err){
     console.error('AI 分析失敗:',err);
@@ -3229,10 +3308,17 @@ function calculateAiScores(data){
   };
 }
 
-function renderAiResult(data){
+function renderAiResult(data,baseline){
   const esc=t=>{const d=document.createElement('div');d.textContent=(t==null?'':String(t));return d.innerHTML;};
   const scoreBadge=s=>`<span class="ai-result-score s${s}">${s}分</span>`;
-  
+  // 有 baseline(面試前分數)且有變動時,badge 下方標「原本 X 分」;沒變就不標
+  const cmpBadge=(newS,oldS)=>{
+    const b=scoreBadge(newS);
+    if(oldS==null||typeof newS!=='number'||oldS===newS)return b;
+    const up=newS>oldS;
+    return b+`<div style="font-size:9px;color:${up?'#059669':'#DC2626'};font-weight:700;margin-top:2px;">${up?'▲':'▼'} 原本 ${oldS} 分</div>`;
+  };
+
   let html='';
   
   // 應徵者資訊(加上 position_type)
@@ -3296,10 +3382,12 @@ function renderAiResult(data){
           <th style="width:35%;">評分依據(原文引用)</th>
         </tr></thead>
         <tbody>`;
-    data.s1.forEach(item=>{
+    const baseS1=baseline&&Array.isArray(baseline.s1)?baseline.s1:null;
+    data.s1.forEach((item,i)=>{
+      const oldS=baseS1&&baseS1[i]?baseS1[i].score:null;
       html+=`<tr>
         <td>${esc(item.title||'')}</td>
-        <td style="text-align:center;">${scoreBadge(item.score)}</td>
+        <td style="text-align:center;">${cmpBadge(item.score,oldS)}</td>
         <td>${esc(item.comment||'')}</td>
         <td style="color:var(--text2);font-style:italic;">${esc(item.evidence||'')}</td>
       </tr>`;
@@ -3308,7 +3396,7 @@ function renderAiResult(data){
   }
   
   // 職能 BEI + 建議分數
-  const renderCompetencyTable=(title,arr)=>{
+  const renderCompetencyTable=(title,arr,baseArr)=>{
     if(!arr||!Array.isArray(arr))return '';
     let h=`<div class="ai-result-section">
       <div class="ai-result-section-title">${title}</div>
@@ -3322,8 +3410,9 @@ function renderAiResult(data){
           <th style="width:13%;">參考來源</th>
         </tr></thead>
         <tbody>`;
-    arr.forEach(item=>{
+    arr.forEach((item,i)=>{
       const car=item.car||{};
+      const oldS=baseArr&&baseArr[i]?baseArr[i].score:null;
       h+=`<tr>
         <td><strong>${esc(item.name||'')}</strong></td>
         <td>
@@ -3332,7 +3421,7 @@ function renderAiResult(data){
           <div class="car"><strong>A(行動):</strong> ${esc(car.a||'')}</div>
           <div class="car"><strong>R(結果):</strong> ${esc(car.r||'')}</div>
         </td>
-        <td style="text-align:center;">${scoreBadge(item.score)}</td>
+        <td style="text-align:center;">${cmpBadge(item.score,oldS)}</td>
         <td style="font-size:11px;">${esc(item.level||'')}</td>
         <td style="color:var(--text2);">${esc(item.reason||'')}</td>
         <td style="color:var(--text2);font-size:11px;">${esc(item.source||'')}</td>
@@ -3343,8 +3432,10 @@ function renderAiResult(data){
   };
   
   if(data.s3){
-    html+=renderCompetencyTable('💼 6 大核心職能',data.s3.core);
-    html+=renderCompetencyTable('🎯 3 大管理職能',data.s3.mgmt);
+    const bc=baseline&&baseline.s3?baseline.s3.core:null;
+    const bm=baseline&&baseline.s3?baseline.s3.mgmt:null;
+    html+=renderCompetencyTable('💼 6 大核心職能',data.s3.core,bc);
+    html+=renderCompetencyTable('🎯 3 大管理職能',data.s3.mgmt,bm);
   }
   
   document.getElementById('ai-result-content').innerHTML=html;
